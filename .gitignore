@@ -1,2 +1,3 @@
-/secure/token.py
+/secure/*
 .idea
+/logs/*
