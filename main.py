@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 
 import requests
 
@@ -114,7 +115,7 @@ def get_groups(session, group_id=None):
         return response_content
 
 
-def upload_file(session, file_to_upload, domain_type='song_arrangement', domain_identifier=394):
+def file_upload(session, file_to_upload, domain_type='song_arrangement', domain_identifier=394, file_name=None):
     """
     Helper function to upload an attachment to any module of ChurchTools
 
@@ -123,13 +124,17 @@ def upload_file(session, file_to_upload, domain_type='song_arrangement', domain_
     :param domain_type:  The domain type. Currently supported are 'avatar', 'groupimage', 'logo', 'attatchments',
      'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
     :param domain_identifier: ID of the object in ChurchTools
+    :param file_name: optional file name - if none specificed the one from the file is used
     :return:
     """
 
     url = domain + '/api/files/{}/{}'.format(domain_type, domain_identifier)
 
     # add files as files form data with dict using 'files[]' as key and (tuple of filename and fileobject)
-    files = {'files[]': (file_to_upload.name, file_to_upload)}
+    if file_name is None:
+        files = {'files[]': (file_to_upload.name, file_to_upload)}
+    else:
+        files = {'files[]': (file_name, file_to_upload)}
     response = session.post(url=url, files=files)
 
     """
@@ -151,6 +156,52 @@ def upload_file(session, file_to_upload, domain_type='song_arrangement', domain_
     else:
         logging.warning(response.content.decode())
 
+    # TODO replace file method using delete and reupload ...
+
+
+def file_delete(session, domain_type='song_arrangement', domain_identifier=394, filename_for_delete=None):
+    """
+    Helper function to delete ALL attachments of any specified module of ChurchTools#
+    Downloads all existing files to tmp and reuploads them in case filename_for_delete is specified
+
+    :param session: which is allready Authorized
+    :param domain_type:  The domain type. Currently supported are 'avatar', 'groupimage', 'logo', 'attatchments',
+     'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
+     defaults to song_arrangement for testing
+    :param domain_identifier: ID of the object in ChurchTools defaults to test song
+    :param filename_for_delete: name of the file to be deleted - all others will reupload
+    :return:
+    """
+    url = domain + '/api/files/{}/{}'.format(domain_type, domain_identifier)
+
+    if filename_for_delete is not None:
+
+        response = session.get(url=url)
+        online_files = [(item["id"], item['name'], item['fileUrl']) for item in json.loads(response.content)['data']]
+
+        for current_file in online_files:
+            current_id = current_file[0]
+            current_name = current_file[1]
+            current_url = current_file[2]
+            if current_name != filename_for_delete:
+                response = session.get(current_file[2])
+                file_path_name = "tmp/{}_{}".format(current_id, current_name)
+                temp_file = open(file_path_name, "wb")
+                temp_file.write(response.content)
+                temp_file.close()
+
+    # Delete all Files for the id online
+    response = session.delete(url=url)
+
+    # Recover Local Files with new upload and delete local copy from tmp
+    if filename_for_delete is not None:
+        local_files = os.listdir('tmp')
+        for current_file in local_files:
+            current_file_object = open('tmp/{}'.format(current_file), 'rb')
+            file_name = ''.join((current_file.split("_")[1:]))
+            file_upload(session, current_file_object, file_name=file_name)
+            os.remove('tmp/{}'.format(current_file))
+
 
 if __name__ == '__main__':
     logging.getLogger().setLevel(logging.INFO)
@@ -167,11 +218,12 @@ if __name__ == '__main__':
     # Tries to upload a file to the test song with ID 394
     # song = get_songs(current_session, 394)
     file = open('media/pinguin.png', 'rb')
-    upload_file(current_session, file, "song_arrangement", 394)
+    file_upload(current_session, file, "song_arrangement", 394)
+    file_delete(current_session, "song_arrangement", 394, filename_for_delete='pinguin.png')
 
     # Tries to upload a file as group image for test group 103
     group = get_groups(current_session, 103)
     file = open('media/pinguin.png', 'rb')
-    upload_file(current_session, file, "groupimage", 103)
+    file_upload(current_session, file, "groupimage", 103)
 
     logging.info("finished main")
