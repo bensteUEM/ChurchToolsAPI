@@ -16,7 +16,7 @@ if __name__ == '__main__':
     api.check_connection_ajax()
 
     # Tries to upload a file as group image for test group 103
-    group = api.get_groups(103)
-    api.file_upload('media/pinguin.png', "groupimage", 103)
+    # group = api.get_groups(103)
+    # api.file_upload('media/pinguin.png', "groupimage", 103)
 
     logging.info("finished main")
