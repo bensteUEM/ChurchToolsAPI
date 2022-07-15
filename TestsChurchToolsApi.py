@@ -132,6 +132,75 @@ class TestsChurchToolsApi(unittest.TestCase):
         song = self.api.get_songs(408)
         self.assertEqual(len(song['arrangements'][0]['files']), 0, 'check that files are deleted')
 
+    def test_create_edit_delete_song(self):
+        """
+        Test method used to create a new song, edit it's metadata and remove the song
+        Does only test metadata not attachments or arrangements
+        On ELKW1610.KRZ.TOOLS songcategory_id 13 ist TEST
+        :return:
+        """
+        title = 'Test_bezeichnung1'
+        songcategory_id = 13
+
+        # 1. Create Song after and check it exists with all params
+        song_id = self.api.create_song(title, songcategory_id)
+
+        ct_song = self.api.get_songs(song_id)
+        self.assertEqual(ct_song['name'], title)
+        self.assertEqual(ct_song['author'], '')
+        self.assertEqual(ct_song['category']['id'], songcategory_id)
+
+        # 2. Edit Song title and check it exists with all params
+        self.api.edit_song(song_id, title='Test_bezeichnung2')
+        ct_song = self.api.get_songs(song_id)
+        self.assertEqual(ct_song['author'], '')
+        self.assertEqual(ct_song['name'], 'Test_bezeichnung2')
+
+        # 3. Edit all fields and check it exists with all params
+        data = {
+            'bezeichnung': 'Test_bezeichnung3',
+            'songcategory_id': 1,  # needs to exist does not matter which because deleted later
+            'author': 'Test_author',
+            'copyright': 'Test_copyright',
+            'ccli': 'Test_ccli',
+            'practice_yn': 1,
+        }
+        self.api.edit_song(song_id, data['songcategory_id'], data['bezeichnung'], data['author'], data['copyright'],
+                           data['ccli'], data['practice_yn'])
+        ct_song = self.api.get_songs(song_id)
+        self.assertEqual(ct_song['name'], data['bezeichnung'])
+        self.assertEqual(ct_song['category']['id'], data['songcategory_id'])
+        self.assertEqual(ct_song['author'], data['author'])
+        self.assertEqual(ct_song['copyright'], data['copyright'])
+        self.assertEqual(ct_song['ccli'], data['ccli'])
+        self.assertEqual(ct_song['shouldPractice'], data['practice_yn'])
+
+        # Delete Song
+        self.api.delete_song(song_id)
+        with self.assertLogs(level='INFO') as cm:
+            ct_song = self.api.get_songs(song_id)
+        messages = [
+            "INFO:root:Did not find song ({}) with CODE 404".format(song_id)]
+        self.assertEqual(messages, cm.output)
+        self.assertIsNone(ct_song)
+
+    def test_add_remove_song_tag(self):
+        """
+        Test method used to add and remove the test tag to some song
+        Tag ID and Song ID may vary depending on the server used
+        On ELKW1610.KRZ.TOOLS song_id 408 and tag_id 34
+        :return:
+        """
+        # TODO CONTINUE HERE unsure how to check status of tags
+
+        with self.assertNoLogs(level='INFO') as cm:
+            response = self.api.remove_song_tag(408, 34)
+        self.assertEqual(response.status_code, 200)
+
+        with self.assertNoLogs(level='INFO') as cm:
+            response = self.api.add_song_tag(408, 34)
+        self.assertEqual(response.status_code, 200)  # TODO 200 if success, 500 if issue - e.g. already exists
+
 
 if __name__ == '__main__':
     unittest.main()

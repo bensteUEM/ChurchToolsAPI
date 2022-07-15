@@ -90,7 +90,7 @@ class ChurchToolsApi:
     def get_songs(self, song_id=None):
         """ Gets list of all songs from the server
         :param song_id: optional filter by song id
-        :return JSON Response Aller Lieder aus CT
+        :return: JSON Response of all songs from ChurchTools or single object
         """
         url = self.domain + '/api/songs'
         if song_id is not None:
@@ -120,7 +120,10 @@ class ChurchToolsApi:
 
             return response_data
         else:
-            logging.warning("Something went wrong fetiching songs: {}".format(response.status_code))
+            if song_id is not None:
+                logging.info("Did not find song ({}) with CODE {}".format(song_id, response.status_code))
+            else:
+                logging.warning("Something went wrong fetching songs: CODE {}".format(response.status_code))
 
     def get_groups(self, group_id=None):
         """ Gets list of all groups
@@ -255,3 +258,141 @@ class ChurchToolsApi:
                 os.remove('tmp/{}'.format(current_file))
 
         return response.status_code == 204  # success code for delete action upload
+
+    def create_song(self, title, songcategory_id, author='', copyright='', ccli='', tonality='', bpm='', beat=''):
+        """
+        Method to create a new song using legacy AJAX API
+        Does not check for existing duplicates !
+        function endpoint see https://api.church.tools/function-churchservice_addNewSong.html
+        name for params reverse engineered based on web developer tools in Firefox and live churchTools instance
+
+        :param title: Title of the Song-  required
+        :param songcategory_id: int id of site specific songcategories (created in CT Metadata) - required
+        :param author: name of author or authors, ideally comma separated if multiple - optional
+        :param copyright: name of organization responsible for rights distribution - optional
+        :param ccli: CCLI ID see songselect.ccli.com/ - using "-" if empty on purpose - optional
+        :param tonality: empty or specific string used for tonaly - see ChurchTools for details e.g. Ab,A,C,C# ... - optional
+        :param bpm: Beats per Minute - optional
+        :param beat: Beat - optional
+
+        :return: int song_id: ChurchTools song_id of the Song created
+        """
+        url = self.domain + '/?q=churchservice/ajax&func=addNewSong'
+
+        data = {
+            'bezeichnung': title,
+            'songcategory_id': songcategory_id,
+            'author': author,
+            'copyright': copyright,
+            'ccli': ccli,
+            'tonality': tonality,
+            'bpm': bpm,
+            'beat': beat
+        }
+
+        response = self.session.post(url=url, data=data)
+        new_id = int(json.loads(response.content)['data'])
+        return new_id
+
+    def edit_song(self, song_id, songcategory_id=None, title=None, author=None, copyright=None, ccli=None,
+                  practice_yn=None, ):
+        """
+        Method to EDIT an existing song using legacy AJAX API
+        Changes are only applied to fields that have values in respective param
+        None is considered empty while '' is an empty text which clears existing values
+
+        function endpoint see https://api.church.tools/function-churchservice_editSong.html
+        name for params reverse engineered based on web developer tools in Firefox and live churchTools instance
+        NOTE - BPM and BEAT used in create are part of arrangement and not song therefore not editable in this method
+
+        :param song_id: ChurchTools site specific song_id which should be modified - required
+
+        :param title: Title of the Song
+        :param songcategory_id: int id of site specific songcategories (created in CT Metadata)
+        :param author: name of author or authors, ideally comma separated if multiple
+        :param copyright: name of organization responsible for rights distribution
+        :param ccli: CCLI ID see songselect.ccli.com/ - using "-" if empty on purpose
+        :param practice_yn: bool as 0 and 1 - additional param which does not exist in create method!
+
+        :return: response item
+        """
+
+        # system/churchservice/churchservice_db.php
+        url = self.domain + '/?q=churchservice/ajax&func=editSong'
+
+        existing_song = self.get_songs(song_id=song_id)
+
+        data = {
+            'id': song_id if song_id is not None else existing_song['name'],
+            'bezeichnung': title if title is not None else existing_song['name'],
+            'songcategory_id': songcategory_id if songcategory_id is not None else existing_song['category']['id'],
+            'author': author if author is not None else existing_song['author'],
+            'copyright': copyright if copyright is not None else existing_song['copyright'],
+            'ccli': ccli if ccli is not None else existing_song['ccli'],
+            'practice_yn': practice_yn if practice_yn is not None else existing_song['shouldPractice'],
+        }
+
+        response = self.session.post(url=url, data=data)
+        return response
+
+    def delete_song(self, song_id):
+        """
+        Method to DELETE a song using legacy AJAX API
+        name for params reverse engineered based on web developer tools in Firefox and live churchTools instance
+
+        :param song_id: ChurchTools site specific song_id which should be modified - required
+
+        :return: response item
+        """
+
+        # system/churchservice/churchservice_db.php
+        url = self.domain + '/?q=churchservice/ajax&func=deleteSong'
+
+        data = {
+            'id': song_id,
+        }
+
+        response = self.session.post(url=url, data=data)
+        return response
+
+    def add_song_tag(self, song_id, tag_id):
+        """
+        Method to add a song tag using legacy AJAX API on a specific song
+        reverse engineered based on web developer tools in Firefox and live churchTools instance
+
+        re-adding existing tag does not cause any issues
+        :param song_id: ChurchTools site specific song_id which should be modified - required
+        :param tag_id: ChurchTools site specific song_tag_id which should be added - required
+
+        :return: response item
+        """
+        url = self.domain + '/?q=churchservice/ajax&func=addSongTag'
+
+        data = {
+            'id': song_id,
+            'tag_id': tag_id
+        }
+
+        response = self.session.post(url=url, data=data)
+        return response
+
+    def remove_song_tag(self, song_id, tag_id):
+        """
+        Method to remove a song tag using legacy AJAX API on a specifc song
+        reverse engineered based on web developer tools in Firefox and live churchTools instance
+
+        re-removing existing tag does not cause any issues
+        :param song_id: ChurchTools site specific song_id which should be modified - required
+        :param tag_id: ChurchTools site specific song_tag_id which should be added - required
+
+        :return: response item
+        """
+        url = self.domain + '/?q=churchservice/ajax&func=delSongTag'
+
+        data = {
+            'id': song_id,
+            'tag_id': tag_id
+        }
+
+        response = self.session.post(url=url, data=data)
+        return response
