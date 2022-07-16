@@ -125,6 +125,21 @@ class ChurchToolsApi:
             else:
                 logging.warning("Something went wrong fetching songs: CODE {}".format(response.status_code))
 
+    def get_song_ajax(self, song_id=None):
+        """
+        Legacy AJAX function to get a specific song
+        used to e.g. check for tags
+        :param song_id: the id of the song to be searched for
+        :return: response content interpreted as json
+        """
+
+        url = self.domain + '/?q=churchservice/ajax&func=getAllSongs'
+
+        response = self.session.post(url=url)
+        song = json.loads(response.content)['data']['songs'][str(song_id)]
+
+        return song
+
     def get_groups(self, group_id=None):
         """ Gets list of all groups
         :param group_id: optional filter by group id
@@ -259,7 +274,8 @@ class ChurchToolsApi:
 
         return response.status_code == 204  # success code for delete action upload
 
-    def create_song(self, title, songcategory_id, author='', copyright='', ccli='', tonality='', bpm='', beat=''):
+    def create_song(self, title: str, songcategory_id: int, author='', copyright='', ccli='', tonality='', bpm='',
+                    beat=''):
         """
         Method to create a new song using legacy AJAX API
         Does not check for existing duplicates !
@@ -294,7 +310,7 @@ class ChurchToolsApi:
         new_id = int(json.loads(response.content)['data'])
         return new_id
 
-    def edit_song(self, song_id, songcategory_id=None, title=None, author=None, copyright=None, ccli=None,
+    def edit_song(self, song_id: int, songcategory_id=None, title=None, author=None, copyright=None, ccli=None,
                   practice_yn=None, ):
         """
         Method to EDIT an existing song using legacy AJAX API
@@ -335,7 +351,7 @@ class ChurchToolsApi:
         response = self.session.post(url=url, data=data)
         return response
 
-    def delete_song(self, song_id):
+    def delete_song(self, song_id: int):
         """
         Method to DELETE a song using legacy AJAX API
         name for params reverse engineered based on web developer tools in Firefox and live churchTools instance
@@ -355,14 +371,14 @@ class ChurchToolsApi:
         response = self.session.post(url=url, data=data)
         return response
 
-    def add_song_tag(self, song_id, tag_id):
+    def add_song_tag(self, song_id: int, song_tag_id: int):
         """
         Method to add a song tag using legacy AJAX API on a specific song
         reverse engineered based on web developer tools in Firefox and live churchTools instance
 
         re-adding existing tag does not cause any issues
         :param song_id: ChurchTools site specific song_id which should be modified - required
-        :param tag_id: ChurchTools site specific song_tag_id which should be added - required
+        :param song_tag_id: ChurchTools site specific song_tag_id which should be added - required
 
         :return: response item
         """
@@ -370,20 +386,20 @@ class ChurchToolsApi:
 
         data = {
             'id': song_id,
-            'tag_id': tag_id
+            'tag_id': song_tag_id
         }
 
         response = self.session.post(url=url, data=data)
         return response
 
-    def remove_song_tag(self, song_id, tag_id):
+    def remove_song_tag(self, song_id: int, song_tag_id: int):
         """
         Method to remove a song tag using legacy AJAX API on a specifc song
         reverse engineered based on web developer tools in Firefox and live churchTools instance
 
         re-removing existing tag does not cause any issues
         :param song_id: ChurchTools site specific song_id which should be modified - required
-        :param tag_id: ChurchTools site specific song_tag_id which should be added - required
+        :param song_tag_id: ChurchTools site specific song_tag_id which should be added - required
 
         :return: response item
         """
@@ -391,8 +407,41 @@ class ChurchToolsApi:
 
         data = {
             'id': song_id,
-            'tag_id': tag_id
+            'tag_id': song_tag_id
         }
 
         response = self.session.post(url=url, data=data)
         return response
+
+    def get_song_tags(self, song_id: int):
+        """
+        Method to get a song tag workaround using legacy AJAX API for getSong
+        :param song_id: ChurchTools site specific song_id which should be modified - required
+        :return: response item
+        """
+        song = self.get_song_ajax(song_id)
+        return song['tags']
+
+    def contains_song_tag(self, song_id: int, song_tag_id: int):
+        """
+        Helper which checks if a specifc song_tag_id is present on a song
+        :param song_id: ChurchTools site specific song_id which should checked
+        :param song_tag_id: ChurchTools site specific song_tag_id which should be searched for
+        :return: bool if present
+        """
+        tags = self.get_song_tags(song_id)
+        return str(song_tag_id) in tags
+
+    def get_songs_with_tag(self, song_tag_id: int):
+        """
+        Helper which returns all songs that contain have a specific tag
+        :param song_tag_id: ChurchTools site specific song_tag_id which should be searched for
+        :return: list of songs
+        """
+        songs = self.get_songs()
+        all_song_ids = [value['id'] for value in songs]
+        filtered_song_ids = [id for id in all_song_ids if self.contains_song_tag(id, song_tag_id)]
+
+        result = [self.get_songs(song_id) for song_id in filtered_song_ids]
+
+        return result

@@ -191,15 +191,25 @@ class TestsChurchToolsApi(unittest.TestCase):
         On ELKW1610.KRZ.TOOLS song_id 408 and tag_id 34
         :return:
         """
-        # TODO CONTINUE HERE unsure how to check status of tags
-
+        self.assertTrue(self.api.contains_song_tag(408, 34))
         with self.assertNoLogs(level='INFO') as cm:
             response = self.api.remove_song_tag(408, 34)
         self.assertEqual(response.status_code, 200)
 
+        self.assertFalse(self.api.contains_song_tag(408, 34))
+
         with self.assertNoLogs(level='INFO') as cm:
             response = self.api.add_song_tag(408, 34)
-        self.assertEqual(response.status_code, 200)  # TODO 200 if success, 500 if issue - e.g. already exists
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(self.api.contains_song_tag(408, 34))
+
+    def test_get_songs_with_tag(self):
+        """
+        Test method to check if fetching all songs with a specific tag works
+        :return:
+        """
+        result = self.api.get_songs_with_tag(34)
+        self.assertEqual(408, result[0]['id'])
 
 
 if __name__ == '__main__':
