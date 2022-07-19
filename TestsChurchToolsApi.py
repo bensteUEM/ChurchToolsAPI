@@ -89,7 +89,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         """
         # 0. Clean and delete files in test
         self.api.file_delete('song_arrangement', 417)
-        song = self.api.get_songs(408)
+        song = self.api.get_songs(song_id=408)
         self.assertEqual(song['arrangements'][0]['id'], 417, 'check that default arrangement exists')
         self.assertEqual(len(song['arrangements'][0]['files']), 0, 'check that ono files exist')
 
@@ -99,7 +99,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.api.file_upload('media/pinguin_shell.png', "song_arrangement", 417, 'pinguin_shell_rename.png')
         self.api.file_upload('media/pinguin.png', "song_arrangement", 417, 'pinguin.png')
 
-        song = self.api.get_songs(408)
+        song = self.api.get_songs(song_id=408)
         self.assertIsInstance(song, dict, 'Should be a single song instead of list of songs')
         self.assertEqual(song['arrangements'][0]['id'], 417, 'check that default arrangement exsits')
         self.assertEqual(len(song['arrangements'][0]['files']), 3, 'check that only the 3 test attachments exist')
@@ -109,27 +109,27 @@ class TestsChurchToolsApi(unittest.TestCase):
 
         # 2. Reupload pinguin.png using overwrite which will remove both old files but keep one
         self.api.file_upload('media/pinguin.png', "song_arrangement", 417, 'pinguin.png', overwrite=True)
-        song = self.api.get_songs(408)
+        song = self.api.get_songs(song_id=408)
         self.assertEqual(len(song['arrangements'][0]['files']), 2, 'check that overwrite is applied on upload')
 
         # 3. Overwrite without existing file
         self.api.file_upload('media/pinguin.png', "song_arrangement", 417, 'pinguin2.png', overwrite=True)
-        song = self.api.get_songs(408)
+        song = self.api.get_songs(song_id=408)
         self.assertEqual(len(song['arrangements'][0]['files']), 3, 'check that both file with overwrite of new file')
 
         # 3.b Try overwriting again and check that number of files does not increase
         self.api.file_upload('media/pinguin.png', "song_arrangement", 417, 'pinguin.png', overwrite=True)
-        song = self.api.get_songs(408)
+        song = self.api.get_songs(song_id=408)
         self.assertEqual(len(song['arrangements'][0]['files']), 3, 'check that still only 3 file exists')
 
         # 4. Delete only one file
         self.api.file_delete("song_arrangement", 417, "pinguin.png")
-        song = self.api.get_songs(408)
+        song = self.api.get_songs(song_id=408)
         self.assertEqual(len(song['arrangements'][0]['files']), 2, 'check that still only 2 file exists')
 
         # cleanup delete all files
         self.api.file_delete('song_arrangement', 417)
-        song = self.api.get_songs(408)
+        song = self.api.get_songs(song_id=408)
         self.assertEqual(len(song['arrangements'][0]['files']), 0, 'check that files are deleted')
 
     def test_create_edit_delete_song(self):
@@ -145,14 +145,14 @@ class TestsChurchToolsApi(unittest.TestCase):
         # 1. Create Song after and check it exists with all params
         song_id = self.api.create_song(title, songcategory_id)
 
-        ct_song = self.api.get_songs(song_id)
+        ct_song = self.api.get_songs(song_id=song_id)
         self.assertEqual(ct_song['name'], title)
         self.assertEqual(ct_song['author'], '')
         self.assertEqual(ct_song['category']['id'], songcategory_id)
 
         # 2. Edit Song title and check it exists with all params
         self.api.edit_song(song_id, title='Test_bezeichnung2')
-        ct_song = self.api.get_songs(song_id)
+        ct_song = self.api.get_songs(song_id=song_id)
         self.assertEqual(ct_song['author'], '')
         self.assertEqual(ct_song['name'], 'Test_bezeichnung2')
 
@@ -167,7 +167,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         }
         self.api.edit_song(song_id, data['songcategory_id'], data['bezeichnung'], data['author'], data['copyright'],
                            data['ccli'], data['practice_yn'])
-        ct_song = self.api.get_songs(song_id)
+        ct_song = self.api.get_songs(song_id=song_id)
         self.assertEqual(ct_song['name'], data['bezeichnung'])
         self.assertEqual(ct_song['category']['id'], data['songcategory_id'])
         self.assertEqual(ct_song['author'], data['author'])
@@ -178,7 +178,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         # Delete Song
         self.api.delete_song(song_id)
         with self.assertLogs(level='INFO') as cm:
-            ct_song = self.api.get_songs(song_id)
+            ct_song = self.api.get_songs(song_id=song_id)
         messages = [
             "INFO:root:Did not find song ({}) with CODE 404".format(song_id)]
         self.assertEqual(messages, cm.output)

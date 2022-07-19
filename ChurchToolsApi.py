@@ -87,14 +87,16 @@ class ChurchToolsApi:
             logging.debug("Response AJAX Connection failed with {}".format(json.load(response.content)))
             return False
 
-    def get_songs(self, song_id=None):
+    def get_songs(self, **kwargs):
+        # song_id=None):
         """ Gets list of all songs from the server
-        :param song_id: optional filter by song id
+        :key kwargs song_id: optional filter by song id
         :return: JSON Response of all songs from ChurchTools or single object
         """
+
         url = self.domain + '/api/songs'
-        if song_id is not None:
-            url = url + '/{}'.format(song_id)
+        if "song_id" in kwargs.keys():
+            url = url + '/{}'.format(kwargs["song_id"])
         headers = {
             'accept': 'application/json'
         }
@@ -120,8 +122,8 @@ class ChurchToolsApi:
 
             return response_data
         else:
-            if song_id is not None:
-                logging.info("Did not find song ({}) with CODE {}".format(song_id, response.status_code))
+            if "song_id" in kwargs.keys():
+                logging.info("Did not find song ({}) with CODE {}".format(kwargs["song_id"], response.status_code))
             else:
                 logging.warning("Something went wrong fetching songs: CODE {}".format(response.status_code))
 
@@ -442,6 +444,6 @@ class ChurchToolsApi:
         all_song_ids = [value['id'] for value in songs]
         filtered_song_ids = [id for id in all_song_ids if self.contains_song_tag(id, song_tag_id)]
 
-        result = [self.get_songs(song_id) for song_id in filtered_song_ids]
+        result = [self.get_songs(song_id=song_id) for song_id in filtered_song_ids]
 
         return result
