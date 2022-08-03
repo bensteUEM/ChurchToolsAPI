@@ -142,6 +142,26 @@ class ChurchToolsApi:
 
         return song
 
+    def get_song_category_map(self):
+        """
+        Helpfer function creating requesting CT metadata for mapping of categories
+        :return: a dictionary of CategoryName:CTCategoryID
+        :rtype: dict
+        """
+
+        url = self.domain + '/api/event/masterdata'
+        headers = {
+            'accept': 'application/json'
+        }
+        response = self.session.get(url=url, headers=headers)
+        response_content = json.loads(response.content)
+        song_categories = response_content['data']['songCategories']
+        song_category_dict = {}
+        for item in song_categories:
+            song_category_dict[item['name']] = item['id']
+
+        return song_category_dict
+
     def get_groups(self, group_id=None):
         """ Gets list of all groups
         :param group_id: optional filter by group id

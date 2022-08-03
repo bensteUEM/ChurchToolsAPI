@@ -61,6 +61,16 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertEqual(song['id'], 408)
         self.assertEqual(song['name'], 'Test')
 
+    def test_get_song_category_map(self):
+        """
+        Checks that a dict with respective known values is returned when requesting song categories
+        Requires the connected test system to have a category "Test" mapped as ID 13 (or changed if other system)
+        :return:
+        """
+
+        song_catgegory_dict = self.api.get_song_category_map()
+        self.assertEqual(song_catgegory_dict['Test'], 13)
+
     def test_get_groups(self):
         """
         1. Test requests all groups and checks that result has more than 10 elements (hence default pagination works)
