@@ -218,7 +218,7 @@ class ChurchToolsApi:
 
         if overwrite:
             logging.debug("deleting old file before download")
-            delete_file_name = file_to_upload.name if custom_file_name is None else custom_file_name
+            delete_file_name = file_to_upload.name.split('/')[-1] if custom_file_name is None else custom_file_name
             self.file_delete(domain_type, domain_identifier, delete_file_name)
 
         # add files as files form data with dict using 'files[]' as key and (tuple of filename and fileobject)
