@@ -19,8 +19,8 @@ class TestsChurchToolsApi(unittest.TestCase):
         :return:
         """
         from secure.secrets import users
-        result = self.api.login_ct_ajax_api('beamer_maki@evang-kirche-baiersbronn.de',
-                                            users['beamer_maki@evang-kirche-baiersbronn.de'])
+        result = self.api.login_ct_ajax_api(list(users.keys())[0],
+                                            users[list(users.keys())[0]])
         self.assertTrue(result)
 
     def test_login_ct_rest_api(self):
@@ -52,6 +52,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         """
         1. Test requests all songs and checks that result has more than 10 elements (hence default pagination works)
         2. Test requests song 383 and checks that result matches Test song
+        IMPORTANT - This test method and the parameters used depend on the target system!
         :return:
         """
         songs = self.api.get_songs()
@@ -64,6 +65,7 @@ class TestsChurchToolsApi(unittest.TestCase):
     def test_get_song_category_map(self):
         """
         Checks that a dict with respective known values is returned when requesting song categories
+        IMPORTANT - This test method and the parameters used depend on the target system!
         Requires the connected test system to have a category "Test" mapped as ID 13 (or changed if other system)
         :return:
         """
@@ -73,6 +75,7 @@ class TestsChurchToolsApi(unittest.TestCase):
 
     def test_get_groups(self):
         """
+        IMPORTANT - This test method and the parameters used depend on the target system!
         1. Test requests all groups and checks that result has more than 10 elements (hence default pagination works)
         2. Test requests group 103 and checks that result matches Test song
         :return:
@@ -87,6 +90,7 @@ class TestsChurchToolsApi(unittest.TestCase):
 
     def test_file_upload_replace_delete(self):
         """
+        IMPORTANT - This test method and the parameters used depend on the target system!
         0. Clean and delete files in test
         1. Tries 3 uploads to the test song with ID 408 and arrangement 417
         Adds the same file again without overwrite - should exist twice
@@ -146,6 +150,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         """
         Test method used to create a new song, edit it's metadata and remove the song
         Does only test metadata not attachments or arrangements
+        IMPORTANT - This test method and the parameters used depend on the target system!
         On ELKW1610.KRZ.TOOLS songcategory_id 13 ist TEST
         :return:
         """
@@ -198,20 +203,20 @@ class TestsChurchToolsApi(unittest.TestCase):
         """
         Test method used to add and remove the test tag to some song
         Tag ID and Song ID may vary depending on the server used
-        On ELKW1610.KRZ.TOOLS song_id 408 and tag_id 34
+        On ELKW1610.KRZ.TOOLS song_id 408 and tag_id 53
         :return:
         """
-        self.assertTrue(self.api.contains_song_tag(408, 34))
+        self.assertTrue(self.api.contains_song_tag(408, 53))
         with self.assertNoLogs(level='INFO') as cm:
-            response = self.api.remove_song_tag(408, 34)
+            response = self.api.remove_song_tag(408, 53)
         self.assertEqual(response.status_code, 200)
 
-        self.assertFalse(self.api.contains_song_tag(408, 34))
+        self.assertFalse(self.api.contains_song_tag(408, 53))
 
         with self.assertNoLogs(level='INFO') as cm:
-            response = self.api.add_song_tag(408, 34)
+            response = self.api.add_song_tag(408, 53)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(self.api.contains_song_tag(408, 34))
+        self.assertTrue(self.api.contains_song_tag(408, 53))
 
     def test_get_songs_with_tag(self):
         """

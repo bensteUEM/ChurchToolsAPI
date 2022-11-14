@@ -4,6 +4,8 @@ import os
 
 import requests
 
+from secure.secrets import users
+
 
 class ChurchToolsApi:
     def __init__(self, domain):
@@ -13,7 +15,7 @@ class ChurchToolsApi:
         from secure.secrets import ct_token
         self.login_ct_rest_api(ct_token)
 
-    def login_ct_ajax_api(self, user="beamer_maki@evang-kirche-baiersbronn.de", pswd=""):
+    def login_ct_ajax_api(self, user=list(users.keys())[0], pswd=""):
         """
         Login function using AJAX with Username and Password
         :param user: Username
@@ -304,7 +306,7 @@ class ChurchToolsApi:
         function endpoint see https://api.church.tools/function-churchservice_addNewSong.html
         name for params reverse engineered based on web developer tools in Firefox and live churchTools instance
 
-        :param title: Title of the Song-  required
+        :param title: Title of the Song
         :param songcategory_id: int id of site specific songcategories (created in CT Metadata) - required
         :param author: name of author or authors, ideally comma separated if multiple - optional
         :param copyright: name of organization responsible for rights distribution - optional
