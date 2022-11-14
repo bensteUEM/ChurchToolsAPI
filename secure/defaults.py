@@ -1,1 +1,1 @@
-domain = 'https://elkw1610.krz.tools'
+domain = 'http://YOUR_DOMAIN'
