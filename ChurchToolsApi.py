@@ -469,3 +469,63 @@ class ChurchToolsApi:
         result = [self.get_songs(song_id=song_id) for song_id in filtered_song_ids]
 
         return result
+
+    def get_events(self, event_id=None):
+        """
+        Retrieve list of events from ChurchTools
+        :return: a list of events
+        #TODO 2 There are params available which are not implemented yet!
+        """
+        url = self.domain + '/api/events'
+        if event_id is not None:
+            url = url + '/{}'.format(event_id)
+        headers = {
+            'accept': 'application/json'
+        }
+        response = self.session.get(url=url, headers=headers)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_data = response_content['data'].copy()
+            logging.debug("First response of Events successful {}".format(response_content))
+
+            if 'meta' not in response_content.keys():  # Shortcut without Pagination
+                return response_data
+
+            if 'pagination' not in response_content['meta'].keys():
+                return response_data
+
+            # Long part extending results with pagination
+            # TODO #1 copied from other method unsure if pagination works the same as with groups
+            while response_content['meta']['pagination']['current'] \
+                    < response_content['meta']['pagination']['lastPage']:
+                logging.info("page {} of {}".format(response_content['meta']['pagination']['current'],
+                                                    response_content['meta']['pagination']['lastPage']))
+                params = {'page': response_content['meta']['pagination']['current'] + 1}
+                response = self.session.get(url=url, headers=headers, params=params)
+                response_content = json.loads(response.content)
+                response_data.extend(response_content['data'])
+
+            return response_data
+        else:
+            logging.warning("Something went wrong fetiching events: {}".format(response.status_code))
+
+    def get_event_agenda(self, event_id: int):
+        """
+        Retrieve agenda for event by ID from ChurchTools
+        :return:
+        """
+        url = self.domain + '/api/events/{}/agenda'.format(event_id)
+        headers = {
+            'accept': 'application/json'
+        }
+        response = self.session.get(url=url, headers=headers)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_data = response_content['data'].copy()
+            logging.debug("Agenda load successful {}".format(response_content))
+
+            return response_data
+        else:
+            logging.warning("Something went wrong fetiching events: {}".format(response.status_code))

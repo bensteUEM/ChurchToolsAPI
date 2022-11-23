@@ -226,6 +226,33 @@ class TestsChurchToolsApi(unittest.TestCase):
         result = self.api.get_songs_with_tag(34)
         self.assertEqual(408, result[0]['id'])
 
+    def test_get_events(self):
+        """
+        Tries to get a list of events and a single event from CT
+
+        Event ID may vary depending on the server used
+        On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
+        :return:
+        """
+        result = self.api.get_events()
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, list)
+
+        event_id = 484
+        result = self.api.get_events(event_id=event_id)
+        self.assertIsInstance(result, dict)
+
+    def test_get_event_schedule(self):
+        """
+        Tries to get an event schedule from a CT Event
+        Event ID may vary depending on the server used
+        On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
+        :return:
+        """
+        event_id = 484
+        result = self.api.get_event_agenda(event_id)
+        self.assertIsNotNone(result)
+
 
 if __name__ == '__main__':
     unittest.main()
