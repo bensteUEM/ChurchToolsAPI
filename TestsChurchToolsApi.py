@@ -242,9 +242,9 @@ class TestsChurchToolsApi(unittest.TestCase):
         result = self.api.get_events(event_id=event_id)
         self.assertIsInstance(result, dict)
 
-    def test_get_event_schedule(self):
+    def test_get_event_agenda(self):
         """
-        Tries to get an event schedule from a CT Event
+        Tries to get an event agenda from a CT Event
         Event ID may vary depending on the server used
         On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
         :return:
@@ -252,6 +252,21 @@ class TestsChurchToolsApi(unittest.TestCase):
         event_id = 484
         result = self.api.get_event_agenda(event_id)
         self.assertIsNotNone(result)
+
+    def test_has_event_schedule(self):
+        """
+        Tries to get boolean if event agenda exists for a CT Event
+        Event ID may vary depending on the server used
+        On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
+        2376 does not have one
+        :return:
+        """
+        event_id = 484
+        result = self.api.get_event_agenda(event_id)
+        self.assertIsNotNone(result)
+        event_id = 2376
+        result = self.api.get_event_agenda(event_id)
+        self.assertIsNone(result)
 
 
 if __name__ == '__main__':
