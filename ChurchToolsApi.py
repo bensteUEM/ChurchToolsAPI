@@ -197,7 +197,7 @@ class ChurchToolsApi:
 
             return response_data
         else:
-            logging.warning("Something went wrong fetiching songs: {}".format(response.status_code))
+            logging.warning("Something went wrong fetiching groups: {}".format(response.status_code))
 
     def file_upload(self, filename_path_for_upload, domain_type, domain_identifier,
                     custom_file_name=None,
