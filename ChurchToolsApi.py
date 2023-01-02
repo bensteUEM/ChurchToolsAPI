@@ -14,6 +14,7 @@ class ChurchToolsApi:
 
         from secure.secrets import ct_token
         self.login_ct_rest_api(ct_token)
+        self.session.headers['CSRF-Token'] = self.get_ct_csrf_token()
 
     def login_ct_ajax_api(self, user=list(users.keys())[0], pswd=""):
         """
