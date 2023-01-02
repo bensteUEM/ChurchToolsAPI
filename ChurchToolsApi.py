@@ -529,3 +529,27 @@ class ChurchToolsApi:
             return response_data
         else:
             logging.warning("Something went wrong fetiching events: {}".format(response.status_code))
+
+    def get_song_tags_all(self):
+        """
+        Retrieve tag-data from ChurchTools for all available tags
+        Purpose: be able to find out tag-ids of all available tags for filtering
+        """
+
+        url = self.domain + '/api/tags'
+        headers = {
+            'accept': 'application/json'
+        }
+        params = {
+       'type': 'songs',
+        }
+        response = self.session.get(url=url, params=params, headers=headers)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_data = response_content['data'].copy()
+            logging.debug("SongTags load successful {}".format(response_content))
+
+            return response_data
+        else:
+            logging.warning("Something went wrong fetiching Song-tags: {}".format(response.status_code))
