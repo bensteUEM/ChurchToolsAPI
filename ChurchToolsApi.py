@@ -554,3 +554,60 @@ class ChurchToolsApi:
             return response_data
         else:
             logging.warning("Something went wrong fetiching Song-tags: {}".format(response.status_code))
+
+
+    def file_download(self, filename: str, domain_type, domain_identifier, targetfolder_path='C:\Temp'):       
+        """
+        Retrieves file from ChurchTools for specific filename, domain_type and domain_identifier from churchtools
+        domain_type: Currently supported are 'avatar', 'groupimage', 'logo', 'attatchments', 'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
+        domainId = Id of Arrangement
+        These information can be requested for example by calling get_songs()
+        """
+        StateOK=False
+        url = '{}/api/files/{}/{}'.format(self.domain, domain_type, domain_identifier)
+
+        response = self.session.get(url=url)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            arrangement_files = response_content['data'].copy()
+            logging.debug("SongArrangement-Files load successful {}".format(response_content))
+            fileUrl=None
+
+            for file in arrangement_files:
+                filenameoriginal = str(file['name'])
+                fileUrl= str(file['fileUrl'])
+                if filenameoriginal==filename:
+                    break;
+            if fileUrl==None:
+                logging.warning("File {} does not exist".format(filename))
+            else:
+                logging.debug("Found File: {}".format(filename))
+                StateOK = self.file_download_fromUrl(fileUrl,"{}\{}".format(targetfolder_path,filename))
+
+            return StateOK
+        else:
+            logging.warning("Something went wrong fetiching SongArrangement-Files: {}".format(response.status_code))
+ 
+    def file_download_fromUrl(self, file_url: str, target_path: str):       
+        """
+        Retrieves file from ChurchTools for specific file_url from churchtools
+        This function is used by file_download(...)
+        Pay Attention: this file-url consists of a specific / random filename which was created by churchtools
+        Example -> file_url=https://lgv-oe.church.tools/?q=public/filedownload&id=631&filename=738db42141baec592aa2f523169af772fd02c1d21f5acaaf0601678962d06a00
+        """
+        # NOTE the stream=True parameter below
+        with self.session.get(url=file_url, stream=True) as r:
+            if r.status_code == 200:           
+                with open(target_path, 'wb') as f:
+                    for chunk in r.iter_content(chunk_size=8192): 
+                        # If you have chunk encoded response uncomment if
+                        # and set chunk_size parameter to None.
+                        #if chunk: 
+                        f.write(chunk)
+                logging.debug("Download of {} successful".format(file_url))
+                return True
+            else:
+                logging.warning("Something went wrong during file_download: {}".format(r.status_code))
+                return False    
+

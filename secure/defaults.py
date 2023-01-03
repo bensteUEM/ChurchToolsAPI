@@ -1,1 +1,1 @@
-domain = 'http://YOUR_DOMAIN'
+domain = 'https://lgv-oe.church.tools'
