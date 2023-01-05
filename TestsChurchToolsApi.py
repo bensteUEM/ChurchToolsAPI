@@ -268,6 +268,30 @@ class TestsChurchToolsApi(unittest.TestCase):
         result = self.api.get_event_agenda(event_id)
         self.assertIsNone(result)
 
+    def test_file_download(self):
+        """ Test of file_download and file_download_from_url on https://elkw1610.krz.tools on any song
+        IDs  vary depending on the server used
+        On ELKW1610.KRZ.TOOLS song ID 762 has arrangement 774 does exist
+
+        Uploads a test file
+        downloads the file via same ID
+        checks that file and content match
+        deletes test file
+        """
+
+        self.api.file_upload('tests/test.txt', 'song_arrangement', 774)
+
+        filePath = 'Downloads/test.txt'
+        if os.path.exists(filePath):
+            os.remove(filePath)
+
+        self.api.file_download('test.txt', 'song_arrangement', 774)
+        with open(filePath, "r") as file:
+            download_text = file.read()
+        self.assertEqual('TEST CONTENT', download_text)
+
+        self.api.file_delete('song_arrangement', 774, 'test.txt')
+
 
 if __name__ == '__main__':
     unittest.main()
