@@ -242,9 +242,9 @@ class TestsChurchToolsApi(unittest.TestCase):
         result = self.api.get_events(event_id=event_id)
         self.assertIsInstance(result, dict)
 
-    def test_get_event_schedule(self):
+    def test_get_event_agenda(self):
         """
-        Tries to get an event schedule from a CT Event
+        Tries to get an event agenda from a CT Event
         Event ID may vary depending on the server used
         On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
         :return:
@@ -253,6 +253,47 @@ class TestsChurchToolsApi(unittest.TestCase):
         result = self.api.get_event_agenda(event_id)
         self.assertIsNotNone(result)
 
+    def test_has_event_schedule(self):
+        """
+        Tries to get boolean if event agenda exists for a CT Event
+        Event ID may vary depending on the server used
+        On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
+        2376 does not have one
+        :return:
+        """
+        event_id = 484
+        result = self.api.get_event_agenda(event_id)
+        self.assertIsNotNone(result)
+        event_id = 2376
+        result = self.api.get_event_agenda(event_id)
+        self.assertIsNone(result)
+
+    def test_file_download(self):
+        """ Test of file_download and file_download_from_url on https://elkw1610.krz.tools on any song
+        IDs  vary depending on the server used
+        On ELKW1610.KRZ.TOOLS song ID 762 has arrangement 774 does exist
+
+        Uploads a test file
+        downloads the file via same ID
+        checks that file and content match
+        deletes test file
+        """
+        test_id = 762
+
+        self.api.file_upload('tests/test.txt', 'song_arrangement', test_id)
+
+        filePath = 'Downloads/test.txt'
+        if os.path.exists(filePath):
+            os.remove(filePath)
+
+        self.api.file_download('test.txt', 'song_arrangement', test_id)
+        with open(filePath, "r") as file:
+            download_text = file.read()
+        self.assertEqual('TEST CONTENT', download_text)
+
+        self.api.file_delete('song_arrangement', test_id, 'test.txt')
+        if os.path.exists(filePath):
+            os.remove(filePath)
 
 if __name__ == '__main__':
     unittest.main()
