@@ -278,20 +278,22 @@ class TestsChurchToolsApi(unittest.TestCase):
         checks that file and content match
         deletes test file
         """
+        test_id = 762
 
-        self.api.file_upload('tests/test.txt', 'song_arrangement', 774)
+        self.api.file_upload('tests/test.txt', 'song_arrangement', test_id)
 
         filePath = 'Downloads/test.txt'
         if os.path.exists(filePath):
             os.remove(filePath)
 
-        self.api.file_download('test.txt', 'song_arrangement', 774)
+        self.api.file_download('test.txt', 'song_arrangement', test_id)
         with open(filePath, "r") as file:
             download_text = file.read()
         self.assertEqual('TEST CONTENT', download_text)
 
-        self.api.file_delete('song_arrangement', 774, 'test.txt')
-
+        self.api.file_delete('song_arrangement', test_id, 'test.txt')
+        if os.path.exists(filePath):
+            os.remove(filePath)
 
 if __name__ == '__main__':
     unittest.main()

@@ -29,6 +29,7 @@ class ChurchToolsApi:
         response = self.session.post(url=login_url, data=data)
         if response.status_code == 200:
             logging.info('Ajax User Login Successful')
+            self.session.headers['CSRF-Token'] = self.get_ct_csrf_token()
             return json.loads(response.content)["status"] == 'success'
         else:
             logging.warning("Token Login failed with {}".format(response.content.decode()))
@@ -52,6 +53,7 @@ class ChurchToolsApi:
         if response.status_code == 200:
             response_content = json.loads(response.content)
             logging.info('Token Login Successful as {}'.format(response_content['data']['email']))
+            self.session.headers['CSRF-Token'] = self.get_ct_csrf_token()
             return json.loads(response.content)['data']['id'] > 0
         else:
             logging.warning("Token Login failed with {}".format(response.content.decode()))
@@ -60,7 +62,9 @@ class ChurchToolsApi:
     def get_ct_csrf_token(self):
         """
         Requests CSRF Token https://hilfe.church.tools/wiki/0/API-CSRF
-        This method was created when debugging file upload but was no longer required later on
+        This method was created when debugging file upload
+        storing and transmitting CSRF token in headers is required for all legacy AJAX API calls unless disabled by admin
+        e.g. self.session.headers['CSRF-Token'] = self.get_ct_csrf_token()
         :return: str token
         """
         url = self.domain + '/api/csrftoken'
