@@ -52,7 +52,7 @@ class ChurchToolsApi:
         if response.status_code == 200:
             response_content = json.loads(response.content)
             logging.info('Token Login Successful as {}'.format(response_content['data']['email']))
-            return json.loads(response.content)['data']['id'] == 9
+            return json.loads(response.content)['data']['id'] > 0
         else:
             logging.warning("Token Login failed with {}".format(response.content.decode()))
             return False
@@ -528,7 +528,8 @@ class ChurchToolsApi:
 
             return response_data
         else:
-            logging.warning("Something went wrong fetiching events: {}".format(response.status_code))
+            logging.info("Event requested that does not have an agenda with status: {}".format(response.status_code))
+            return None
 
     def file_download(self, filename: str, domain_type, domain_identifier, path_for_download='./Downloads'):
         """
