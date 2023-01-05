@@ -254,8 +254,11 @@ class ChurchToolsApi:
         """
 
         if response.status_code == 200:
-            response_content = json.loads(response.content)
-            logging.debug("Upload successful {}".format(response_content))
+            try:
+                response_content = json.loads(response.content)
+                logging.debug("Upload successful {}".format(response_content))
+            except:
+                logging.warning(response.content.decode())
         else:
             logging.warning(response.content.decode())
 
