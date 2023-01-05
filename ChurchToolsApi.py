@@ -564,19 +564,22 @@ class ChurchToolsApi:
             arrangement_files = response_content['data'].copy()
             logging.debug("SongArrangement-Files load successful {}".format(response_content))
             fileUrl = None
+            file_found = False
 
             for file in arrangement_files:
                 filenameoriginal = str(file['name'])
                 fileUrl = str(file['fileUrl'])
                 if filenameoriginal == filename:
-                    break;
-            if fileUrl == None:
-                logging.warning("File {} does not exist".format(filename))
-            else:
+                    file_found = True
+                    break
+
+            if file_found:
                 logging.debug("Found File: {}".format(filename))
                 # Build path OS independent
                 path_file = os.sep.join([path_for_download, filename])
                 StateOK = self.file_download_from_url(fileUrl, path_file)
+            else:
+                logging.warning("File {} does not exist".format(filename))
 
             return StateOK
         else:
