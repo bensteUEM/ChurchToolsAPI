@@ -29,6 +29,7 @@ class ChurchToolsApi:
         response = self.session.post(url=login_url, data=data)
         if response.status_code == 200:
             logging.info('Ajax User Login Successful')
+            self.session.headers['CSRF-Token'] = self.get_ct_csrf_token()
             return json.loads(response.content)["status"] == 'success'
         else:
             logging.warning("Token Login failed with {}".format(response.content.decode()))
@@ -52,7 +53,8 @@ class ChurchToolsApi:
         if response.status_code == 200:
             response_content = json.loads(response.content)
             logging.info('Token Login Successful as {}'.format(response_content['data']['email']))
-            return json.loads(response.content)['data']['id'] == 9
+            self.session.headers['CSRF-Token'] = self.get_ct_csrf_token()
+            return json.loads(response.content)['data']['id'] > 0
         else:
             logging.warning("Token Login failed with {}".format(response.content.decode()))
             return False
@@ -60,7 +62,9 @@ class ChurchToolsApi:
     def get_ct_csrf_token(self):
         """
         Requests CSRF Token https://hilfe.church.tools/wiki/0/API-CSRF
-        This method was created when debugging file upload but was no longer required later on
+        This method was created when debugging file upload
+        storing and transmitting CSRF token in headers is required for all legacy AJAX API calls unless disabled by admin
+        e.g. self.session.headers['CSRF-Token'] = self.get_ct_csrf_token()
         :return: str token
         """
         url = self.domain + '/api/csrftoken'
@@ -250,8 +254,11 @@ class ChurchToolsApi:
         """
 
         if response.status_code == 200:
-            response_content = json.loads(response.content)
-            logging.debug("Upload successful {}".format(response_content))
+            try:
+                response_content = json.loads(response.content)
+                logging.debug("Upload successful {}".format(response_content))
+            except:
+                logging.warning(response.content.decode())
         else:
             logging.warning(response.content.decode())
 
@@ -528,7 +535,8 @@ class ChurchToolsApi:
 
             return response_data
         else:
-            logging.warning("Something went wrong fetiching events: {}".format(response.status_code))
+            logging.info("Event requested that does not have an agenda with status: {}".format(response.status_code))
+            return None
 
     def get_tags(self, type='songs'):
         """
@@ -556,3 +564,71 @@ class ChurchToolsApi:
             return response_content['data']
         else:
             logging.warning("Something went wrong fetching Song-tags: {}".format(response.status_code))
+
+    def file_download(self, filename: str, domain_type, domain_identifier, path_for_download='./Downloads'):
+        """
+        Retrieves file from ChurchTools for specific filename, domain_type and domain_identifier from churchtools
+        :param filename:
+        :param domain_type: Currently supported are 'avatar', 'groupimage', 'logo', 'attatchments', 'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
+        :param domain_identifier = Id of Arrangement (in case of songs) This information can be checked for example by calling get_songs()
+        :param path_for_download: local path as target for the download - will be created if not exists
+        :return: bool if success
+        """
+        StateOK = False
+        CHECK_FOLDER = os.path.isdir(path_for_download)
+
+        # If folder doesn't exist, then create it.
+        if not CHECK_FOLDER:
+            os.makedirs(path_for_download)
+            print("created folder : ", path_for_download)
+
+        url = '{}/api/files/{}/{}'.format(self.domain, domain_type, domain_identifier)
+
+        response = self.session.get(url=url)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            arrangement_files = response_content['data'].copy()
+            logging.debug("SongArrangement-Files load successful {}".format(response_content))
+            fileUrl = None
+
+            for file in arrangement_files:
+                filenameoriginal = str(file['name'])
+                fileUrl = str(file['fileUrl'])
+                if filenameoriginal == filename:
+                    break;
+            if fileUrl == None:
+                logging.warning("File {} does not exist".format(filename))
+            else:
+                logging.debug("Found File: {}".format(filename))
+                # Build path OS independent
+                path_file = os.sep.join([path_for_download, filename])
+                StateOK = self.file_download_from_url(fileUrl, path_file)
+
+            return StateOK
+        else:
+            logging.warning("Something went wrong fetching SongArrangement-Files: {}".format(response.status_code))
+
+    def file_download_from_url(self, file_url: str, target_path: str):
+        """
+        Retrieves file from ChurchTools for specific file_url from churchtools
+        This function is used by file_download(...)
+        :param file_url: Example -> file_url=https://lgv-oe.church.tools/?q=public/filedownload&id=631&filename=738db42141baec592aa2f523169af772fd02c1d21f5acaaf0601678962d06a00
+                Pay Attention: this file-url consists of a specific / random filename which was created by churchtools
+        :param target_path: directory to drop the download into (must exist first)
+        :return:
+        """
+        # NOTE the stream=True parameter below
+        with self.session.get(url=file_url, stream=True) as r:
+            if r.status_code == 200:
+                with open(target_path, 'wb') as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        # If you have chunk encoded response uncomment if
+                        # and set chunk_size parameter to None.
+                        # if chunk:
+                        f.write(chunk)
+                logging.debug("Download of {} successful".format(file_url))
+                return True
+            else:
+                logging.warning("Something went wrong during file_download: {}".format(r.status_code))
+                return False

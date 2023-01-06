@@ -65,3 +65,8 @@ BUT you are required to publish any changes or additional functionality (even if
 yourself only!)
 
 Anybody using this code is more than welcome to contribute with change requests to the original repository.
+
+## Contributors 
+
+* benste - implemented for use at Evangelische Kirchengemeinde Baiersbronn (https://www.evang-kirche-baiersbronn.de/)
+* kolibri52 - Jonathan supporting Liebenzeller Gemeinschaft Oettingen (https://lgv-oe.de/)"
