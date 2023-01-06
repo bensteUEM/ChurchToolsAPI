@@ -532,10 +532,11 @@ class ChurchToolsApi:
 
     def get_tags(self, type='songs'):
         """
-        Retrieve tag-data from ChurchTools for tags of type 'songs' or 'persons'
-        Purpose: be able to find out tag-ids of all available tags for filtering
-        @param type: type 'songs' (default) or 'persons'
-        @return: response item
+        Retrieve a list of all available tags of a specific domain type from ChurchTools
+        Purpose: be able to find out tag-ids of all available tags for filtering by tag
+
+        :param type: 'songs' (default) or 'persons'
+        :return: list of dicts describing each tag. Each contains keys 'id' and 'name'
         """
 
         url = self.domain + '/api/tags'
@@ -543,7 +544,7 @@ class ChurchToolsApi:
             'accept': 'application/json'
         }
         params = {
-       'type': type,
+            'type': type,
         }
         response = self.session.get(url=url, params=params, headers=headers)
 
@@ -552,6 +553,6 @@ class ChurchToolsApi:
             response_data = response_content['data'].copy()
             logging.debug("SongTags load successful {}".format(response_content))
 
-            return response_data
+            return response_content['data']
         else:
             logging.warning("Something went wrong fetching Song-tags: {}".format(response.status_code))
