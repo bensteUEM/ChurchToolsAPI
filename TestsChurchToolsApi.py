@@ -253,6 +253,18 @@ class TestsChurchToolsApi(unittest.TestCase):
         result = self.api.get_event_agenda(event_id)
         self.assertIsNotNone(result)
 
+    def test_get_tags(self):
+        """
+        Test function for get_tags() with default type song
+        On ELKW1610.KRZ.TOOLS tag ID 49 has the name To Do
+        :return:
+        """
+        result = self.api.get_tags()
+        self.assertGreater(len(result), 0)
+        test_tag = [item for item in result if item['id'] == 49][0]
+        self.assertEqual(test_tag['id'], 49)
+        self.assertEqual(test_tag['name'], 'ToDo')
+
     def test_has_event_schedule(self):
         """
         Tries to get boolean if event agenda exists for a CT Event
