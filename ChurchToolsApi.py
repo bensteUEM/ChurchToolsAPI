@@ -563,12 +563,10 @@ class ChurchToolsApi:
             response_content = json.loads(response.content)
             arrangement_files = response_content['data'].copy()
             logging.debug("SongArrangement-Files load successful {}".format(response_content))
-            fileUrl = None
             file_found = False
 
             for file in arrangement_files:
                 filenameoriginal = str(file['name'])
-                fileUrl = str(file['fileUrl'])
                 if filenameoriginal == filename:
                     file_found = True
                     break
@@ -576,6 +574,7 @@ class ChurchToolsApi:
             if file_found:
                 logging.debug("Found File: {}".format(filename))
                 # Build path OS independent
+                fileUrl = str(file['fileUrl'])
                 path_file = os.sep.join([path_for_download, filename])
                 StateOK = self.file_download_from_url(fileUrl, path_file)
             else:
@@ -608,3 +607,44 @@ class ChurchToolsApi:
             else:
                 logging.warning("Something went wrong during file_download: {}".format(r.status_code))
                 return False
+
+    def get_eventId_NextEvent(self):
+        """
+        Retrieve ID of next event
+        """
+        url = self.domain + '/api/events'
+        params = {
+            'limit': '1', 'direction': 'forward'
+        }
+
+        headers = {
+            'accept': 'application/json'
+        }
+        response = self.session.get(url=url, params=params, headers=headers)
+        EventID = -1
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_data = response_content['data'].copy()
+            logging.debug("First response of Events successful {}".format(response_content))
+
+            if 'meta' not in response_content.keys():  # Shortcut without Pagination
+                return -2
+
+            if 'pagination' not in response_content['meta'].keys():
+                return int(response_data[0]['id'])
+
+            # Long part extending results with pagination
+            while response_content['meta']['pagination']['current'] \
+                    < response_content['meta']['pagination']['lastPage']:
+                logging.info("page {} of {}".format(response_content['meta']['pagination']['current'],
+                                                    response_content['meta']['pagination']['lastPage']))
+                params = {'page': response_content['meta']['pagination']['current'] + 1}
+                response = self.session.get(url=url, headers=headers, params=params)
+                response_content = json.loads(response.content)
+                response_data.extend(response_content['data'])
+
+            EventID = int(response_data[0]['id'])
+            return EventID
+        else:
+            logging.warning("Something went wrong fetiching events: {}".format(response.status_code))
