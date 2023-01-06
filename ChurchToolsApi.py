@@ -530,10 +530,12 @@ class ChurchToolsApi:
         else:
             logging.warning("Something went wrong fetiching events: {}".format(response.status_code))
 
-    def get_tags(self,type='songs'):
+    def get_tags(self, type='songs'):
         """
-        Retrieve tag-data from ChurchTools for tags of type 'songs' (default) or 'persons'
+        Retrieve tag-data from ChurchTools for tags of type 'songs' or 'persons'
         Purpose: be able to find out tag-ids of all available tags for filtering
+        @param type: type 'songs' (default) or 'persons'
+        @return: response item
         """
 
         url = self.domain + '/api/tags'
@@ -552,4 +554,4 @@ class ChurchToolsApi:
 
             return response_data
         else:
-            logging.warning("Something went wrong fetiching Song-tags: {}".format(response.status_code))
+            logging.warning("Something went wrong fetching Song-tags: {}".format(response.status_code))
