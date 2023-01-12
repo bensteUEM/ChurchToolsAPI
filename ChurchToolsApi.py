@@ -477,18 +477,35 @@ class ChurchToolsApi:
 
         return result
 
-    def get_events(self, event_id=None):
+    def get_events(self, from_: str = '', to: str = '', canceled: bool = False, direction: str = 'forward',
+                   limit: int = 1, include: str = 'eventServices'):
         """
-        Retrieve list of events from ChurchTools
-        :return: a list of events
-        #TODO 2 There are params available which are not implemented yet!
+        Method to get all the events from given timespan or only the next event
+        :param from_: starting date in format YYYY-MM-DD
+        :param to: end date in format YYYY-MM-DD
+        :param canceled: if 'True' canceled events will be also included
+        :param direction: direction of output 'forward' or 'backward' from the date defined by parameter 'from_'
+        :param limit: limits the number of events - Default = 1, if all events shall be retrieved insert 'None'
+        :param include: if Parameter is set to 'eventServices', the services of the event will be included
+        :return: list of events
         """
         url = self.domain + '/api/events'
-        if event_id is not None:
-            url = url + '/{}'.format(event_id)
         headers = {
             'accept': 'application/json'
         }
+
+        self.session.params['canceled'] = canceled
+        if from_ != '' and (from_ is not None):
+            self.session.params['from'] = from_
+        if to != '' and (to is not None):
+            self.session.params['to'] = to
+        if limit is not None:
+            self.session.params['limit'] = limit
+        if (include != '') and (include is not None):
+            self.session.params['include'] = include
+        if (direction != '') and (direction is not None):
+            self.session.params['direction'] = direction
+
         response = self.session.get(url=url, headers=headers)
 
         if response.status_code == 200:
@@ -515,7 +532,7 @@ class ChurchToolsApi:
 
             return response_data
         else:
-            logging.warning("Something went wrong fetiching events: {}".format(response.status_code))
+            logging.warning("Something went wrong fetching events: {}".format(response.status_code))
 
     def get_event_agenda(self, event_id: int):
         """
