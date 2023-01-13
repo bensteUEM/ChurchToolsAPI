@@ -253,6 +253,29 @@ class TestsChurchToolsApi(unittest.TestCase):
         result = self.api.get_event_agenda(event_id)
         self.assertIsNotNone(result)
 
+    def test_get_services(self):
+        """
+        Tries to get all and a single services configuration from the server
+        serviceId varies depending on the server used id 1 = Predigt and more than one item exsits
+        On any KRZ.TOOLS serviceId 1 is named 'Predigt' and more than one service exists by default (13. Jan 2023)
+        :return:
+        """
+        serviceId = 1
+        result1 = self.api.get_services()
+        self.assertIsInstance(result1, list)
+        self.assertIsInstance(result1[0], dict)
+        self.assertGreater(len(result1), 1)
+
+        result2 = self.api.get_services(serviceId=serviceId)
+        self.assertIsInstance(result2, dict)
+        self.assertEqual(result2['name'], 'Predigt')
+
+        result3 = self.api.get_services(returnAsDict=True)
+        self.assertIsInstance(result3, dict)
+
+        result4 = self.api.get_services(returnAsDict=False)
+        self.assertIsInstance(result4, list)
+
     def test_get_tags(self):
         """
         Test function for get_tags() with default type song
@@ -306,6 +329,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.api.file_delete('song_arrangement', test_id, 'test.txt')
         if os.path.exists(filePath):
             os.remove(filePath)
+
 
 if __name__ == '__main__':
     unittest.main()

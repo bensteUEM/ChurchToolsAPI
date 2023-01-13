@@ -538,6 +538,40 @@ class ChurchToolsApi:
             logging.info("Event requested that does not have an agenda with status: {}".format(response.status_code))
             return None
 
+    def get_services(self, **kwargs):
+        """
+        Function to get list of all or a single services configuration item from CT
+        :param kwargs: optional keywords as listed
+        :keyword serviceId: id of a single item for filter
+        :keyword returnAsDict: true if should return a dict instead of list (not combineable if serviceId)
+        :return:
+        """
+        url = self.domain + '/api/services'
+        if 'serviceId' in kwargs.keys():
+            url += '/{}'.format(kwargs['serviceId'])
+
+        headers = {
+            'accept': 'application/json'
+        }
+        response = self.session.get(url=url, headers=headers)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_data = response_content['data'].copy()
+
+            if 'returnAsDict' in kwargs and not 'serviceId' in kwargs:
+                if kwargs['returnAsDict']:
+                    result = {}
+                    for item in response_data:
+                        result[item['id']] = item
+                    response_data = result
+
+            logging.debug("Services load successful {}".format(response_data))
+            return response_data
+        else:
+            logging.info("Services requested failed: {}".format(response.status_code))
+            return None
+
     def get_tags(self, type='songs'):
         """
         Retrieve a list of all available tags of a specific domain type from ChurchTools
