@@ -48,6 +48,28 @@ class TestsChurchToolsApi(unittest.TestCase):
         result = self.api.check_connection_ajax()
         self.assertTrue(result)
 
+    def test_get_persons(self):
+        """
+        Tries to get all and a single person from the server
+        On any elkw.KRZ.TOOLS personId 1 'firstName' starts with 'Ben' and more than 10 users exist(13. Jan 2023)
+        :return:
+        """
+        personId = 1
+        result1 = self.api.get_persons()
+        self.assertIsInstance(result1, list)
+        self.assertIsInstance(result1[0], dict)
+        self.assertGreater(len(result1), 10)
+
+        result2 = self.api.get_persons(ids=[personId])
+        self.assertIsInstance(result2, dict)
+        self.assertEqual(result2['firstName'][0:3], 'Ben')
+
+        result3 = self.api.get_persons(returnAsDict=True)
+        self.assertIsInstance(result3, dict)
+
+        result4 = self.api.get_persons(returnAsDict=False)
+        self.assertIsInstance(result4, list)
+
     def test_get_songs(self):
         """
         1. Test requests all songs and checks that result has more than 10 elements (hence default pagination works)

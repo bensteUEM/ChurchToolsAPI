@@ -93,6 +93,56 @@ class ChurchToolsApi:
             logging.debug("Response AJAX Connection failed with {}".format(json.load(response.content)))
             return False
 
+    def get_persons(self, **kwargs):
+        """
+        Function to get list of all or a person from CT
+        :param kwargs: optional keywords as listed
+        :keyword ids: list of a ids filter
+        :keyword returnAsDict: true if should return a dict instead of list (not combineable if serviceId)
+        :return: list of user dicts or a single user dict if only one
+        """
+        url = self.domain + '/api/persons'
+        params = {}
+        if 'ids' in kwargs.keys():
+            params['ids[]'] = kwargs['ids']
+
+        headers = {
+            'accept': 'application/json'
+        }
+        response = self.session.get(url=url, params=params, headers=headers)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_data = response_content['data'].copy()
+
+            logging.debug("First response of GET Persons successful {}".format(response_content))
+
+            if 'meta' not in response_content.keys():  # Shortcut without Pagination
+                return response_data
+
+            # Long part extending results with pagination
+            while response_content['meta']['pagination']['current'] \
+                    < response_content['meta']['pagination']['lastPage']:
+                logging.info("page {} of {}".format(response_content['meta']['pagination']['current'],
+                                                    response_content['meta']['pagination']['lastPage']))
+                params = {'page': response_content['meta']['pagination']['current'] + 1}
+                response = self.session.get(url=url, headers=headers, params=params)
+                response_content = json.loads(response.content)
+                response_data.extend(response_content['data'])
+
+            if 'returnAsDict' in kwargs and not 'serviceId' in kwargs:
+                if kwargs['returnAsDict']:
+                    result = {}
+                    for item in response_data:
+                        result[item['id']] = item
+                    response_data = result
+
+            logging.debug("Persons load successful {}".format(response_data))
+            return response_data if len(response_data) > 1 else response_data[0]
+        else:
+            logging.info("Persons requested failed: {}".format(response.status_code))
+            return None
+
     def get_songs(self, **kwargs):
         # song_id=None):
         """ Gets list of all songs from the server
