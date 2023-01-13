@@ -117,6 +117,10 @@ class ChurchToolsApi:
 
             logging.debug("First response of GET Persons successful {}".format(response_content))
 
+            if len(response_data) == 0:
+                logging.warning('Requesting users {} returned an empty response - '
+                                'make sure the user has correct permissions'.format(params))
+
             if 'meta' not in response_content.keys():  # Shortcut without Pagination
                 return response_data
 
@@ -138,7 +142,7 @@ class ChurchToolsApi:
                     response_data = result
 
             logging.debug("Persons load successful {}".format(response_data))
-            return response_data if len(response_data) > 1 else response_data[0]
+            return response_data[0] if len(response_data) == 1 else response_data
         else:
             logging.info("Persons requested failed: {}".format(response.status_code))
             return None

@@ -51,9 +51,11 @@ class TestsChurchToolsApi(unittest.TestCase):
     def test_get_persons(self):
         """
         Tries to get all and a single person from the server
+        Be aware that only users that are visible to the user associated with the login token can be viewed!
         On any elkw.KRZ.TOOLS personId 1 'firstName' starts with 'Ben' and more than 10 users exist(13. Jan 2023)
         :return:
         """
+
         personId = 1
         result1 = self.api.get_persons()
         self.assertIsInstance(result1, list)
