@@ -592,6 +592,33 @@ class ChurchToolsApi:
             logging.info("Event requested that does not have an agenda with status: {}".format(response.status_code))
             return None
 
+    def get_event_masterdata(self, **kwargs):
+        """
+        Function to get the Masterdata of the event module
+        This information is required to map some IDs to specific items
+        :param kwargs: optional keywords as listed below
+        :keyword type: str with name of the masterdata type (not datatype) common types are 'absenceReasons', 'songCategories', 'services', 'serviceGroups'
+        :return: list of masterdata items, if multiple types list of lists (by type)
+        """
+        url = self.domain + '/api/event/masterdata'
+
+        headers = {
+            'accept': 'application/json'
+        }
+        response = self.session.get(url=url, headers=headers)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_data = response_content['data'].copy()
+
+            if 'type' in kwargs:
+                response_data = response_data[kwargs['type']]
+            logging.debug("Event Masterdata load successful {}".format(response_data))
+            return response_data
+        else:
+            logging.info("Event Masterdata requested failed: {}".format(response.status_code))
+            return None
+
     def get_services(self, **kwargs):
         """
         Function to get list of all or a single services configuration item from CT

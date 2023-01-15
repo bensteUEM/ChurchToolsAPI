@@ -266,6 +266,18 @@ class TestsChurchToolsApi(unittest.TestCase):
         result = self.api.get_events(event_id=event_id)
         self.assertIsInstance(result, dict)
 
+    def test_get_event_masterdata(self):
+        """
+        Tries to get a list of event masterdata and a type of masterdata from CT
+        :return:
+        """
+        result = self.api.get_event_masterdata()
+        self.assertEqual(len(result), 4)
+
+        result = self.api.get_event_masterdata(type='serviceGroups')
+        self.assertGreater(len(result), 1)
+        self.assertEqual(result[0]['name'], 'Programm')
+
     def test_get_event_agenda(self):
         """
         Tries to get an event agenda from a CT Event
