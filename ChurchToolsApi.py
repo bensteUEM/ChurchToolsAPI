@@ -598,6 +598,7 @@ class ChurchToolsApi:
         This information is required to map some IDs to specific items
         :param kwargs: optional keywords as listed below
         :keyword type: str with name of the masterdata type (not datatype) common types are 'absenceReasons', 'songCategories', 'services', 'serviceGroups'
+        :keyword returnAsDict: if the list with one type should be returned as dict by ID
         :return: list of masterdata items, if multiple types list of lists (by type)
         """
         url = self.domain + '/api/event/masterdata'
@@ -613,7 +614,12 @@ class ChurchToolsApi:
 
             if 'type' in kwargs:
                 response_data = response_data[kwargs['type']]
+                if 'returnAsDict' in kwargs.keys():
+                    if kwargs['returnAsDict']:
+                        response_data2 = response_data.copy()
+                        response_data = {item['id']: item for item in response_data2}
             logging.debug("Event Masterdata load successful {}".format(response_data))
+
             return response_data
         else:
             logging.info("Event Masterdata requested failed: {}".format(response.status_code))

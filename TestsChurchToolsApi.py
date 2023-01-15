@@ -278,6 +278,11 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertGreater(len(result), 1)
         self.assertEqual(result[0]['name'], 'Programm')
 
+        result = self.api.get_event_masterdata(type='serviceGroups', returnAsDict=True)
+        self.assertIsInstance(result, dict)
+        result = self.api.get_event_masterdata(type='serviceGroups', returnAsDict=False)
+        self.assertIsInstance(result, list)
+
     def test_get_event_agenda(self):
         """
         Tries to get an event agenda from a CT Event
