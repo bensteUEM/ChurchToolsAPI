@@ -538,6 +538,41 @@ class ChurchToolsApi:
             logging.info("Event requested that does not have an agenda with status: {}".format(response.status_code))
             return None
 
+    def export_event_agenda(self, target_format, agenda_id, target_path):
+        """
+        Exports the agenda as zip file for imports in presenter-programs
+        :param target_format: fileformat or name of presentation software which should be supported.
+        Supported formats are 'SONG_BEAMER', 'PRO_PRESENTER6' and 'PRO_PRESENTER7'
+        :param agenda_id: agenda id of the agenda which should be exported
+        :param target_path: Filepath of the file which should be exported (including filename)
+        :return: bool if success
+        """
+        url = '{}/api/agendas/{}/export'.format(self.domain, agenda_id)
+        # NOTE the stream=True parameter below
+        params = {
+            'target': target_format
+        }
+        # The following 3 parameter are mandatory from the churchtools API side:
+        json_data = {
+            'appendArrangement': True,
+            'exportSongs': True,
+            'withCategory': True,
+        }
+        headers = {
+            'accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+
+        response = self.session.post(url=url, params=params, headers=headers, json=json_data)
+        ResultOK = False
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            agenda_data = response_content['data'].copy()
+            logging.debug("Agenda package found {}".format(response_content))
+            ResultOK = self.file_download_from_url('{}/{}'.format(self.domain, agenda_data['url']), target_path)
+
+        return ResultOK        
+        
     def get_tags(self, type='songs'):
         """
         Retrieve a list of all available tags of a specific domain type from ChurchTools
