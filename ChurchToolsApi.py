@@ -531,19 +531,51 @@ class ChurchToolsApi:
 
         return result
 
-    def get_events(self, event_id=None):
+    def get_events(self, **kwargs):
         """
-        Retrieve list of events from ChurchTools
-        :return: a list of events
-        #TODO 2 There are params available which are not implemented yet!
+        Method to get all the events from given timespan or only the next event
+        :param kwargs: optional params to modify the search criteria
+        :key event_id: number of event for single event lookup
+        :key from_: str with starting date in format YYYY-MM-DD - added _ to name as opposed to api because of reserved keyword
+        :key to_: str end date in format YYYY-MM-DD ONLY allowed with from_ - added _ to name as opposed to api because of reserved keyword
+        :key canceled: bool If true, include also canceled events
+        :key direction: direction of output 'forward' or 'backward' from the date defined by parameter 'from'
+        :key limit: limits the number of events - Default = 1, if all events shall be retrieved insert 'None', only applies if direction is specified
+        :key include: if Parameter is set to 'eventServices', the services of the event will be included
+        :return: list of events or a single event as dict (if only one)
         """
         url = self.domain + '/api/events'
-        if event_id is not None:
-            url = url + '/{}'.format(event_id)
+
         headers = {
             'accept': 'application/json'
         }
-        response = self.session.get(url=url, headers=headers)
+        params = {}
+
+        if 'event_id' in kwargs.keys():
+            url += '/{}'.format(kwargs['event_id'])
+
+        else:
+            if 'from_' in kwargs.keys():
+                if len(kwargs['from_']) == 10:
+                    params['from'] = kwargs['from_']
+            if 'to_' in kwargs.keys() and 'from_' in kwargs.keys():
+                if len(kwargs['to_']) == 10:
+                    params['to'] = kwargs['to_']
+            elif 'from_' in kwargs.keys():
+                logging.warning('Use of from is only allowed together with from')
+
+            if 'canceled' in kwargs.keys():
+                params['canceled'] = kwargs['canceled']
+            if 'direction' in kwargs.keys():
+                params['direction'] = kwargs['direction']
+            if 'limit' in kwargs.keys() and 'direction' in kwargs.keys():
+                params['limit'] = kwargs['limit']
+            elif 'direction' in kwargs.keys():
+                logging.warning('Use of limit is only allowed together with direction keyword')
+            if 'include' in kwargs.keys():
+                params['include'] = kwargs['include']
+
+        response = self.session.get(url=url, params=params, headers=headers)
 
         if response.status_code == 200:
             response_content = json.loads(response.content)
@@ -554,7 +586,10 @@ class ChurchToolsApi:
                 return response_data
 
             if 'pagination' not in response_content['meta'].keys():
-                return response_data
+                if len(response_data) == 1:
+                    return response_data[0]
+                else:
+                    return response_data
 
             # Long part extending results with pagination
             # TODO #1 copied from other method unsure if pagination works the same as with groups
@@ -569,7 +604,7 @@ class ChurchToolsApi:
 
             return response_data
         else:
-            logging.warning("Something went wrong fetiching events: {}".format(response.status_code))
+            logging.warning("Something went wrong fetching events: {}".format(response.status_code))
 
     def get_event_agenda(self, event_id: int):
         """
