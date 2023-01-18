@@ -93,6 +93,60 @@ class ChurchToolsApi:
             logging.debug("Response AJAX Connection failed with {}".format(json.load(response.content)))
             return False
 
+    def get_persons(self, **kwargs):
+        """
+        Function to get list of all or a person from CT
+        :param kwargs: optional keywords as listed
+        :keyword ids: list of a ids filter
+        :keyword returnAsDict: true if should return a dict instead of list (not combineable if serviceId)
+        :return: list of user dicts or a single user dict if only one
+        """
+        url = self.domain + '/api/persons'
+        params = {}
+        if 'ids' in kwargs.keys():
+            params['ids[]'] = kwargs['ids']
+
+        headers = {
+            'accept': 'application/json'
+        }
+        response = self.session.get(url=url, params=params, headers=headers)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_data = response_content['data'].copy()
+
+            logging.debug("First response of GET Persons successful {}".format(response_content))
+
+            if len(response_data) == 0:
+                logging.warning('Requesting users {} returned an empty response - '
+                                'make sure the user has correct permissions'.format(params))
+
+            if 'meta' not in response_content.keys():  # Shortcut without Pagination
+                return response_data
+
+            # Long part extending results with pagination
+            while response_content['meta']['pagination']['current'] \
+                    < response_content['meta']['pagination']['lastPage']:
+                logging.info("page {} of {}".format(response_content['meta']['pagination']['current'],
+                                                    response_content['meta']['pagination']['lastPage']))
+                params = {'page': response_content['meta']['pagination']['current'] + 1}
+                response = self.session.get(url=url, headers=headers, params=params)
+                response_content = json.loads(response.content)
+                response_data.extend(response_content['data'])
+
+            if 'returnAsDict' in kwargs and not 'serviceId' in kwargs:
+                if kwargs['returnAsDict']:
+                    result = {}
+                    for item in response_data:
+                        result[item['id']] = item
+                    response_data = result
+
+            logging.debug("Persons load successful {}".format(response_data))
+            return response_data[0] if len(response_data) == 1 else response_data
+        else:
+            logging.info("Persons requested failed: {}".format(response.status_code))
+            return None
+
     def get_songs(self, **kwargs):
         # song_id=None):
         """ Gets list of all songs from the server
@@ -573,6 +627,100 @@ class ChurchToolsApi:
             logging.info("Event requested that does not have an agenda with status: {}".format(response.status_code))
             return None
 
+    def get_event_masterdata(self, **kwargs):
+        """
+        Function to get the Masterdata of the event module
+        This information is required to map some IDs to specific items
+        :param kwargs: optional keywords as listed below
+        :keyword type: str with name of the masterdata type (not datatype) common types are 'absenceReasons', 'songCategories', 'services', 'serviceGroups'
+        :keyword returnAsDict: if the list with one type should be returned as dict by ID
+        :return: list of masterdata items, if multiple types list of lists (by type)
+        """
+        url = self.domain + '/api/event/masterdata'
+
+        headers = {
+            'accept': 'application/json'
+        }
+        response = self.session.get(url=url, headers=headers)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_data = response_content['data'].copy()
+
+            if 'type' in kwargs:
+                response_data = response_data[kwargs['type']]
+                if 'returnAsDict' in kwargs.keys():
+                    if kwargs['returnAsDict']:
+                        response_data2 = response_data.copy()
+                        response_data = {item['id']: item for item in response_data2}
+            logging.debug("Event Masterdata load successful {}".format(response_data))
+
+            return response_data
+        else:
+            logging.info("Event Masterdata requested failed: {}".format(response.status_code))
+            return None
+
+    def get_services(self, **kwargs):
+        """
+        Function to get list of all or a single services configuration item from CT
+        :param kwargs: optional keywords as listed
+        :keyword serviceId: id of a single item for filter
+        :keyword returnAsDict: true if should return a dict instead of list (not combineable if serviceId)
+        :return:
+        """
+        url = self.domain + '/api/services'
+        if 'serviceId' in kwargs.keys():
+            url += '/{}'.format(kwargs['serviceId'])
+
+        headers = {
+            'accept': 'application/json'
+        }
+        response = self.session.get(url=url, headers=headers)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_data = response_content['data'].copy()
+
+            if 'returnAsDict' in kwargs and not 'serviceId' in kwargs:
+                if kwargs['returnAsDict']:
+                    result = {}
+                    for item in response_data:
+                        result[item['id']] = item
+                    response_data = result
+
+            logging.debug("Services load successful {}".format(response_data))
+            return response_data
+        else:
+            logging.info("Services requested failed: {}".format(response.status_code))
+            return None
+
+    def get_tags(self, type='songs'):
+        """
+        Retrieve a list of all available tags of a specific domain type from ChurchTools
+        Purpose: be able to find out tag-ids of all available tags for filtering by tag
+
+        :param type: 'songs' (default) or 'persons'
+        :return: list of dicts describing each tag. Each contains keys 'id' and 'name'
+        """
+
+        url = self.domain + '/api/tags'
+        headers = {
+            'accept': 'application/json'
+        }
+        params = {
+            'type': type,
+        }
+        response = self.session.get(url=url, params=params, headers=headers)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_data = response_content['data'].copy()
+            logging.debug("SongTags load successful {}".format(response_content))
+
+            return response_content['data']
+        else:
+            logging.warning("Something went wrong fetching Song-tags: {}".format(response.status_code))
+
     def file_download(self, filename: str, domain_type, domain_identifier, path_for_download='./Downloads'):
         """
         Retrieves file from ChurchTools for specific filename, domain_type and domain_identifier from churchtools
@@ -598,20 +746,22 @@ class ChurchToolsApi:
             response_content = json.loads(response.content)
             arrangement_files = response_content['data'].copy()
             logging.debug("SongArrangement-Files load successful {}".format(response_content))
-            fileUrl = None
+            file_found = False
 
             for file in arrangement_files:
                 filenameoriginal = str(file['name'])
-                fileUrl = str(file['fileUrl'])
                 if filenameoriginal == filename:
-                    break;
-            if fileUrl == None:
-                logging.warning("File {} does not exist".format(filename))
-            else:
+                    file_found = True
+                    break
+
+            if file_found:
                 logging.debug("Found File: {}".format(filename))
                 # Build path OS independent
+                fileUrl = str(file['fileUrl'])
                 path_file = os.sep.join([path_for_download, filename])
                 StateOK = self.file_download_from_url(fileUrl, path_file)
+            else:
+                logging.warning("File {} does not exist".format(filename))
 
             return StateOK
         else:
