@@ -48,6 +48,30 @@ class TestsChurchToolsApi(unittest.TestCase):
         result = self.api.check_connection_ajax()
         self.assertTrue(result)
 
+    def test_get_persons(self):
+        """
+        Tries to get all and a single person from the server
+        Be aware that only users that are visible to the user associated with the login token can be viewed!
+        On any elkw.KRZ.TOOLS personId 1 'firstName' starts with 'Ben' and more than 10 users exist(13. Jan 2023)
+        :return:
+        """
+
+        personId = 1
+        result1 = self.api.get_persons()
+        self.assertIsInstance(result1, list)
+        self.assertIsInstance(result1[0], dict)
+        self.assertGreater(len(result1), 10)
+
+        result2 = self.api.get_persons(ids=[personId])
+        self.assertIsInstance(result2, dict)
+        self.assertEqual(result2['firstName'][0:3], 'Ben')
+
+        result3 = self.api.get_persons(returnAsDict=True)
+        self.assertIsInstance(result3, dict)
+
+        result4 = self.api.get_persons(returnAsDict=False)
+        self.assertIsInstance(result4, list)
+
     def test_get_songs(self):
         """
         1. Test requests all songs and checks that result has more than 10 elements (hence default pagination works)
@@ -242,6 +266,23 @@ class TestsChurchToolsApi(unittest.TestCase):
         result = self.api.get_events(event_id=event_id)
         self.assertIsInstance(result, dict)
 
+    def test_get_event_masterdata(self):
+        """
+        Tries to get a list of event masterdata and a type of masterdata from CT
+        :return:
+        """
+        result = self.api.get_event_masterdata()
+        self.assertEqual(len(result), 4)
+
+        result = self.api.get_event_masterdata(type='serviceGroups')
+        self.assertGreater(len(result), 1)
+        self.assertEqual(result[0]['name'], 'Programm')
+
+        result = self.api.get_event_masterdata(type='serviceGroups', returnAsDict=True)
+        self.assertIsInstance(result, dict)
+        result = self.api.get_event_masterdata(type='serviceGroups', returnAsDict=False)
+        self.assertIsInstance(result, list)
+
     def test_get_event_agenda(self):
         """
         Tries to get an event agenda from a CT Event
@@ -252,6 +293,29 @@ class TestsChurchToolsApi(unittest.TestCase):
         event_id = 484
         result = self.api.get_event_agenda(event_id)
         self.assertIsNotNone(result)
+
+    def test_get_services(self):
+        """
+        Tries to get all and a single services configuration from the server
+        serviceId varies depending on the server used id 1 = Predigt and more than one item exsits
+        On any KRZ.TOOLS serviceId 1 is named 'Predigt' and more than one service exists by default (13. Jan 2023)
+        :return:
+        """
+        serviceId = 1
+        result1 = self.api.get_services()
+        self.assertIsInstance(result1, list)
+        self.assertIsInstance(result1[0], dict)
+        self.assertGreater(len(result1), 1)
+
+        result2 = self.api.get_services(serviceId=serviceId)
+        self.assertIsInstance(result2, dict)
+        self.assertEqual(result2['name'], 'Predigt')
+
+        result3 = self.api.get_services(returnAsDict=True)
+        self.assertIsInstance(result3, dict)
+
+        result4 = self.api.get_services(returnAsDict=False)
+        self.assertIsInstance(result4, list)
 
     def test_get_tags(self):
         """
@@ -306,6 +370,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.api.file_delete('song_arrangement', test_id, 'test.txt')
         if os.path.exists(filePath):
             os.remove(filePath)
+
 
 if __name__ == '__main__':
     unittest.main()
