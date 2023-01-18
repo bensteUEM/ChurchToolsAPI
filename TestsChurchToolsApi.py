@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime, timedelta
 
 from ChurchToolsApi import *
 
@@ -234,6 +235,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
         :return:
         """
+
         result = self.api.get_events()
         self.assertIsNotNone(result)
         self.assertIsInstance(result, list)
@@ -241,6 +243,51 @@ class TestsChurchToolsApi(unittest.TestCase):
         event_id = 484
         result = self.api.get_events(event_id=event_id)
         self.assertIsInstance(result, dict)
+
+        # load next event (limit)
+        result = self.api.get_events(limit=1, direction='forward')
+        self.assertIsInstance(result, dict)
+        result_date = datetime.strptime(result['startDate'], '%Y-%m-%dT%H:%M:%S%z').date()
+        today_date = datetime.today().date()
+        self.assertGreaterEqual(result_date, today_date)
+
+        # load last event (direction, limit)
+        result = self.api.get_events(limit=1, direction='backward')
+        result_date = datetime.strptime(result['startDate'], '%Y-%m-%dT%H:%M:%S%z').date()
+        self.assertLessEqual(result_date, today_date)
+
+        # Load events after 7 days (from)
+        next_week_date = today_date + timedelta(days=7)
+        next_week_formatted = next_week_date.strftime('%Y-%m-%d')
+        result = self.api.get_events(from_=next_week_formatted)
+        result_min_date = min([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').date() for item in result])
+        result_max_date = max([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').date() for item in result])
+        self.assertGreaterEqual(result_min_date, next_week_date)
+        self.assertGreaterEqual(result_max_date, next_week_date)
+
+        # load events for next 14 days (to)
+        next2_week_date = today_date + timedelta(days=14)
+        next2_week_formatted = next2_week_date.strftime('%Y-%m-%d')
+        today_date_formatted = today_date.strftime('%Y-%m-%d')
+
+        result = self.api.get_events(from_=today_date_formatted, to_=next2_week_formatted)
+        result_min = min([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').date() for item in result])
+        result_max = max([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').date() for item in result])
+        self.assertLessEqual(result_min, next_week_date)  # only works if there is an event within 7 days on demo system
+        self.assertLessEqual(result_max, next2_week_date)
+
+        # missing keyword pair warning
+        with self.assertLogs(level=logging.WARNING) as captured:
+            logging.warning("Logs from functions are not detected ...")  # TODO workaround - followup in #25
+            item = self.api.get_events(to_=next2_week_formatted)
+        self.assertEqual(len(captured.records), 1)
+
+        # load more than 10 events (pagination #TODO #1 improve test case for pagination
+        result = self.api.get_events(direction='forward', limit=11)
+        self.assertIsInstance(result, list)
+        self.assertGreaterEqual(len(result), 11)
+
+        # TODO add test cases for uncommon parts #24 * canceled, include
 
     def test_get_event_agenda(self):
         """
@@ -294,6 +341,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.api.file_delete('song_arrangement', test_id, 'test.txt')
         if os.path.exists(filePath):
             os.remove(filePath)
+
 
 if __name__ == '__main__':
     unittest.main()
