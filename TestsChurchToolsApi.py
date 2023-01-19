@@ -183,7 +183,9 @@ class TestsChurchToolsApi(unittest.TestCase):
         songcategory_id = 13
 
         # 1. Create Song after and check it exists with all params
+        # with self.assertNoLogs(level=logging.WARNING) as cm: #TODO #25
         song_id = self.api.create_song(title, songcategory_id)
+        self.assertIsNotNone(song_id)
 
         ct_song = self.api.get_songs(song_id=song_id)
         self.assertEqual(ct_song['name'], title)

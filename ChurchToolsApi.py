@@ -392,8 +392,16 @@ class ChurchToolsApi:
         }
 
         response = self.session.post(url=url, data=data)
-        new_id = int(json.loads(response.content)['data'])
-        return new_id
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            new_id = int(response_content['data'])
+            logging.debug("Song created successful with ID={}".format(new_id))
+            return new_id
+
+        else:
+            logging.info("Creating song failed with {}".format(response.status_code))
+            return None
 
     def edit_song(self, song_id: int, songcategory_id=None, title=None, author=None, copyright=None, ccli=None,
                   practice_yn=None, ):
