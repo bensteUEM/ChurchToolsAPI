@@ -614,6 +614,81 @@ class ChurchToolsApi:
         else:
             logging.warning("Something went wrong fetching events: {}".format(response.status_code))
 
+    def get_AllEventData_ajax(self, event_id: int):
+        """
+        Reverse engineered function from legacy AJAX API which is used to get all event data for one event
+        Required to read special params not yet included in REST getEvents()
+        Legacy AJAX request might stop working with any future release ... CSRF-Token is required in session header
+        :param event_id: number of the event to be requested
+        :return:
+        """
+        url = self.domain + '/index.php'
+        headers = {
+            'accept': 'application/json'
+        }
+        params = {'q': 'churchservice/ajax'}
+        data = {
+            'id': event_id,
+            'func': 'getAllEventData'
+        }
+        response = self.session.post(url=url, headers=headers, params=params, data=data)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_data = response_content['data'][str(event_id)]
+            logging.debug("AJAX Event data {}".format(response_data))
+
+            return response_data
+        else:
+            logging.info("AJAX All Event data not successful: {}".format(response.status_code))
+            return None
+
+    def get_event_admins_ajax(self, event_id):
+        """
+        get the admin id list of an event using legacy AJAX API
+        :param event_id: number of the event to be changed
+        :type event_id: int
+        :return:
+        """
+
+        event_data = self.get_AllEventData_ajax(event_id)
+        admin_ids = [int(id) for id in event_data['admin'].split(',')]
+        return admin_ids
+
+    def set_event_admins_ajax(self, event_id, admin_ids):
+        """
+        set the admin id list of an event using legacy AJAX API
+        :param event_id: number of the event to be changed
+        :type event_id: int
+        :param admin_ids: list of admin user ids to be set as admin for event
+        :type admin_ids: list
+        :return:
+        """
+
+        url = self.domain + '/index.php'
+        headers = {
+            'accept': 'application/json'
+        }
+        params = {'q': 'churchservice/ajax'}
+
+        data = {
+            'id': event_id,
+            'admin': ", ".join([str(id) for id in admin_ids]),
+            'func': 'updateEventInfo'
+        }
+        response = self.session.post(url=url, headers=headers, params=params, data=data)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_data = response_content['status'] == 'success'
+            logging.debug("Setting Admin IDs {} for event {} success".format(admin_ids, event_id))
+
+            return response_data
+        else:
+            logging.info(
+                "Setting Admin IDs {} for event {} failed with : {}".format(admin_ids, event_id, response.status_code))
+            return False
+
     def get_event_agenda(self, event_id: int):
         """
         Retrieve agenda for event by ID from ChurchTools
