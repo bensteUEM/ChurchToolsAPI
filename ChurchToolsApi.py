@@ -631,16 +631,15 @@ class ChurchToolsApi:
         """
         Exports the agenda as zip file for imports in presenter-programs
         :param target_format: fileformat or name of presentation software which should be supported.
-        Supported formats are 'SONG_BEAMER', 'PRO_PRESENTER6' and 'PRO_PRESENTER7'
+            Supported formats are 'SONG_BEAMER', 'PRO_PRESENTER6' and 'PRO_PRESENTER7'
         :param agenda_id: agenda id of the agenda which should be exported
         :param target_path: Filepath of the file which should be exported (including filename)
         :key append_arrangement: if True, the name of the arrangement will be included within the agenda caption
+        :param kwargs: additional keywords as listed below
         :key export_Songs: if True, the songfiles will be in the folder "Songs" within the zip file
         :key with_category: has no effect when exported in target format 'SONG_BEAMER'
         :return: bool if success
         """
-
-        state_ok = False
         # note: target path can be either a zip-file defined before function call or just a folder
         is_zip = target_path.lower().endswith('.zip')
         if not is_zip:
@@ -648,8 +647,9 @@ class ChurchToolsApi:
             # If folder doesn't exist, then create it.
             if not folder_exists:
                 os.makedirs(target_path)
-                print("created folder : ", target_path)
-                target_path = os.sep.join([target_path, '{}_agenda_id_{}.zip'.format(target_format, agenda_id)])
+                logging.debug("created folder : ", target_path)
+
+            target_path = os.sep.join([target_path, '{}_agenda_id_{}.zip'.format(target_format, agenda_id)])
 
         url = '{}/api/agendas/{}/export'.format(self.domain, agenda_id)
         # NOTE the stream=True parameter below

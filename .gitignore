@@ -2,6 +2,7 @@ main.py
 /secure/
 .idea
 /logs/
+Downloads
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
