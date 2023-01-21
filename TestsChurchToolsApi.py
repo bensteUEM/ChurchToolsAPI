@@ -348,8 +348,21 @@ class TestsChurchToolsApi(unittest.TestCase):
          """
         event_id = 484
         agenda_id = self.api.get_event_agenda(event_id)['id']
-        download_result = self.api.export_event_agenda('SONG_BEAMER', agenda_id)
+
+        download_result = self.api.export_event_agenda('SONG_BEAMER')
+        self.assertFalse(download_result)
+
+        for file in os.listdir('./Downloads'):
+            os.remove('./Downloads/' + file)
+        self.assertEqual(len(os.listdir('./Downloads')), 0)
+
+        download_result = self.api.export_event_agenda('SONG_BEAMER', agenda_id=agenda_id)
         self.assertTrue(download_result)
+
+        download_result = self.api.export_event_agenda('SONG_BEAMER', event_id=event_id)
+        self.assertTrue(download_result)
+
+        self.assertEqual(len(os.listdir('./Downloads')), 2)
 
     def test_get_services(self):
         """

@@ -627,19 +627,33 @@ class ChurchToolsApi:
             logging.info("Event requested that does not have an agenda with status: {}".format(response.status_code))
             return None
 
-    def export_event_agenda(self, target_format, agenda_id, target_path='./Downloads', **kwargs):
+    def export_event_agenda(self, target_format, target_path='./Downloads', **kwargs):
         """
         Exports the agenda as zip file for imports in presenter-programs
         :param target_format: fileformat or name of presentation software which should be supported.
             Supported formats are 'SONG_BEAMER', 'PRO_PRESENTER6' and 'PRO_PRESENTER7'
-        :param agenda_id: agenda id of the agenda which should be exported
         :param target_path: Filepath of the file which should be exported (including filename)
-        :key append_arrangement: if True, the name of the arrangement will be included within the agenda caption
         :param kwargs: additional keywords as listed below
+        :key event_id: event id to check for agenda id should be exported
+        :key agenda_id: agenda id of the agenda which should be exported
+            DO NOT combine with event_id because it will be overwritten!
+        :key append_arrangement: if True, the name of the arrangement will be included within the agenda caption
         :key export_Songs: if True, the songfiles will be in the folder "Songs" within the zip file
         :key with_category: has no effect when exported in target format 'SONG_BEAMER'
         :return: bool if success
         """
+        if 'event_id' in kwargs.keys():
+            if 'agenda_id' in kwargs.keys():
+                logging.warning('Invalid use of params - can not combine event_id and agenda_id!')
+            else:
+                agenda = self.get_event_agenda(event_id=kwargs['event_id'])
+                agenda_id = agenda['id']
+        elif 'agenda_id' in kwargs.keys():
+            agenda_id = kwargs['agenda_id']
+        else:
+            logging.warning('Missing event or agenda_id')
+            return False
+
         # note: target path can be either a zip-file defined before function call or just a folder
         is_zip = target_path.lower().endswith('.zip')
         if not is_zip:
@@ -649,7 +663,12 @@ class ChurchToolsApi:
                 os.makedirs(target_path)
                 logging.debug("created folder : ", target_path)
 
-            target_path = os.sep.join([target_path, '{}_agenda_id_{}.zip'.format(target_format, agenda_id)])
+            if 'event_id' in kwargs.keys():
+                new_file_name = '{}_{}.zip'.format(agenda['name'], target_format)
+            else:
+                new_file_name = '{}_agenda_id_{}.zip'.format(target_format, agenda_id)
+
+            target_path = os.sep.join([target_path, new_file_name])
 
         url = '{}/api/agendas/{}/export'.format(self.domain, agenda_id)
         # NOTE the stream=True parameter below
