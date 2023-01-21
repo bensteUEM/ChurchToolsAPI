@@ -343,6 +343,29 @@ class TestsChurchToolsApi(unittest.TestCase):
         result = self.api.get_event_agenda(event_id)
         self.assertIsNotNone(result)
 
+    def test_export_event_agenda(self):
+        """ Test function to download an Event Agenda file package for e.g. Songbeamer
+        Event ID may vary depending on the server used
+        On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
+         """
+        event_id = 484
+        agenda_id = self.api.get_event_agenda(event_id)['id']
+
+        download_result = self.api.export_event_agenda('SONG_BEAMER')
+        self.assertFalse(download_result)
+
+        for file in os.listdir('./Downloads'):
+            os.remove('./Downloads/' + file)
+        self.assertEqual(len(os.listdir('./Downloads')), 0)
+
+        download_result = self.api.export_event_agenda('SONG_BEAMER', agenda_id=agenda_id)
+        self.assertTrue(download_result)
+
+        download_result = self.api.export_event_agenda('SONG_BEAMER', event_id=event_id)
+        self.assertTrue(download_result)
+
+        self.assertEqual(len(os.listdir('./Downloads')), 2)
+
     def test_get_services(self):
         """
         Tries to get all and a single services configuration from the server

@@ -635,6 +635,90 @@ class ChurchToolsApi:
             logging.info("Event requested that does not have an agenda with status: {}".format(response.status_code))
             return None
 
+    def export_event_agenda(self, target_format, target_path='./Downloads', **kwargs):
+        """
+        Exports the agenda as zip file for imports in presenter-programs
+        :param target_format: fileformat or name of presentation software which should be supported.
+            Supported formats are 'SONG_BEAMER', 'PRO_PRESENTER6' and 'PRO_PRESENTER7'
+        :param target_path: Filepath of the file which should be exported (including filename)
+        :param kwargs: additional keywords as listed below
+        :key event_id: event id to check for agenda id should be exported
+        :key agenda_id: agenda id of the agenda which should be exported
+            DO NOT combine with event_id because it will be overwritten!
+        :key append_arrangement: if True, the name of the arrangement will be included within the agenda caption
+        :key export_Songs: if True, the songfiles will be in the folder "Songs" within the zip file
+        :key with_category: has no effect when exported in target format 'SONG_BEAMER'
+        :return: bool if success
+        """
+        if 'event_id' in kwargs.keys():
+            if 'agenda_id' in kwargs.keys():
+                logging.warning('Invalid use of params - can not combine event_id and agenda_id!')
+            else:
+                agenda = self.get_event_agenda(event_id=kwargs['event_id'])
+                agenda_id = agenda['id']
+        elif 'agenda_id' in kwargs.keys():
+            agenda_id = kwargs['agenda_id']
+        else:
+            logging.warning('Missing event or agenda_id')
+            return False
+
+        # note: target path can be either a zip-file defined before function call or just a folder
+        is_zip = target_path.lower().endswith('.zip')
+        if not is_zip:
+            folder_exists = os.path.isdir(target_path)
+            # If folder doesn't exist, then create it.
+            if not folder_exists:
+                os.makedirs(target_path)
+                logging.debug("created folder : ", target_path)
+
+            if 'event_id' in kwargs.keys():
+                new_file_name = '{}_{}.zip'.format(agenda['name'], target_format)
+            else:
+                new_file_name = '{}_agenda_id_{}.zip'.format(target_format, agenda_id)
+
+            target_path = os.sep.join([target_path, new_file_name])
+
+        url = '{}/api/agendas/{}/export'.format(self.domain, agenda_id)
+        # NOTE the stream=True parameter below
+        params = {
+            'target': target_format
+        }
+        json_data = {}
+        # The following 3 parameter 'appendArrangement', 'exportSongs' and 'withCategory' are mandatory from the churchtools API side:
+        if 'append_arrangement' in kwargs.keys():
+            json_data['appendArrangement'] = kwargs['append_arrangement']
+        else:
+            json_data['appendArrangement'] = True
+
+        if 'export_songs' in kwargs.keys():
+            json_data['exportSongs'] = kwargs['export_songs']
+        else:
+            json_data['exportSongs'] = True
+
+        if 'with_category' in kwargs.keys():
+            json_data['withCategory'] = kwargs['with_category']
+        else:
+            json_data['withCategory'] = True
+
+        headers = {
+            'accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+
+        response = self.session.post(url=url, params=params, headers=headers, json=json_data)
+        result_ok = False
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            agenda_data = response_content['data'].copy()
+            logging.debug("Agenda package found {}".format(response_content))
+            result_ok = self.file_download_from_url('{}/{}'.format(self.domain, agenda_data['url']), target_path)
+            if result_ok:
+                logging.debug('download finished')
+        else:
+            logging.warning("export of event_agenda failed: {}".format(response.status_code))
+
+        return result_ok
+
     def get_event_masterdata(self, **kwargs):
         """
         Function to get the Masterdata of the event module
