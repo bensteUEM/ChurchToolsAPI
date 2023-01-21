@@ -315,6 +315,37 @@ class TestsChurchToolsApi(unittest.TestCase):
 
         # TODO add test cases for uncommon parts #24 * canceled, include
 
+    def test_get_AllEventData_ajax(self):
+        """
+        Test function to check the get_AllEventData_ajax function for a specific ID
+        On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
+        :return:
+        """
+        event_id = 484
+        result = self.api.get_AllEventData_ajax(event_id)
+        self.assertEqual(result['id'], str(event_id))
+
+    def test_get_set_event_admins(self):
+        """
+        Test function to get list of event admins, change it and check again (and reset to original)
+        On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
+        :return:
+        """
+        event_id = 484
+        admin_ids_original_test = [45, 51, 36]
+
+        admin_ids_original = self.api.get_event_admins_ajax(event_id)
+        self.assertEqual(admin_ids_original, admin_ids_original_test)
+
+        admin_ids_change = [0, 1, 2]
+        result = self.api.set_event_admins_ajax(event_id, admin_ids_change)
+        self.assertTrue(result)
+
+        admin_ids_test = self.api.get_event_admins_ajax(event_id)
+        self.assertEqual(admin_ids_change, admin_ids_test)
+
+        self.assertTrue(self.api.set_event_admins_ajax(event_id, admin_ids_original_test))
+
     def test_get_event_masterdata(self):
         """
         Tries to get a list of event masterdata and a type of masterdata from CT
