@@ -652,7 +652,10 @@ class ChurchToolsApi:
         """
 
         event_data = self.get_AllEventData_ajax(event_id)
-        admin_ids = [int(id) for id in event_data['admin'].split(',')]
+        if 'admin' in event_data.keys():
+            admin_ids = [int(id) for id in event_data['admin'].split(',')]
+        else:
+            admin_ids = []
         return admin_ids
 
     def set_event_admins_ajax(self, event_id, admin_ids):
