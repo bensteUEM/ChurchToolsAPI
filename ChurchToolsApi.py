@@ -755,11 +755,11 @@ class ChurchToolsApi:
             admin_ids = []
         return admin_ids
 
-    def set_event_admins_ajax(self, event_id, admin_ids):
+    def set_event_admins_ajax(self, eventId, admin_ids):
         """
         set the admin id list of an event using legacy AJAX API
-        :param event_id: number of the event to be changed
-        :type event_id: int
+        :param eventId: number of the event to be changed
+        :type eventId: int
         :param admin_ids: list of admin user ids to be set as admin for event
         :type admin_ids: list
         :return:
@@ -772,7 +772,7 @@ class ChurchToolsApi:
         params = {'q': 'churchservice/ajax'}
 
         data = {
-            'id': event_id,
+            'id': eventId,
             'admin': ", ".join([str(id) for id in admin_ids]),
             'func': 'updateEventInfo'
         }
@@ -781,20 +781,22 @@ class ChurchToolsApi:
         if response.status_code == 200:
             response_content = json.loads(response.content)
             response_data = response_content['status'] == 'success'
-            logging.debug("Setting Admin IDs {} for event {} success".format(admin_ids, event_id))
+            logging.debug("Setting Admin IDs {} for event {} success".format(admin_ids, eventId))
 
             return response_data
         else:
             logging.info(
-                "Setting Admin IDs {} for event {} failed with : {}".format(admin_ids, event_id, response.status_code))
+                "Setting Admin IDs {} for event {} failed with : {}".format(admin_ids, eventId, response.status_code))
             return False
 
-    def get_event_agenda(self, event_id: int):
+    def get_event_agenda(self, eventId):
         """
         Retrieve agenda for event by ID from ChurchTools
+        :param eventId: number of the event
+        :type eventId: int
         :return:
         """
-        url = self.domain + '/api/events/{}/agenda'.format(event_id)
+        url = self.domain + '/api/events/{}/agenda'.format(eventId)
         headers = {
             'accept': 'application/json'
         }
@@ -829,7 +831,7 @@ class ChurchToolsApi:
             if 'agendaId' in kwargs.keys():
                 logging.warning('Invalid use of params - can not combine eventId and agendaId!')
             else:
-                agenda = self.get_event_agenda(event_id=kwargs['eventId'])
+                agenda = self.get_event_agenda(eventId=kwargs['eventId'])
                 agendaId = agenda['id']
         elif 'agendaId' in kwargs.keys():
             agendaId = kwargs['agendaId']
