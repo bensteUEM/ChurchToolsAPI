@@ -266,8 +266,8 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertIsInstance(result, list)
 
-        event_id = 484
-        result = self.api.get_events(eventId=event_id)
+        eventId = 484
+        result = self.api.get_events(eventId=eventId)
         self.assertIsInstance(result, dict)
 
         # load next event (limit)
@@ -321,9 +321,9 @@ class TestsChurchToolsApi(unittest.TestCase):
         On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
         :return:
         """
-        event_id = 484
-        result = self.api.get_AllEventData_ajax(event_id)
-        self.assertEqual(result['id'], str(event_id))
+        eventId = 484
+        result = self.api.get_AllEventData_ajax(eventId)
+        self.assertEqual(result['id'], str(eventId))
 
     def test_get_set_event_services_counts(self):
         """
@@ -336,22 +336,22 @@ class TestsChurchToolsApi(unittest.TestCase):
         On ELKW1610.KRZ.TOOLS serviceID 1 is Predigt (1. Jan 2023)
         :return:
         """
-        event_id = 2626
+        eventId = 2626
         service_id = 1
         original_count_comapre = 3
 
-        event = self.api.get_events(event_id=event_id)
+        event = self.api.get_events(eventId=eventId)
 
-        original_count = self.api.get_event_services_counts_ajax(eventId=event_id, serviceId=service_id)
+        original_count = self.api.get_event_services_counts_ajax(eventId=eventId, serviceId=service_id)
         self.assertEqual(original_count, {service_id: original_count_comapre})
 
-        result = self.api.set_event_services_counts_ajax(event_id, service_id, 2)
+        result = self.api.set_event_services_counts_ajax(eventId, service_id, 2)
         self.assertTrue(result)
 
-        new_count = self.api.get_event_services_counts_ajax(eventId=event_id, serviceId=service_id)
+        new_count = self.api.get_event_services_counts_ajax(eventId=eventId, serviceId=service_id)
         self.assertEqual(new_count, {service_id: 2})
 
-        result = self.api.set_event_services_counts_ajax(event_id, service_id, original_count[service_id])
+        result = self.api.set_event_services_counts_ajax(eventId, service_id, original_count[service_id])
         self.assertTrue(result)
 
     def test_get_set_event_admins(self):
@@ -360,20 +360,20 @@ class TestsChurchToolsApi(unittest.TestCase):
         On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
         :return:
         """
-        event_id = 484
+        eventId = 484
         admin_ids_original_test = [45, 51, 36]
 
-        admin_ids_original = self.api.get_event_admins_ajax(event_id)
+        admin_ids_original = self.api.get_event_admins_ajax(eventId)
         self.assertEqual(admin_ids_original, admin_ids_original_test)
 
         admin_ids_change = [0, 1, 2]
-        result = self.api.set_event_admins_ajax(event_id, admin_ids_change)
+        result = self.api.set_event_admins_ajax(eventId, admin_ids_change)
         self.assertTrue(result)
 
-        admin_ids_test = self.api.get_event_admins_ajax(event_id)
+        admin_ids_test = self.api.get_event_admins_ajax(eventId)
         self.assertEqual(admin_ids_change, admin_ids_test)
 
-        self.assertTrue(self.api.set_event_admins_ajax(event_id, admin_ids_original_test))
+        self.assertTrue(self.api.set_event_admins_ajax(eventId, admin_ids_original_test))
 
     def test_get_event_masterdata(self):
         """
@@ -399,8 +399,8 @@ class TestsChurchToolsApi(unittest.TestCase):
         On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
         :return:
         """
-        event_id = 484
-        result = self.api.get_event_agenda(event_id)
+        eventId = 484
+        result = self.api.get_event_agenda(eventId)
         self.assertIsNotNone(result)
 
     def test_export_event_agenda(self):
@@ -469,11 +469,11 @@ class TestsChurchToolsApi(unittest.TestCase):
         2376 does not have one
         :return:
         """
-        event_id = 484
-        result = self.api.get_event_agenda(event_id)
+        eventId = 484
+        result = self.api.get_event_agenda(eventId)
         self.assertIsNotNone(result)
-        event_id = 2376
-        result = self.api.get_event_agenda(event_id)
+        eventId = 2376
+        result = self.api.get_event_agenda(eventId)
         self.assertIsNone(result)
 
     def test_file_download(self):
