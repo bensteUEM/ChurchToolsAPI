@@ -337,21 +337,21 @@ class TestsChurchToolsApi(unittest.TestCase):
         :return:
         """
         eventId = 2626
-        service_id = 1
+        serviceId = 1
         original_count_comapre = 3
 
         event = self.api.get_events(eventId=eventId)
 
-        original_count = self.api.get_event_services_counts_ajax(eventId=eventId, serviceId=service_id)
-        self.assertEqual(original_count, {service_id: original_count_comapre})
+        original_count = self.api.get_event_services_counts_ajax(eventId=eventId, serviceId=serviceId)
+        self.assertEqual(original_count, {serviceId: original_count_comapre})
 
-        result = self.api.set_event_services_counts_ajax(eventId, service_id, 2)
+        result = self.api.set_event_services_counts_ajax(eventId, serviceId, 2)
         self.assertTrue(result)
 
-        new_count = self.api.get_event_services_counts_ajax(eventId=eventId, serviceId=service_id)
-        self.assertEqual(new_count, {service_id: 2})
+        new_count = self.api.get_event_services_counts_ajax(eventId=eventId, serviceId=serviceId)
+        self.assertEqual(new_count, {serviceId: 2})
 
-        result = self.api.set_event_services_counts_ajax(eventId, service_id, original_count[service_id])
+        result = self.api.set_event_services_counts_ajax(eventId, serviceId, original_count[serviceId])
         self.assertTrue(result)
 
     def test_get_set_event_admins(self):

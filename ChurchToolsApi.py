@@ -671,12 +671,12 @@ class ChurchToolsApi:
 
             services = {}
             for service in event['eventServices']:
-                service_id = service['serviceId']
-                if service_id in serviceGroupServiceIds:
-                    if service_id in services.keys():
-                        services[service_id] += 1
+                serviceId = service['serviceId']
+                if serviceId in serviceGroupServiceIds:
+                    if serviceId in services.keys():
+                        services[serviceId] += 1
                     else:
-                        services[service_id] = 1
+                        services[serviceId] = 1
 
             return services
         else:
