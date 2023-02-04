@@ -543,7 +543,7 @@ class ChurchToolsApi:
         """
         Method to get all the events from given timespan or only the next event
         :param kwargs: optional params to modify the search criteria
-        :key event_id: number of event for single event lookup
+        :key eventId: number of event for single event lookup
         :key from_: str with starting date in format YYYY-MM-DD - added _ to name as opposed to api because of reserved keyword
         :key to_: str end date in format YYYY-MM-DD ONLY allowed with from_ - added _ to name as opposed to api because of reserved keyword
         :key canceled: bool If true, include also canceled events
@@ -559,8 +559,8 @@ class ChurchToolsApi:
         }
         params = {}
 
-        if 'event_id' in kwargs.keys():
-            url += '/{}'.format(kwargs['event_id'])
+        if 'eventId' in kwargs.keys():
+            url += '/{}'.format(kwargs['eventId'])
 
         else:
             if 'from_' in kwargs.keys():
@@ -614,12 +614,12 @@ class ChurchToolsApi:
         else:
             logging.warning("Something went wrong fetching events: {}".format(response.status_code))
 
-    def get_AllEventData_ajax(self, event_id: int):
+    def get_AllEventData_ajax(self, eventId: int):
         """
         Reverse engineered function from legacy AJAX API which is used to get all event data for one event
         Required to read special params not yet included in REST getEvents()
         Legacy AJAX request might stop working with any future release ... CSRF-Token is required in session header
-        :param event_id: number of the event to be requested
+        :param eventId: number of the event to be requested
         :return:
         """
         url = self.domain + '/index.php'
@@ -628,14 +628,14 @@ class ChurchToolsApi:
         }
         params = {'q': 'churchservice/ajax'}
         data = {
-            'id': event_id,
+            'id': eventId,
             'func': 'getAllEventData'
         }
         response = self.session.post(url=url, headers=headers, params=params, data=data)
 
         if response.status_code == 200:
             response_content = json.loads(response.content)
-            response_data = response_content['data'][str(event_id)]
+            response_data = response_content['data'][str(eventId)]
             logging.debug("AJAX Event data {}".format(response_data))
 
             return response_data
@@ -643,15 +643,112 @@ class ChurchToolsApi:
             logging.info("AJAX All Event data not successful: {}".format(response.status_code))
             return None
 
-    def get_event_admins_ajax(self, event_id):
+    def get_event_services_counts_ajax(self, eventId, **kwargs):
+        """
+        retrieve the number of services currently set for one specific event id
+        optionally get the number of services for one specific id on that event only
+        :param eventId: id number of the calendar event
+        :type eventId: int
+        :param kwargs: keyword arguments either serviceId or service_group_id
+        :key serviceId: id number of the service type to be filtered for
+        :key serviceGroupId: id number of the group of services to request
+        :return: dict of service types and the number of services required for this event
+        :rtype: dict
+        """
+
+        event = self.get_events(eventId=eventId)
+
+        if 'serviceId' in kwargs.keys() and 'serviceGroupId' not in kwargs.keys():
+            service_count = 0
+            for service in event['eventServices']:
+                if service['serviceId'] == kwargs['serviceId']:
+                    service_count += 1
+            return {kwargs['serviceId']: service_count}
+        elif 'serviceId' not in kwargs.keys() and 'serviceGroupId' in kwargs.keys():
+            all_services = self.get_services()
+            serviceGroupServiceIds = [service['id'] for service in all_services
+                                      if service['serviceGroupId'] == kwargs['serviceGroupId']]
+
+            services = {}
+            for service in event['eventServices']:
+                service_id = service['serviceId']
+                if service_id in serviceGroupServiceIds:
+                    if service_id in services.keys():
+                        services[service_id] += 1
+                    else:
+                        services[service_id] = 1
+
+            return services
+        else:
+            logging.warning('Illegal combination of kwargs - check documentation either')
+
+    def set_event_services_counts_ajax(self, eventId, serviceId, servicesCount):
+        """
+        update the number of services currently set for one event specific id
+
+        :param eventId: id number of the calendar event
+        :type eventId: int
+        :param serviceId: id number of the service type to be filtered for
+        :type serviceId: int
+        :param servicesCount: number of services of the specified type to be planned
+        :type servicesCount: int
+        :return: successful execution
+        :rtype: bool
+        """
+
+        url = self.domain + '/index.php'
+        headers = {
+            'accept': 'application/json'
+        }
+        params = {'q': 'churchservice/ajax'}
+
+        # restore other ServiceGroup assignments required for request form data
+
+        services = self.get_services(returnAsDict=True)
+        serviceGroupId = services[serviceId]['serviceGroupId']
+        servicesOfServiceGroup = self.get_event_services_counts_ajax(eventId, serviceGroupId=serviceGroupId)
+        # set new assignment
+        servicesOfServiceGroup[serviceId] = servicesCount
+
+        # Generate form specific data
+        item_id = 0
+        data = {
+            'id': eventId,
+            'func': 'addOrRemoveServiceToEvent'
+        }
+        for serviceIdRow, serviceCount in servicesOfServiceGroup.items():
+            data['col{}'.format(item_id)] = serviceIdRow
+            if serviceCount > 0:
+                data['val{}'.format(item_id)] = 'checked'
+            data['count{}'.format(item_id)] = serviceCount
+            item_id += 1
+
+        response = self.session.post(url=url, headers=headers, params=params, data=data)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_success = response_content['status'] == 'success'
+
+            number_match = self.get_event_services_counts_ajax(eventId, serviceId=serviceId)[serviceId] == servicesCount
+            if number_match and response_success:
+                return True
+            else:
+                logging.warning("Request was successful but serviceId {} not changed to count {} "
+                                .format(serviceId, servicesCount))
+                return False
+        else:
+            logging.info("set_event_services_counts_ajax not successful: {}".format(response.status_code))
+            return False
+
+    def get_event_admins_ajax(self, eventId):
         """
         get the admin id list of an event using legacy AJAX API
-        :param event_id: number of the event to be changed
-        :type event_id: int
+        :param eventId: number of the event to be changed
+        :type eventId: int
         :return:
         """
 
-        event_data = self.get_AllEventData_ajax(event_id)
+        event_data = self.get_AllEventData_ajax(eventId)
         if 'admin' in event_data.keys():
             admin_ids = [int(id) for id in event_data['admin'].split(',')]
         else:
@@ -720,24 +817,24 @@ class ChurchToolsApi:
             Supported formats are 'SONG_BEAMER', 'PRO_PRESENTER6' and 'PRO_PRESENTER7'
         :param target_path: Filepath of the file which should be exported (including filename)
         :param kwargs: additional keywords as listed below
-        :key event_id: event id to check for agenda id should be exported
+        :key eventId: event id to check for agenda id should be exported
         :key agenda_id: agenda id of the agenda which should be exported
-            DO NOT combine with event_id because it will be overwritten!
+            DO NOT combine with eventId because it will be overwritten!
         :key append_arrangement: if True, the name of the arrangement will be included within the agenda caption
         :key export_Songs: if True, the songfiles will be in the folder "Songs" within the zip file
         :key with_category: has no effect when exported in target format 'SONG_BEAMER'
         :return: bool if success
         """
-        if 'event_id' in kwargs.keys():
-            if 'agenda_id' in kwargs.keys():
-                logging.warning('Invalid use of params - can not combine event_id and agenda_id!')
+        if 'eventId' in kwargs.keys():
+            if 'agendaId' in kwargs.keys():
+                logging.warning('Invalid use of params - can not combine eventId and agendaId!')
             else:
-                agenda = self.get_event_agenda(event_id=kwargs['event_id'])
-                agenda_id = agenda['id']
-        elif 'agenda_id' in kwargs.keys():
-            agenda_id = kwargs['agenda_id']
+                agenda = self.get_event_agenda(event_id=kwargs['eventId'])
+                agendaId = agenda['id']
+        elif 'agendaId' in kwargs.keys():
+            agendaId = kwargs['agendaId']
         else:
-            logging.warning('Missing event or agenda_id')
+            logging.warning('Missing event or agendaId')
             return False
 
         # note: target path can be either a zip-file defined before function call or just a folder
@@ -749,14 +846,14 @@ class ChurchToolsApi:
                 os.makedirs(target_path)
                 logging.debug("created folder : ", target_path)
 
-            if 'event_id' in kwargs.keys():
+            if 'eventId' in kwargs.keys():
                 new_file_name = '{}_{}.zip'.format(agenda['name'], target_format)
             else:
-                new_file_name = '{}_agenda_id_{}.zip'.format(target_format, agenda_id)
+                new_file_name = '{}_agendaId_{}.zip'.format(target_format, agendaId)
 
             target_path = os.sep.join([target_path, new_file_name])
 
-        url = '{}/api/agendas/{}/export'.format(self.domain, agenda_id)
+        url = '{}/api/agendas/{}/export'.format(self.domain, agendaId)
         # NOTE the stream=True parameter below
         params = {
             'target': target_format
