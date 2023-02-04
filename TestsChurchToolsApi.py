@@ -231,27 +231,39 @@ class TestsChurchToolsApi(unittest.TestCase):
         Test method used to add and remove the test tag to some song
         Tag ID and Song ID may vary depending on the server used
         On ELKW1610.KRZ.TOOLS song_id 408 and tag_id 53
+        self.api.ajax_song_last_update = None is required in order to clear the ajax song cache
         :return:
         """
+        self.api.ajax_song_last_update = None
         self.assertTrue(self.api.contains_song_tag(408, 53))
         with self.assertNoLogs(level='INFO') as cm:
             response = self.api.remove_song_tag(408, 53)
         self.assertEqual(response.status_code, 200)
 
+        self.api.ajax_song_last_update = None
         self.assertFalse(self.api.contains_song_tag(408, 53))
 
+        self.api.ajax_song_last_update = None
         with self.assertNoLogs(level='INFO') as cm:
             response = self.api.add_song_tag(408, 53)
         self.assertEqual(response.status_code, 200)
+
+        self.api.ajax_song_last_update = None
         self.assertTrue(self.api.contains_song_tag(408, 53))
 
     def test_get_songs_with_tag(self):
         """
         Test method to check if fetching all songs with a specific tag works
+        songId and tag_id will vary depending on the server used
+        On ELKW1610.KRZ.TOOLS song ID 408 is the first song with tag 53 "Test"
         :return:
         """
-        result = self.api.get_songs_with_tag(34)
-        self.assertEqual(408, result[0]['id'])
+        tagId = 53
+        songId= 408
+
+        self.api.ajax_song_last_update = None
+        result = self.api.get_songs_by_tag(tagId)
+        self.assertEqual(songId, result[0]['id'])
 
     def test_get_events(self):
         """

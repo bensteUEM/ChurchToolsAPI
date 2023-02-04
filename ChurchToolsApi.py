@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from datetime import datetime, timedelta
 
 import requests
 
@@ -11,6 +12,9 @@ class ChurchToolsApi:
     def __init__(self, domain):
         self.session = None
         self.domain = domain
+
+        self.ajax_song_last_update = None
+        self.ajax_song_cache = []
 
         from secure.secrets import ct_token
         self.login_ct_rest_api(ct_token)
@@ -187,18 +191,31 @@ class ChurchToolsApi:
             else:
                 logging.warning("Something went wrong fetching songs: CODE {}".format(response.status_code))
 
-    def get_song_ajax(self, song_id=None):
+    def get_song_ajax(self, song_id=None, require_update_after_seconds=10):
         """
         Legacy AJAX function to get a specific song
-        used to e.g. check for tags
+        used to e.g. check for tags requires requesting full song list
+        for efficiency reasons songs are cached and not updated unless older than 15sec or update_required
         :param song_id: the id of the song to be searched for
+        :type song_id: int
+        :param require_update_after_seconds: number of seconds after which an update of ajax song cache is required
+            defaults to 10 sedonds
+        :type require_update_after_seconds: int
         :return: response content interpreted as json
+        :rtype: dict
         """
 
-        url = self.domain + '/?q=churchservice/ajax&func=getAllSongs'
+        if self.ajax_song_last_update is None:
+            require_update = True
+        else:
+            require_update = self.ajax_song_last_update + timedelta(seconds=10) < datetime.now()
+        if require_update:
+            url = self.domain + '/?q=churchservice/ajax&func=getAllSongs'
+            response = self.session.post(url=url)
+            self.ajax_song_cache = json.loads(response.content)['data']['songs']
+            self.ajax_song_last_update = datetime.now()
 
-        response = self.session.post(url=url)
-        song = json.loads(response.content)['data']['songs'][str(song_id)]
+        song = self.ajax_song_cache[str(song_id)]
 
         return song
 
@@ -525,17 +542,21 @@ class ChurchToolsApi:
         tags = self.get_song_tags(song_id)
         return str(song_tag_id) in tags
 
-    def get_songs_with_tag(self, song_tag_id: int):
+    def get_songs_by_tag(self, song_tag_id: int):
         """
         Helper which returns all songs that contain have a specific tag
         :param song_tag_id: ChurchTools site specific song_tag_id which should be searched for
         :return: list of songs
         """
         songs = self.get_songs()
-        all_song_ids = [value['id'] for value in songs]
-        filtered_song_ids = [id for id in all_song_ids if self.contains_song_tag(id, song_tag_id)]
+        songs_dict = {song['id']: song for song in songs}
 
-        result = [self.get_songs(song_id=song_id) for song_id in filtered_song_ids]
+        filtered_song_ids = []
+        for id in songs_dict.keys():
+            if self.contains_song_tag(id, song_tag_id):
+                filtered_song_ids.append(id)
+
+        result = [songs_dict[song_id] for song_id in filtered_song_ids]
 
         return result
 
