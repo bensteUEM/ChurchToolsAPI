@@ -267,7 +267,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertIsInstance(result, list)
 
         event_id = 484
-        result = self.api.get_events(event_id=event_id)
+        result = self.api.get_events(eventId=event_id)
         self.assertIsInstance(result, dict)
 
         # load next event (limit)
@@ -325,6 +325,35 @@ class TestsChurchToolsApi(unittest.TestCase):
         result = self.api.get_AllEventData_ajax(event_id)
         self.assertEqual(result['id'], str(event_id))
 
+    def test_get_set_event_services_counts(self):
+        """
+        Test function for get and set methods related to event services counts
+        tries to get the number of specicifc service in an id
+        tries to increase that number
+        tries to get the number again
+        tries to set it back to original
+        On ELKW1610.KRZ.TOOLS event ID 2626 is an existing test Event with schedule (1. Jan 2023)
+        On ELKW1610.KRZ.TOOLS serviceID 1 is Predigt (1. Jan 2023)
+        :return:
+        """
+        event_id = 2626
+        service_id = 1
+        original_count_comapre = 3
+
+        event = self.api.get_events(event_id=event_id)
+
+        original_count = self.api.get_event_services_counts_ajax(eventId=event_id, serviceId=service_id)
+        self.assertEqual(original_count, {service_id: original_count_comapre})
+
+        result = self.api.set_event_services_counts_ajax(event_id, service_id, 2)
+        self.assertTrue(result)
+
+        new_count = self.api.get_event_services_counts_ajax(eventId=event_id, serviceId=service_id)
+        self.assertEqual(new_count, {service_id: 2})
+
+        result = self.api.set_event_services_counts_ajax(event_id, service_id, original_count[service_id])
+        self.assertTrue(result)
+
     def test_get_set_event_admins(self):
         """
         Test function to get list of event admins, change it and check again (and reset to original)
@@ -379,8 +408,8 @@ class TestsChurchToolsApi(unittest.TestCase):
         Event ID may vary depending on the server used
         On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
          """
-        event_id = 484
-        agenda_id = self.api.get_event_agenda(event_id)['id']
+        eventId = 484
+        agendaId = self.api.get_event_agenda(eventId)['id']
 
         download_result = self.api.export_event_agenda('SONG_BEAMER')
         self.assertFalse(download_result)
@@ -389,10 +418,10 @@ class TestsChurchToolsApi(unittest.TestCase):
             os.remove('./Downloads/' + file)
         self.assertEqual(len(os.listdir('./Downloads')), 0)
 
-        download_result = self.api.export_event_agenda('SONG_BEAMER', agenda_id=agenda_id)
+        download_result = self.api.export_event_agenda('SONG_BEAMER', agendaId=agendaId)
         self.assertTrue(download_result)
 
-        download_result = self.api.export_event_agenda('SONG_BEAMER', event_id=event_id)
+        download_result = self.api.export_event_agenda('SONG_BEAMER', eventId=eventId)
         self.assertTrue(download_result)
 
         self.assertEqual(len(os.listdir('./Downloads')), 2)
