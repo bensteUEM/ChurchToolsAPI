@@ -820,7 +820,7 @@ class ChurchToolsApi:
         :param target_path: Filepath of the file which should be exported (including filename)
         :param kwargs: additional keywords as listed below
         :key eventId: event id to check for agenda id should be exported
-        :key agenda_id: agenda id of the agenda which should be exported
+        :key agendaId: agenda id of the agenda which should be exported
             DO NOT combine with eventId because it will be overwritten!
         :key append_arrangement: if True, the name of the arrangement will be included within the agenda caption
         :key export_Songs: if True, the songfiles will be in the folder "Songs" within the zip file
