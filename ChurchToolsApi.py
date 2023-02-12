@@ -336,43 +336,26 @@ class ChurchToolsApi:
     def file_delete(self, domain_type, domain_identifier, filename_for_selective_delete=None):
         """
         Helper function to delete ALL attachments of any specified module of ChurchTools#
-        Downloads all existing files to tmp and reuploads them in case filename_for_delete is specified
+        or identifying individual file_name_ids and deleting specifc files only
         :param domain_type:  The domain type, currently supported are 'avatar', 'groupimage', 'logo', 'attatchments',
          'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
         :param domain_identifier: ID of the object in ChurchTools
-        :param filename_for_selective_delete: name of the file to be deleted - all others will reupload
+        :param filename_for_selective_delete: name of the file to be deleted - all others will be kept
         :return: if successful
         """
         url = self.domain + '/api/files/{}/{}'.format(domain_type, domain_identifier)
 
         if filename_for_selective_delete is not None:
-
             response = self.session.get(url=url)
-            online_files = [(item["id"], item['name'], item['fileUrl']) for item in
-                            json.loads(response.content)['data']]
-
-            for current_file in online_files:
-                current_id = current_file[0]
-                current_name = current_file[1]
-                current_url = current_file[2]
-                if current_name != filename_for_selective_delete:
-                    response = self.session.get(current_url)
-                    file_path_name = "tmp/{}_{}".format(current_id, current_name)
-                    temp_file = open(file_path_name, "wb")
-                    temp_file.write(response.content)
-                    temp_file.close()
+            files = json.loads(response.content)['data']
+            selective_file_ids = [item["id"] for item in files if item['name'] == filename_for_selective_delete]
+            for current_file_id in selective_file_ids:
+                url = self.domain + '/api/files/{}'.format(current_file_id)
+                response = self.session.delete(url=url)
 
         # Delete all Files for the id online
-        response = self.session.delete(url=url)
-
-        # Recover Local Files with new upload and delete local copy from tmp
-        if filename_for_selective_delete is not None:
-            local_files = os.listdir('tmp')
-            for current_file in local_files:
-                file_name = ''.join((current_file.split("_")[1:]))
-                self.file_upload('tmp/{}'.format(current_file), domain_type, domain_identifier,
-                                 custom_file_name=file_name)
-                os.remove('tmp/{}'.format(current_file))
+        else:
+            response = self.session.delete(url=url)
 
         return response.status_code == 204  # success code for delete action upload
 
