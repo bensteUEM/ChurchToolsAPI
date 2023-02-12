@@ -573,9 +573,8 @@ class ChurchToolsApi:
             if 'to_' in kwargs.keys() and 'from_' in kwargs.keys():
                 if len(kwargs['to_']) == 10:
                     params['to'] = kwargs['to_']
-            elif 'from_' in kwargs.keys():
-                logging.warning('Use of from is only allowed together with from')
-
+            elif 'to_' in kwargs.keys():
+                logging.warning('Use of to_ is only allowed together with from_')
             if 'canceled' in kwargs.keys():
                 params['canceled'] = kwargs['canceled']
             if 'direction' in kwargs.keys():
