@@ -294,7 +294,7 @@ class ChurchToolsApi:
         url = '{}/api/files/{}/{}'.format(self.domain, domain_type, domain_identifier)
 
         if overwrite:
-            logging.debug("deleting old file before download")
+            logging.debug("deleting old file {} before new upload".format(file_to_upload))
             delete_file_name = file_to_upload.name.split('/')[-1] if custom_file_name is None else custom_file_name
             self.file_delete(domain_type, domain_identifier, delete_file_name)
 
