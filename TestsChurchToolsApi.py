@@ -316,9 +316,9 @@ class TestsChurchToolsApi(unittest.TestCase):
 
         # missing keyword pair warning
         with self.assertLogs(level=logging.WARNING) as captured:
-            logging.warning("Logs from functions are not detected ...")  # TODO workaround - followup in #25
             item = self.api.get_events(to_=next2_week_formatted)
         self.assertEqual(len(captured.records), 1)
+        self.assertEqual(['WARNING:root:Use of to_ is only allowed together with from_'], captured.output)
 
         # load more than 10 events (pagination #TODO #1 improve test case for pagination
         result = self.api.get_events(direction='forward', limit=11)
