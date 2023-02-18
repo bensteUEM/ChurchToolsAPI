@@ -5,8 +5,6 @@ from datetime import datetime, timedelta
 
 import requests
 
-from secure.secrets import users
-
 
 class ChurchToolsApi:
     def __init__(self, domain, ct_token):
@@ -18,7 +16,7 @@ class ChurchToolsApi:
 
         self.login_ct_rest_api(ct_token)
 
-    def login_ct_ajax_api(self, user=list(users.keys())[0], pswd=""):
+    def login_ct_ajax_api(self, user, pswd=""):
         """
         Login function using AJAX with Username and Password
         :param user: Username

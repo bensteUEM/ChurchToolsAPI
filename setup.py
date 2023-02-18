@@ -13,7 +13,7 @@ setup(
     long_description_content_type="text/markdown",
     url='https://github.com/bensteUEM/ChurchToolsAPI',
     license='CC-BY-SA',
-    python_requires='>=3.10',
+    python_requires='>=3.8',
     packages=find_packages(),
     install_requires=[
         # Add more dependencies as necessary
