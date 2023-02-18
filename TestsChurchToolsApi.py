@@ -1,12 +1,13 @@
 import unittest
+import urllib
 
 from ChurchToolsAPI.ChurchToolsApi import *
+from secure.defaults import domain
 
 
 class TestsChurchToolsApi(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(TestsChurchToolsApi, self).__init__(*args, **kwargs)
-        from secure.defaults import domain
         from secure.secrets import ct_token
         self.api = ChurchToolsApi(domain, ct_token)
         logging.basicConfig(filename='logs/TestsChurchToolsApi.log', encoding='utf-8',
@@ -14,12 +15,21 @@ class TestsChurchToolsApi(unittest.TestCase):
                             level=logging.DEBUG)
         logging.info("Executing Tests RUN")
 
+    def tearDown(self):
+        """
+        Destroy the session after test execution to avoid resource issues
+        :return:
+        """
+        self.api.session.close()
+
     def test_login_ct_ajax_api(self):
         """
         Checks that Userlogin using AJAX is working with provided credentials
         :return:
         """
         from secure.secrets import users
+        if self.api.session is not None:
+            self.api.session.close()
         result = self.api.login_ct_ajax_api(list(users.keys())[0],
                                             users[list(users.keys())[0]])
         self.assertTrue(result)
@@ -30,6 +40,8 @@ class TestsChurchToolsApi(unittest.TestCase):
         :return:
         """
         from secure.secrets import ct_token
+        if self.api.session is not None:
+            self.api.session.close()
         result = self.api.login_ct_rest_api(ct_token)
         self.assertTrue(result)
 
@@ -259,7 +271,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         :return:
         """
         tagId = 53
-        songId= 408
+        songId = 408
 
         self.api.ajax_song_last_update = None
         result = self.api.get_songs_by_tag(tagId)
@@ -425,7 +437,9 @@ class TestsChurchToolsApi(unittest.TestCase):
         eventId = 484
         agendaId = self.api.get_event_agenda(eventId)['id']
 
-        download_result = self.api.export_event_agenda('SONG_BEAMER')
+        with self.assertLogs(level=logging.WARNING) as captured:
+            download_result = self.api.export_event_agenda('SONG_BEAMER')
+        self.assertEqual(len(captured.records), 1)
         self.assertFalse(download_result)
 
         for file in os.listdir('downloads'):
