@@ -1,14 +1,14 @@
 import unittest
-from datetime import datetime, timedelta
 
-from ChurchToolsApi import *
+from ChurchToolsAPI.ChurchToolsApi import *
 
 
 class TestsChurchToolsApi(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(TestsChurchToolsApi, self).__init__(*args, **kwargs)
-        from secure.defaults import domain as temp_domain
-        self.api = ChurchToolsApi(temp_domain)
+        from secure.defaults import domain
+        from secure.secrets import ct_token
+        self.api = ChurchToolsApi(domain, ct_token)
         logging.basicConfig(filename='logs/TestsChurchToolsApi.log', encoding='utf-8',
                             format="%(asctime)s %(name)-10s %(levelname)-8s %(message)s",
                             level=logging.DEBUG)
@@ -134,9 +134,9 @@ class TestsChurchToolsApi(unittest.TestCase):
 
         # 1. Tries 3 uploads to the test song with ID 408 and arrangement 417
         # Adds the same file again without overwrite - should exist twice
-        self.api.file_upload('media/pinguin.png', "song_arrangement", 417)
-        self.api.file_upload('media/pinguin_shell.png', "song_arrangement", 417, 'pinguin_shell_rename.png')
-        self.api.file_upload('media/pinguin.png', "song_arrangement", 417, 'pinguin.png')
+        self.api.file_upload('samples/pinguin.png', "song_arrangement", 417)
+        self.api.file_upload('samples/pinguin_shell.png', "song_arrangement", 417, 'pinguin_shell_rename.png')
+        self.api.file_upload('samples/pinguin.png', "song_arrangement", 417, 'pinguin.png')
 
         song = self.api.get_songs(song_id=408)
         self.assertIsInstance(song, dict, 'Should be a single song instead of list of songs')
@@ -147,17 +147,17 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertEqual(filenames, filenames_target)
 
         # 2. Reupload pinguin.png using overwrite which will remove both old files but keep one
-        self.api.file_upload('media/pinguin.png', "song_arrangement", 417, 'pinguin.png', overwrite=True)
+        self.api.file_upload('samples/pinguin.png', "song_arrangement", 417, 'pinguin.png', overwrite=True)
         song = self.api.get_songs(song_id=408)
         self.assertEqual(len(song['arrangements'][0]['files']), 2, 'check that overwrite is applied on upload')
 
         # 3. Overwrite without existing file
-        self.api.file_upload('media/pinguin.png', "song_arrangement", 417, 'pinguin2.png', overwrite=True)
+        self.api.file_upload('samples/pinguin.png', "song_arrangement", 417, 'pinguin2.png', overwrite=True)
         song = self.api.get_songs(song_id=408)
         self.assertEqual(len(song['arrangements'][0]['files']), 3, 'check that both file with overwrite of new file')
 
         # 3.b Try overwriting again and check that number of files does not increase
-        self.api.file_upload('media/pinguin.png', "song_arrangement", 417, 'pinguin.png', overwrite=True)
+        self.api.file_upload('samples/pinguin.png', "song_arrangement", 417, 'pinguin.png', overwrite=True)
         song = self.api.get_songs(song_id=408)
         self.assertEqual(len(song['arrangements'][0]['files']), 3, 'check that still only 3 file exists')
 
@@ -426,9 +426,9 @@ class TestsChurchToolsApi(unittest.TestCase):
         download_result = self.api.export_event_agenda('SONG_BEAMER')
         self.assertFalse(download_result)
 
-        for file in os.listdir('./Downloads'):
-            os.remove('./Downloads/' + file)
-        self.assertEqual(len(os.listdir('./Downloads')), 0)
+        for file in os.listdir('downloads'):
+            os.remove('downloads/' + file)
+        self.assertEqual(len(os.listdir('downloads')), 0)
 
         download_result = self.api.export_event_agenda('SONG_BEAMER', agendaId=agendaId)
         self.assertTrue(download_result)
@@ -436,7 +436,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         download_result = self.api.export_event_agenda('SONG_BEAMER', eventId=eventId)
         self.assertTrue(download_result)
 
-        self.assertEqual(len(os.listdir('./Downloads')), 2)
+        self.assertEqual(len(os.listdir('downloads')), 2)
 
     def test_get_services(self):
         """
@@ -500,9 +500,9 @@ class TestsChurchToolsApi(unittest.TestCase):
         """
         test_id = 762
 
-        self.api.file_upload('tests/test.txt', 'song_arrangement', test_id)
+        self.api.file_upload('samples/test.txt', 'song_arrangement', test_id)
 
-        filePath = 'Downloads/test.txt'
+        filePath = 'downloads/test.txt'
         if os.path.exists(filePath):
             os.remove(filePath)
 

@@ -9,14 +9,13 @@ from secure.secrets import users
 
 
 class ChurchToolsApi:
-    def __init__(self, domain):
+    def __init__(self, domain, ct_token):
         self.session = None
         self.domain = domain
 
         self.ajax_song_last_update = None
         self.ajax_song_cache = []
 
-        from secure.secrets import ct_token
         self.login_ct_rest_api(ct_token)
 
     def login_ct_ajax_api(self, user=list(users.keys())[0], pswd=""):
@@ -815,7 +814,7 @@ class ChurchToolsApi:
             logging.info("Event requested that does not have an agenda with status: {}".format(response.status_code))
             return None
 
-    def export_event_agenda(self, target_format, target_path='./Downloads', **kwargs):
+    def export_event_agenda(self, target_format, target_path='./downloads', **kwargs):
         """
         Exports the agenda as zip file for imports in presenter-programs
         :param target_format: fileformat or name of presentation software which should be supported.
@@ -993,7 +992,7 @@ class ChurchToolsApi:
         else:
             logging.warning("Something went wrong fetching Song-tags: {}".format(response.status_code))
 
-    def file_download(self, filename: str, domain_type, domain_identifier, path_for_download='./Downloads'):
+    def file_download(self, filename: str, domain_type, domain_identifier, path_for_download='./downloads'):
         """
         Retrieves file from ChurchTools for specific filename, domain_type and domain_identifier from churchtools
         :param filename:
