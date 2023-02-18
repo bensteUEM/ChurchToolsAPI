@@ -330,10 +330,11 @@ class TestsChurchToolsApi(unittest.TestCase):
     def test_get_AllEventData_ajax(self):
         """
         Test function to check the get_AllEventData_ajax function for a specific ID
-        On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
+        On ELKW1610.KRZ.TOOLS event ID 2626 is an existing Test Event with schedule (1. Jan 2023)
+        Please be aware that this function is limited to the timeframe configured for cache in CT (by default -90days)
         :return:
         """
-        eventId = 484
+        eventId = 2626
         result = self.api.get_AllEventData_ajax(eventId)
         self.assertEqual(result['id'], str(eventId))
 
@@ -369,11 +370,12 @@ class TestsChurchToolsApi(unittest.TestCase):
     def test_get_set_event_admins(self):
         """
         Test function to get list of event admins, change it and check again (and reset to original)
-        On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
+         On ELKW1610.KRZ.TOOLS event ID 2626 is an existing Test Event with schedule (1. Jan 2023)
+        Please be aware that this function is limited to the timeframe configured for cache in CT (by default -90days)
         :return:
         """
-        eventId = 484
-        admin_ids_original_test = [45, 51, 36]
+        eventId = 2626
+        admin_ids_original_test = [9]
 
         admin_ids_original = self.api.get_event_admins_ajax(eventId)
         self.assertEqual(admin_ids_original, admin_ids_original_test)
