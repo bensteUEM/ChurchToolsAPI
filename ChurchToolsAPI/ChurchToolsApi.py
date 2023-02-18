@@ -637,10 +637,13 @@ class ChurchToolsApi:
 
         if response.status_code == 200:
             response_content = json.loads(response.content)
-            response_data = response_content['data'][str(eventId)]
-            logging.debug("AJAX Event data {}".format(response_data))
-
-            return response_data
+            if len(response_content['data']) > 0:
+                response_data = response_content['data'][str(eventId)]
+                logging.debug("AJAX Event data {}".format(response_data))
+                return response_data
+            else:
+                logging.info("AJAX All Event data not successful - no event found: {}".format(response.status_code))
+                return None
         else:
             logging.info("AJAX All Event data not successful: {}".format(response.status_code))
             return None
@@ -751,11 +754,15 @@ class ChurchToolsApi:
         """
 
         event_data = self.get_AllEventData_ajax(eventId)
-        if 'admin' in event_data.keys():
-            admin_ids = [int(id) for id in event_data['admin'].split(',')]
+        if event_data is not None:
+            if 'admin' in event_data.keys():
+                admin_ids = [int(id) for id in event_data['admin'].split(',')]
+            else:
+                admin_ids = []
+            return admin_ids
         else:
-            admin_ids = []
-        return admin_ids
+            logging.info('No admins found because event not found')
+            return []
 
     def set_event_admins_ajax(self, eventId, admin_ids):
         """
