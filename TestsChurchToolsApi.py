@@ -34,6 +34,18 @@ class TestsChurchToolsApi(unittest.TestCase):
                                             users[list(users.keys())[0]])
         self.assertTrue(result)
 
+    def test_init_userpwd(self):
+        """
+        Tries to create a login ith churchTools using specified username and password
+        :return:
+        """
+        from secure.secrets import users
+        username = list(users.keys())[0]
+        password = list(users.items())[0]
+        ct_api = ChurchToolsApi(domain, ct_user=username, ct_password=password)
+        self.assertIsNotNone(ct_api)
+
+
     def test_login_ct_rest_api(self):
         """
         Checks that Userlogin using REST is working with provided TOKEN

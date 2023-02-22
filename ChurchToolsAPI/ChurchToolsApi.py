@@ -7,14 +7,25 @@ import requests
 
 
 class ChurchToolsApi:
-    def __init__(self, domain, ct_token):
+    def __init__(self, domain, ct_token=None, ct_user=None, ct_password=None):
+        """
+        Setup of a ChurchToolsApi object for the specified domain using a token login
+        :param domain:
+        :param ct_token: direct access using a user token
+        :param ct_user: indirect login using user and password combination
+        :param ct_password: indirect login using user and password combination
+        """
         self.session = None
         self.domain = domain
-
         self.ajax_song_last_update = None
         self.ajax_song_cache = []
 
-        self.login_ct_rest_api(ct_token)
+        if ct_token is not None:
+            self.login_ct_rest_api(ct_token)
+        elif ct_user is not None and ct_password is not None:
+            self.login_ct_ajax_api(ct_user, ct_password)
+
+        logging.debug('ChurchToolsApi init finished')
 
     def login_ct_ajax_api(self, user, pswd=""):
         """
@@ -33,7 +44,7 @@ class ChurchToolsApi:
             self.session.headers['CSRF-Token'] = self.get_ct_csrf_token()
             return json.loads(response.content)["status"] == 'success'
         else:
-            logging.warning("Token Login failed with {}".format(response.content.decode()))
+            logging.warning("Ajax User Login failed with {}".format(response.content.decode()))
             return False
 
     def login_ct_rest_api(self, login_token):
