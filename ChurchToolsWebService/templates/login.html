@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div style="color:#ff0000"> {{error}}</div>
+    <form action="/login" method="POST">
+		<label for="user">User:</label>
+		<input type="text" id="user" name="user" required><br>
+
+		<label for="password">Password:</label>
+		<input type="password" id="password" name="password" required><br>
+
+		<input type="submit" value="Login">
+	</form>
+</body>
+</html>

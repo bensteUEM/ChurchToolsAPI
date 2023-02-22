@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    {% if error %}
+        <div style="color:#ff0000"> {{error}}</div>
+    {% endif %}
+    <h1>Welcome {{ user.firstName }} {{ user.lastName }}</h1>
+    You are authorized as user {{user.id}} on {{domain}} </br>
+    Please be aware that some of the functionality listed below might require special permissions!</br>
+
+    <h2>Functions</h2>
+    <ul>
+        <li> function 1</li>
+        <li> function 2</li>
+    </ul>
+</body>
+</html>
