@@ -30,6 +30,7 @@ class ChurchToolsApi:
     def login_ct_ajax_api(self, user, pswd=""):
         """
         Login function using AJAX with Username and Password
+        not saving a cookie / session
         :param user: Username
         :param pswd: Password - default safed in secure.token.user dict for tests
         :return: if login successful
@@ -47,29 +48,50 @@ class ChurchToolsApi:
             logging.warning("Ajax User Login failed with {}".format(response.content.decode()))
             return False
 
-    def login_ct_rest_api(self, login_token):
+    def login_ct_rest_api(self, ct_token=None, **kwargs):
         """
         Authorization: Login<token>
         If you want to authorize a request, you need to provide a Login Token as
         Authorization header in the format {Authorization: Login<token>}
         Login Tokens are generated in "Berechtigungen" of User Settings
-        :param login_token: token to be used for login into CT
-        :return: if login successful
+        using REST API login as opposed to AJAX login will also save a cookie
+        :param ct_token: token to be used for login into CT
+        :param kwargs: optional keyword arguments as listed
+        :keyword user: the username to be used in case of unknown login token
+        :keyword password: the password to be used in case of unknown login token
+        :return: personId if login successful otherwise False
         """
-
         self.session = requests.Session()
-        login_url = self.domain + '/api/whoami'
-        headers = {"Authorization": 'Login ' + login_token}
-        response = self.session.get(url=login_url, headers=headers)
 
-        if response.status_code == 200:
-            response_content = json.loads(response.content)
-            logging.info('Token Login Successful as {}'.format(response_content['data']['email']))
-            self.session.headers['CSRF-Token'] = self.get_ct_csrf_token()
-            return json.loads(response.content)['data']['id'] > 0
-        else:
-            logging.warning("Token Login failed with {}".format(response.content.decode()))
-            return False
+        if ct_token is not None:
+            logging.info('Trying Login with token')
+            url = self.domain + '/api/whoami'
+            headers = {"Authorization": 'Login ' + ct_token}
+            response = self.session.get(url=url, headers=headers)
+
+            if response.status_code == 200:
+                response_content = json.loads(response.content)
+                logging.info('Token Login Successful as {}'.format(response_content['data']['email']))
+                self.session.headers['CSRF-Token'] = self.get_ct_csrf_token()
+                return json.loads(response.content)['data']['id']
+            else:
+                logging.warning("Token Login failed with {}".format(response.content.decode()))
+                return False
+
+        elif 'user' in kwargs.keys() and 'password' in kwargs.keys():
+            logging.info('Trying Login with Username/Password')
+            url = self.domain + '/api/login'
+            data = {'username': kwargs['user'], 'password': kwargs['password']}
+            response = self.session.post(url=url, data=data)
+
+            if response.status_code == 200:
+                response_content = json.loads(response.content)
+                person = self.who_am_i()
+                logging.info('User/Password Login Successful as {}'.format(person['email']))
+                return person['id']
+            else:
+                logging.warning("User/Password Login failed with {}".format(response.content.decode()))
+                return False
 
     def get_ct_csrf_token(self):
         """
@@ -80,13 +102,34 @@ class ChurchToolsApi:
         :return: str token
         """
         url = self.domain + '/api/csrftoken'
-        response = self.session.get(url=url)  # , headers=headers)
+        response = self.session.get(url=url)
         if response.status_code == 200:
             csrf_token = json.loads(response.content)["data"]
             logging.info("CSRF Token erfolgreich abgerufen {}".format(csrf_token))
             return csrf_token
         else:
             logging.warning("CSRF Token not updated because of Response {}".format(response.content.decode()))
+
+    def who_am_i(self):
+        """
+        Simple function which returns the user information for the authorized user
+        :return:
+        """
+
+        url = self.domain + '/api/whoami'
+        response = self.session.get(url=url)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            if 'email' in response_content['data'].keys():
+                logging.info('Who am I as {}'.format(response_content['data']['email']))
+                return response_content['data']
+            else:
+                logging.warning('User might not be logged in? {}'.format(response_content['data']))
+                return False
+        else:
+            logging.warning("Checking who am i failed with {}".format(response.status_code))
+            return False
 
     def check_connection_ajax(self):
         """

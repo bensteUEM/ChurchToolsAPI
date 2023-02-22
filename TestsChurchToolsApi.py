@@ -1,5 +1,4 @@
 import unittest
-import urllib
 
 from ChurchToolsAPI.ChurchToolsApi import *
 from secure.defaults import domain
@@ -36,15 +35,14 @@ class TestsChurchToolsApi(unittest.TestCase):
 
     def test_init_userpwd(self):
         """
-        Tries to create a login ith churchTools using specified username and password
+        Tries to create a login with churchTools using specified username and password
         :return:
         """
         from secure.secrets import users
         username = list(users.keys())[0]
-        password = list(users.items())[0]
+        password = list(users.values())[0]
         ct_api = ChurchToolsApi(domain, ct_user=username, ct_password=password)
         self.assertIsNotNone(ct_api)
-
 
     def test_login_ct_rest_api(self):
         """
@@ -55,6 +53,14 @@ class TestsChurchToolsApi(unittest.TestCase):
         if self.api.session is not None:
             self.api.session.close()
         result = self.api.login_ct_rest_api(ct_token)
+        self.assertTrue(result)
+
+        from secure.secrets import users
+        username = list(users.keys())[0]
+        password = list(users.values())[0]
+        if self.api.session is not None:
+            self.api.session.close()
+        result = self.api.login_ct_rest_api(user=username, password=password)
         self.assertTrue(result)
 
     def test_get_ct_csrf_token(self):
