@@ -4,8 +4,8 @@ with open("README.md", "r") as file:
     description = file.read()
 
 setup(
-    name='ChurchToolsAPI',
-    version='1.1',
+    name='ChurchToolsApi',
+    version='1.2',
     author='bensteUEM',
     author_email='benedict.stein@gmail.com',
     description='A python package to make use of ChurchTools API',

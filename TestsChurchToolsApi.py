@@ -1,6 +1,9 @@
+import logging
+import os
 import unittest
+from datetime import datetime, timedelta
 
-from ChurchToolsAPI.ChurchToolsApi import *
+from ChurchToolsApi import ChurchToolsApi
 from secure.defaults import domain
 
 

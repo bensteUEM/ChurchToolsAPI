@@ -3,7 +3,7 @@ import os
 from flask import Flask, render_template, request, redirect, session
 from flask_session import Session
 
-from ChurchToolsAPI.ChurchToolsApi import ChurchToolsApi as CTAPI
+from ChurchToolsApi import ChurchToolsApi as CTAPI
 from secure.defaults import domain
 
 app = Flask(__name__)
