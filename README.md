@@ -1,8 +1,21 @@
 # Setup
 
-This code requires changes in 2 files within the "secure" folder in order to work
+## Using project source code directly 
+Downloading the source code of the project
+it requires changes in 2 files within the "secure" folder in order to work
 
-## Initial configuration
+## Using it as a module
+If using as a module the class requires some parameters to run - check the docstring for correct usage
+Check https://github.com/bensteUEM/ChurchToolsAPI/releases for the latest release.
+It can be installed using
+```pip install git+https://github.com/bensteUEM/ChurchToolsAPI.git@vX.X.X#egg=ChurchToolsAPI'```
+replacing X.X.X by a released version number
+
+## Using it via docker or github actions
+For use with Docker or GithubActions ENV variables can be used instead
+if 'ct_token' is available 'domain' and 'users' will also be read from ENV
+
+## Initial configuration (when used as project)
 
 ### Server connection
 

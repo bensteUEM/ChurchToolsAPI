@@ -1,17 +1,32 @@
+import ast
 import logging
 import os
 import unittest
 from datetime import datetime, timedelta
 
 from ChurchToolsApi import ChurchToolsApi
-from secure.defaults import domain
 
 
 class TestsChurchToolsApi(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(TestsChurchToolsApi, self).__init__(*args, **kwargs)
-        from secure.secrets import ct_token
-        self.api = ChurchToolsApi(domain, ct_token)
+
+        if 'CT_TOKEN' in os.environ:
+            self.ct_token = os.environ['CT_TOKEN']
+            self.domain = os.environ['CT_DOMAIN']
+            users_string = os.environ['CT_USERS']
+            self.users = ast.literal_eval(users_string)
+            logging.info('using connection details provided with ENV variables')
+        else:
+            from secure.secrets import ct_token
+            self.ct_token = ct_token
+            from secure.defaults import domain
+            self.domain = domain
+            from secure.secrets import users
+            self.users = users
+            logging.info('using connection details provided from secrets folder')
+
+        self.api = ChurchToolsApi(self.domain, self.ct_token)
         logging.basicConfig(filename='logs/TestsChurchToolsApi.log', encoding='utf-8',
                             format="%(asctime)s %(name)-10s %(levelname)-8s %(message)s",
                             level=logging.DEBUG)
@@ -29,11 +44,10 @@ class TestsChurchToolsApi(unittest.TestCase):
         Checks that Userlogin using AJAX is working with provided credentials
         :return:
         """
-        from secure.secrets import users
         if self.api.session is not None:
             self.api.session.close()
-        result = self.api.login_ct_ajax_api(list(users.keys())[0],
-                                            users[list(users.keys())[0]])
+        result = self.api.login_ct_ajax_api(list(self.users.keys())[0],
+                                            self.users[list(self.users.keys())[0]])
         self.assertTrue(result)
 
     def test_init_userpwd(self):
@@ -41,10 +55,11 @@ class TestsChurchToolsApi(unittest.TestCase):
         Tries to create a login with churchTools using specified username and password
         :return:
         """
-        from secure.secrets import users
-        username = list(users.keys())[0]
-        password = list(users.values())[0]
-        ct_api = ChurchToolsApi(domain, ct_user=username, ct_password=password)
+        if self.api.session is not None:
+            self.api.session.close()
+        username = list(self.users.keys())[0]
+        password = list(self.users.values())[0]
+        ct_api = ChurchToolsApi(self.domain, ct_user=username, ct_password=password)
         self.assertIsNotNone(ct_api)
 
     def test_login_ct_rest_api(self):
@@ -52,15 +67,13 @@ class TestsChurchToolsApi(unittest.TestCase):
         Checks that Userlogin using REST is working with provided TOKEN
         :return:
         """
-        from secure.secrets import ct_token
         if self.api.session is not None:
             self.api.session.close()
-        result = self.api.login_ct_rest_api(ct_token)
+        result = self.api.login_ct_rest_api(self.ct_token)
         self.assertTrue(result)
 
-        from secure.secrets import users
-        username = list(users.keys())[0]
-        password = list(users.values())[0]
+        username = list(self.users.keys())[0]
+        password = list(self.users.values())[0]
         if self.api.session is not None:
             self.api.session.close()
         result = self.api.login_ct_rest_api(user=username, password=password)
@@ -463,9 +476,10 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertEqual(len(captured.records), 1)
         self.assertFalse(download_result)
 
-        for file in os.listdir('downloads'):
-            os.remove('downloads/' + file)
-        self.assertEqual(len(os.listdir('downloads')), 0)
+        if os.path.exists('downloads'):
+            for file in os.listdir('downloads'):
+                os.remove('downloads/' + file)
+            self.assertEqual(len(os.listdir('downloads')), 0)
 
         download_result = self.api.export_event_agenda('SONG_BEAMER', agendaId=agendaId)
         self.assertTrue(download_result)

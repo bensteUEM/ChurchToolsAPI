@@ -3,12 +3,15 @@ from setuptools import setup, find_packages
 with open("README.md", "r") as file:
     description = file.read()
 
+with open('ChurchToolsWebService/docker/requirements.txt') as f:
+    requirements = f.read().splitlines()
+
 setup(
     name='ChurchToolsApi',
-    version='1.2.1.1',
+    version='1.2.2',
     author='bensteUEM',
     author_email='benedict.stein@gmail.com',
-    description='A python package to make use of ChurchTools API',
+    description='A python package to make use of ChurchTools API and offer a Basic WebUI for some functions',
     long_description=description,
     long_description_content_type="text/markdown",
     url='https://github.com/bensteUEM/ChurchToolsAPI',
@@ -19,7 +22,5 @@ setup(
     package_data={
         'ChurchToolsWebService': ['templates/*.html', 'static/*']
     },
-    install_requires=[
-        # Add more dependencies as necessary
-    ],
+    install_requires=requirements,
 )
