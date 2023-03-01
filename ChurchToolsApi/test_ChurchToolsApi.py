@@ -61,6 +61,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         password = list(self.users.values())[0]
         ct_api = ChurchToolsApi(self.domain, ct_user=username, ct_password=password)
         self.assertIsNotNone(ct_api)
+        ct_api.session.close()
 
     def test_login_ct_rest_api(self):
         """
