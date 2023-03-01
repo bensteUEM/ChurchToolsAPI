@@ -1051,14 +1051,19 @@ class ChurchToolsApi:
         else:
             logging.warning("Something went wrong fetching Song-tags: {}".format(response.status_code))
 
-    def file_download(self, filename: str, domain_type, domain_identifier, target_path='./downloads'):
+    def file_download(self, filename, domain_type, domain_identifier, target_path='./downloads'):
         """
-        Retrieves file from ChurchTools for specific filename, domain_type and domain_identifier from churchtools
-        :param filename:
-        :param domain_type: Currently supported are 'avatar', 'groupimage', 'logo', 'attatchments', 'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
-        :param domain_identifier = Id of Arrangement (in case of songs) This information can be checked for example by calling get_songs()
-        :param target_path: local path as target for the download - will be created if not exists
-        :return: bool if success
+        Retrieves the first file from ChurchTools for specific filename, domain_type and domain_identifier from churchtools
+        :param filename: display name of the file as shown in ChurchTools
+        :type filename: str
+        :param domain_type: Currently supported are either 'avatar', 'groupimage', 'logo', 'attatchments', 'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'
+        :type domain_type: str
+        :param domain_identifier: = Id e.g. of song_arrangement - For songs this technical number can be obtained running get_songs()
+        :type domain_identifier: str
+        :param target_path: local path as target for the download (without filename) - will be created if not exists
+        :type target_path: str
+        :return: if success
+        :rtype: bool
         """
         StateOK = False
         CHECK_FOLDER = os.path.isdir(target_path)
@@ -1097,14 +1102,17 @@ class ChurchToolsApi:
         else:
             logging.warning("Something went wrong fetching SongArrangement-Files: {}".format(response.status_code))
 
-    def file_download_from_url(self, file_url: str, target_path: str):
+    def file_download_from_url(self, file_url, target_path):
         """
         Retrieves file from ChurchTools for specific file_url from churchtools
         This function is used by file_download(...)
-        :param file_url: Example -> file_url=https://lgv-oe.church.tools/?q=public/filedownload&id=631&filename=738db42141baec592aa2f523169af772fd02c1d21f5acaaf0601678962d06a00
+        :param file_url: Example file_url=https://lgv-oe.church.tools/?q=public/filedownload&id=631&filename=738db42141baec592aa2f523169af772fd02c1d21f5acaaf0601678962d06a00
                 Pay Attention: this file-url consists of a specific / random filename which was created by churchtools
-        :param target_path: directory to drop the download into (must exist first)
-        :return:
+        :type file_url: str
+        :param target_path: directory to drop the download into - must exist before use!
+        :type target_path: str
+        :return: if success
+        :rtype: bool
         """
         # NOTE the stream=True parameter below
         with self.session.get(url=file_url, stream=True) as r:
