@@ -325,12 +325,12 @@ class ChurchToolsApi:
         else:
             logging.warning("Something went wrong fetiching groups: {}".format(response.status_code))
 
-    def file_upload(self, filename_path_for_upload, domain_type, domain_identifier,
+    def file_upload(self, source_filepath, domain_type, domain_identifier,
                     custom_file_name=None,
                     overwrite=False):
         """
         Helper function to upload an attachment to any module of ChurchTools
-        :param filename_path_for_upload: file to be opened e.g. with open('media/pinguin.png', 'rb')
+        :param source_filepath: file to be opened e.g. with open('media/pinguin.png', 'rb')
         :param domain_type:  The domain type, currently supported are 'avatar', 'groupimage', 'logo', 'attatchments',
          'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
         :param domain_identifier: ID of the object in ChurchTools
@@ -340,27 +340,27 @@ class ChurchToolsApi:
         :return:
         """
 
-        file_to_upload = open(filename_path_for_upload, 'rb')
+        source_file = open(source_filepath, 'rb')
 
         url = '{}/api/files/{}/{}'.format(self.domain, domain_type, domain_identifier)
 
         if overwrite:
-            logging.debug("deleting old file {} before new upload".format(file_to_upload))
-            delete_file_name = file_to_upload.name.split('/')[-1] if custom_file_name is None else custom_file_name
+            logging.debug("deleting old file {} before new upload".format(source_file))
+            delete_file_name = source_file.name.split('/')[-1] if custom_file_name is None else custom_file_name
             self.file_delete(domain_type, domain_identifier, delete_file_name)
 
         # add files as files form data with dict using 'files[]' as key and (tuple of filename and fileobject)
         if custom_file_name is None:
-            files = {'files[]': (file_to_upload.name.split('/')[-1], file_to_upload)}
+            files = {'files[]': (source_file.name.split('/')[-1], source_file)}
         else:
             if '/' in custom_file_name:
                 logging.warning('/ in file name ({}) will fail upload!'.format(custom_file_name))
                 files = {}
             else:
-                files = {'files[]': (custom_file_name, file_to_upload)}
+                files = {'files[]': (custom_file_name, source_file)}
 
         response = self.session.post(url=url, files=files)
-        file_to_upload.close()
+        source_file.close()
 
         """
         # Issues with HEADERS in Request module when using non standard 'files[]' key in POST Request
@@ -1051,22 +1051,22 @@ class ChurchToolsApi:
         else:
             logging.warning("Something went wrong fetching Song-tags: {}".format(response.status_code))
 
-    def file_download(self, filename: str, domain_type, domain_identifier, path_for_download='./downloads'):
+    def file_download(self, filename: str, domain_type, domain_identifier, target_path='./downloads'):
         """
         Retrieves file from ChurchTools for specific filename, domain_type and domain_identifier from churchtools
         :param filename:
         :param domain_type: Currently supported are 'avatar', 'groupimage', 'logo', 'attatchments', 'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
         :param domain_identifier = Id of Arrangement (in case of songs) This information can be checked for example by calling get_songs()
-        :param path_for_download: local path as target for the download - will be created if not exists
+        :param target_path: local path as target for the download - will be created if not exists
         :return: bool if success
         """
         StateOK = False
-        CHECK_FOLDER = os.path.isdir(path_for_download)
+        CHECK_FOLDER = os.path.isdir(target_path)
 
         # If folder doesn't exist, then create it.
         if not CHECK_FOLDER:
-            os.makedirs(path_for_download)
-            print("created folder : ", path_for_download)
+            os.makedirs(target_path)
+            print("created folder : ", target_path)
 
         url = '{}/api/files/{}/{}'.format(self.domain, domain_type, domain_identifier)
 
@@ -1088,7 +1088,7 @@ class ChurchToolsApi:
                 logging.debug("Found File: {}".format(filename))
                 # Build path OS independent
                 fileUrl = str(file['fileUrl'])
-                path_file = os.sep.join([path_for_download, filename])
+                path_file = os.sep.join([target_path, filename])
                 StateOK = self.file_download_from_url(fileUrl, path_file)
             else:
                 logging.warning("File {} does not exist".format(filename))
