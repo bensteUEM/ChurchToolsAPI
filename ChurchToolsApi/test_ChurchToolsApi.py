@@ -327,18 +327,22 @@ class TestsChurchToolsApi(unittest.TestCase):
 
         eventId = 484
         result = self.api.get_events(eventId=eventId)
-        self.assertIsInstance(result, dict)
+        self.assertIsInstance(result, list)
+        self.assertEqual(1, len(result))
+        self.assertIsInstance(result[0], dict)
 
         # load next event (limit)
         result = self.api.get_events(limit=1, direction='forward')
-        self.assertIsInstance(result, dict)
-        result_date = datetime.strptime(result['startDate'], '%Y-%m-%dT%H:%M:%S%z').date()
+        self.assertIsInstance(result, list)
+        self.assertEqual(1, len(result))
+        self.assertIsInstance(result[0], dict)
+        result_date = datetime.strptime(result[0]['startDate'], '%Y-%m-%dT%H:%M:%S%z').date()
         today_date = datetime.today().date()
         self.assertGreaterEqual(result_date, today_date)
 
         # load last event (direction, limit)
         result = self.api.get_events(limit=1, direction='backward')
-        result_date = datetime.strptime(result['startDate'], '%Y-%m-%dT%H:%M:%S%z').date()
+        result_date = datetime.strptime(result[0]['startDate'], '%Y-%m-%dT%H:%M:%S%z').date()
         self.assertLessEqual(result_date, today_date)
 
         # Load events after 7 days (from)

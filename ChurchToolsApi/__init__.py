@@ -605,7 +605,8 @@ class ChurchToolsApi:
         :key direction: direction of output 'forward' or 'backward' from the date defined by parameter 'from'
         :key limit: limits the number of events - Default = 1, if all events shall be retrieved insert 'None', only applies if direction is specified
         :key include: if Parameter is set to 'eventServices', the services of the event will be included
-        :return: list of events or a single event as dict (if only one)
+        :return: list of events
+        :rtype: list
         """
         url = self.domain + '/api/events'
 
@@ -645,13 +646,11 @@ class ChurchToolsApi:
             logging.debug("First response of Events successful {}".format(response_content))
 
             if 'meta' not in response_content.keys():  # Shortcut without Pagination
-                return response_data
+                return [response_data] if isinstance(response_data, dict) else response_data
 
             if 'pagination' not in response_content['meta'].keys():
-                if len(response_data) == 1:
-                    return response_data[0]
-                else:
-                    return response_data
+                return [response_data] if isinstance(response_data, dict) else response_data
+
 
             # Long part extending results with pagination
             # TODO #1 copied from other method unsure if pagination works the same as with groups
