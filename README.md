@@ -1,59 +1,69 @@
 # Setup
 
-## Using project source code directly 
-Downloading the source code of the project
-it requires changes in 2 files within the "secure" folder in order to work
+## Using project source code directly
+
+Downloading the source code of the project by default a config.py
+needs to be added in the "secure" folder for default execution.
+Please be aware that this will include sensitive information and should never be shared with 3rd parties and is
+therefore included in gitignore
+
+It should look like this:
+
+```
+# COMMENT FOR WHICH USER / DATE this is -> DO NOT SHARE
+ct_domain = 'https://YOUR-DOMAIN.DE'
+ct_token = 'TOKEN SECRET VERY LONG RANDOM STRING'
+ct_users = {'USER_EMAIL': 'USER_PASSWORD'}
+```
 
 ## Using it as a module
-If using as a module the class requires some parameters to run - check the docstring for correct usage
-Check https://github.com/bensteUEM/ChurchToolsAPI/releases for the latest release.
+
+If you want to use this code as a python module certain classes will require params similar to the config file in order
+to access your system
+
+- check the docstrings for correct usage
+
+The latest release can be found on https://github.com/bensteUEM/ChurchToolsAPI/releases
+
 It can be installed using
 ```pip install git+https://github.com/bensteUEM/ChurchToolsAPI.git@vX.X.X#egg=ChurchToolsAPI'```
 replacing X.X.X by a released version number
 
 ## Using it via docker or github actions
-For use with Docker or GithubActions ENV variables can be used instead
-if 'ct_token' is available 'domain' and 'users' will also be read from ENV
 
-## Initial configuration (when used as project)
+For use within a Docker container or for tests using GithubActions ENV variables can be used to pass the required
+configurations values these are
 
-### Server connection
+* CT_DOMAIN
+* CT_TOKEN
+* CT_USERS
 
-defaults.py with
+Values can be written like entered in a text box - no quotation marks are required. The CT_Users String is interpreted
+as dict like shown in the sample of config.py but must include {}
 
-```
-domain = 'https://YOUR_DOMAIN'
-```
-
-obviously YOUR_DOMAIN needs to be replaced by the respective server to be used.
-it needs to be the domain only, do not include a /api or similar.
-e.g. http://churchtools.test
-
-### Login Details
-
-secrets.py contains the configuration for the user login used:
-
-```
-ct_token = 'CT_TOKEN'
-users = {'CT_USER_NAME': 'CT_PASSWORT'}
-```
+### CT Token
 
 CT_TOKEN can be obtained / changed using the "Berechtigungen" option of the user which should be used to access the CT
-instance
-It is highly recommended to setup a custom user with minimal permissions for this task!
+instance. It is highly recommended to setup a custom user with minimal permissions for use with this module.
+However please check the log files and expect incomplete results if the user is msising permissions.
 
-# Usage
+# Development use
 
-The script was coded using PyCharm Community edition. It is highly recomended to run the test cases successfully before use.
+The script was coded using PyCharm Community edition. 
+Test cases are automatically run when pushed to GitHub. This ensures that basic functionality is checked against at least one environment.
+
 Please be aware that some of the test cases require specific IDs to be present on the CT server which is tested against.
 The respective function do have a hint like the one below in the docstring of the respective functions
+
 ```
 IMPORTANT - This test method and the parameters used depend on the target system!
 ```
 
+You are more than welcome to contribute additional code using respective feature branches and pull requests.
+
 ## Compatibility
 
-Tested against the current Churchtools APIs as of Nov 2022.
+Tested against the current Churchtools APIs as of March 2023.
 More information is provided on the respective ChurchTools pages.
 
 ### REST API
@@ -61,12 +71,18 @@ More information is provided on the respective ChurchTools pages.
 https://YOUR_DOMAIN/api/
 
 More recent and should be used for anything that is accessible through this API.
+Documentation of additional endpoints can be found opening the respective URL.
+The API was developed to support the ChurchTools Web App and does not yet include th full feature set of CT Web
 
 ### Legacy API
 
 https://api.church.tools/index.html
 
-Legacy API used by the WebUI which includes some endpoints that were not yet implemented into the REST API
+Legacy API used by the WebUI which includes some endpoints that were not yet implemented into the REST API.
+Some functions can be reverse engineered using Web-Developer Console to monitor requests.
+The API is subject to change and might stop working with any future release!
+
+It is also more time consuming than the REST api as it often queries large sets of data instead of specific items.
 
 # License
 
@@ -79,7 +95,7 @@ yourself only!)
 
 Anybody using this code is more than welcome to contribute with change requests to the original repository.
 
-## Contributors 
+## Contributors
 
 * benste - implemented for use at Evangelische Kirchengemeinde Baiersbronn (https://www.evang-kirche-baiersbronn.de/)
 * kolibri52 - Jonathan supporting Liebenzeller Gemeinschaft Oettingen (https://lgv-oe.de/)"

@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+from versions import VERSION
 
 with open("README.md", "r") as file:
     description = file.read()
@@ -8,7 +9,7 @@ with open('ChurchToolsWebService/docker/requirements.txt') as f:
 
 setup(
     name='ChurchToolsApi',
-    version='1.2.2',
+    version=VERSION,
     author='bensteUEM',
     author_email='benedict.stein@gmail.com',
     description='A python package to make use of ChurchTools API and offer a Basic WebUI for some functions',
