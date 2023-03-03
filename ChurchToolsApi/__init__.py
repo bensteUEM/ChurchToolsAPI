@@ -10,10 +10,14 @@ class ChurchToolsApi:
     def __init__(self, domain, ct_token=None, ct_user=None, ct_password=None):
         """
         Setup of a ChurchToolsApi object for the specified domain using a token login
-        :param domain:
+        :param domain: including https:// ending on e.g. .de
+        :type domain: str
         :param ct_token: direct access using a user token
+        :type ct_token: str
         :param ct_user: indirect login using user and password combination
+        :type ct_user: str
         :param ct_password: indirect login using user and password combination
+        :type ct_password: str
         """
         self.session = None
         self.domain = domain
@@ -21,23 +25,26 @@ class ChurchToolsApi:
         self.ajax_song_cache = []
 
         if ct_token is not None:
-            self.login_ct_rest_api(ct_token)
+            self.login_ct_rest_api(ct_token=ct_token)
         elif ct_user is not None and ct_password is not None:
             self.login_ct_ajax_api(ct_user, ct_password)
 
         logging.debug('ChurchToolsApi init finished')
 
-    def login_ct_ajax_api(self, user, pswd=""):
+    def login_ct_ajax_api(self, user, password):
         """
         Login function using AJAX with Username and Password
         not saving a cookie / session
-        :param user: Username
-        :param pswd: Password - default safed in secure.token.user dict for tests
-        :return: if login successful
+        :param user: Username - default saved in secure.token.users dict for tests using project files
+        :type user: str
+        :param password: Password - default saved in secure.token.users dict for tests using project files
+        :type password: str
+        :return: is successful
+        :rtype: bool
         """
         self.session = requests.Session()
         login_url = self.domain + '/?q=login/ajax&func=login'
-        data = {'email': user, 'password': pswd}
+        data = {'email': user, 'password': password}
 
         response = self.session.post(url=login_url, data=data)
         if response.status_code == 200:
@@ -48,25 +55,27 @@ class ChurchToolsApi:
             logging.warning("Ajax User Login failed with {}".format(response.content.decode()))
             return False
 
-    def login_ct_rest_api(self, ct_token=None, **kwargs):
+    def login_ct_rest_api(self, **kwargs):
         """
         Authorization: Login<token>
         If you want to authorize a request, you need to provide a Login Token as
         Authorization header in the format {Authorization: Login<token>}
         Login Tokens are generated in "Berechtigungen" of User Settings
         using REST API login as opposed to AJAX login will also save a cookie
-        :param ct_token: token to be used for login into CT
+
         :param kwargs: optional keyword arguments as listed
-        :keyword user: the username to be used in case of unknown login token
-        :keyword password: the password to be used in case of unknown login token
+        :keyword ct_token: str : token to be used for login into CT
+        :keyword user: str: the username to be used in case of unknown login token
+        :keyword password: str: the password to be used in case of unknown login token
         :return: personId if login successful otherwise False
+        :rtype: int | bool
         """
         self.session = requests.Session()
 
-        if ct_token is not None:
+        if 'ct_token' in kwargs.keys():
             logging.info('Trying Login with token')
             url = self.domain + '/api/whoami'
-            headers = {"Authorization": 'Login ' + ct_token}
+            headers = {"Authorization": 'Login ' + kwargs['ct_token']}
             response = self.session.get(url=url, headers=headers)
 
             if response.status_code == 200:
@@ -96,10 +105,11 @@ class ChurchToolsApi:
     def get_ct_csrf_token(self):
         """
         Requests CSRF Token https://hilfe.church.tools/wiki/0/API-CSRF
-        This method was created when debugging file upload
-        storing and transmitting CSRF token in headers is required for all legacy AJAX API calls unless disabled by admin
-        e.g. self.session.headers['CSRF-Token'] = self.get_ct_csrf_token()
-        :return: str token
+        Storing and transmitting CSRF token in headers is required for all legacy AJAX API calls unless disabled by admin
+        Therefore it is executed with each new login
+
+        :return: token
+        :rtype: str
         """
         url = self.domain + '/api/csrftoken'
         response = self.session.get(url=url)
@@ -113,7 +123,8 @@ class ChurchToolsApi:
     def who_am_i(self):
         """
         Simple function which returns the user information for the authorized user
-        :return:
+        :return: CT user dict if found or bool
+        :rtype: dict | bool
         """
 
         url = self.domain + '/api/whoami'
@@ -134,7 +145,8 @@ class ChurchToolsApi:
     def check_connection_ajax(self):
         """
         Checks whether a successful connection with the given token can be initiated using the legacy AJAX API
-        :return:
+        This requires a CSRF token to be set in headers
+        :return: if successful
         """
         url = self.domain + '/?q=churchservice/ajax&func=getAllFacts'
         headers = {
@@ -152,9 +164,10 @@ class ChurchToolsApi:
         """
         Function to get list of all or a person from CT
         :param kwargs: optional keywords as listed
-        :keyword ids: list of a ids filter
-        :keyword returnAsDict: true if should return a dict instead of list (not combineable if serviceId)
-        :return: list of user dicts or a single user dict if only one
+        :keyword ids: list: of a ids filter
+        :keyword returnAsDict: bool: true if should return a dict instead of list
+        :return: list of user dicts
+        :rtype: list[dict]
         """
         url = self.domain + '/api/persons'
         params = {}
@@ -177,7 +190,7 @@ class ChurchToolsApi:
                                 'make sure the user has correct permissions'.format(params))
 
             if 'meta' not in response_content.keys():  # Shortcut without Pagination
-                return response_data
+                return [response_data] if isinstance(response_data, dict) else response_data
 
             # Long part extending results with pagination
             while response_content['meta']['pagination']['current'] \
@@ -197,16 +210,16 @@ class ChurchToolsApi:
                     response_data = result
 
             logging.debug("Persons load successful {}".format(response_data))
-            return response_data[0] if len(response_data) == 1 else response_data
+            return response_data
         else:
             logging.info("Persons requested failed: {}".format(response.status_code))
             return None
 
     def get_songs(self, **kwargs):
-        # song_id=None):
         """ Gets list of all songs from the server
-        :key kwargs song_id: optional filter by song id
-        :return: JSON Response of all songs from ChurchTools or single object
+        :key kwargs song_id: int: optional filter by song id
+        :return: list of songs
+        :rtype: list[dict]
         """
 
         url = self.domain + '/api/songs'
@@ -223,7 +236,7 @@ class ChurchToolsApi:
             logging.debug("First response of GET Songs successful {}".format(response_content))
 
             if 'meta' not in response_content.keys():  # Shortcut without Pagination
-                return response_data
+                return [response_data] if isinstance(response_data, dict) else response_data
 
             # Long part extending results with pagination
             while response_content['meta']['pagination']['current'] \
@@ -290,14 +303,16 @@ class ChurchToolsApi:
 
         return song_category_dict
 
-    def get_groups(self, group_id=None):
-        """ Gets list of all groups
-        :param group_id: optional filter by group id
-        :return dict mit allen Gruppen
+    def get_groups(self, **kwargs):
+        """
+        Gets list of all groups
+        :keyword group_id: int: optional filter by group id
+        :return: dict mit allen Gruppen
+        :rtype: dict
         """
         url = self.domain + '/api/groups'
-        if group_id is not None:
-            url = url + '/{}'.format(group_id)
+        if 'group_id' in kwargs.keys():
+            url = url + '/{}'.format(kwargs['group_id'])
         headers = {
             'accept': 'application/json'
         }
@@ -323,21 +338,25 @@ class ChurchToolsApi:
 
             return response_data
         else:
-            logging.warning("Something went wrong fetiching groups: {}".format(response.status_code))
+            logging.warning("Something went wrong fetching groups: {}".format(response.status_code))
 
-    def file_upload(self, source_filepath, domain_type, domain_identifier,
-                    custom_file_name=None,
-                    overwrite=False):
+    def file_upload(self, source_filepath, domain_type, domain_identifier, custom_file_name=None, overwrite=False):
         """
         Helper function to upload an attachment to any module of ChurchTools
         :param source_filepath: file to be opened e.g. with open('media/pinguin.png', 'rb')
+        :type source_filepath: str
         :param domain_type:  The domain type, currently supported are 'avatar', 'groupimage', 'logo', 'attatchments',
          'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
+        :type domain_type: str
         :param domain_identifier: ID of the object in ChurchTools
+        :type domain_identifier: int
         :param custom_file_name: optional file name - if not specified the one from the file is used
+        :type custom_file_name: str
         :param overwrite: if true delete existing file before upload of new one to replace \
         it's content instead of creating a copy
-        :return:
+        :type overwrite: bool
+        :return: if successful
+        :rtype: bool
         """
 
         source_file = open(source_filepath, 'rb')
@@ -379,10 +398,13 @@ class ChurchToolsApi:
             try:
                 response_content = json.loads(response.content)
                 logging.debug("Upload successful {}".format(response_content))
+                return True
             except:
                 logging.warning(response.content.decode())
+                return False
         else:
             logging.warning(response.content.decode())
+            return False
 
     def file_delete(self, domain_type, domain_identifier, filename_for_selective_delete=None):
         """
@@ -390,9 +412,13 @@ class ChurchToolsApi:
         or identifying individual file_name_ids and deleting specifc files only
         :param domain_type:  The domain type, currently supported are 'avatar', 'groupimage', 'logo', 'attatchments',
          'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
+        :type domain_type: str
         :param domain_identifier: ID of the object in ChurchTools
+        :type domain_identifier: int
         :param filename_for_selective_delete: name of the file to be deleted - all others will be kept
+        :type filename_for_selective_delete: str
         :return: if successful
+        :rtype: bool
         """
         url = self.domain + '/api/files/{}/{}'.format(domain_type, domain_identifier)
 
@@ -427,7 +453,8 @@ class ChurchToolsApi:
         :param bpm: Beats per Minute - optional
         :param beat: Beat - optional
 
-        :return: int song_id: ChurchTools song_id of the Song created
+        :return: int song_id: ChurchTools song_id of the Song created or None if not successful
+        :rtype: int | None
         """
         url = self.domain + '/?q=churchservice/ajax&func=addNewSong'
 
@@ -455,7 +482,7 @@ class ChurchToolsApi:
             return None
 
     def edit_song(self, song_id: int, songcategory_id=None, title=None, author=None, copyright=None, ccli=None,
-                  practice_yn=None, ):
+                  practice_yn=None):
         """
         Method to EDIT an existing song using legacy AJAX API
         Changes are only applied to fields that have values in respective param
@@ -475,12 +502,13 @@ class ChurchToolsApi:
         :param practice_yn: bool as 0 and 1 - additional param which does not exist in create method!
 
         :return: response item
+        :rtype: dict #TODO 49
         """
 
         # system/churchservice/churchservice_db.php
         url = self.domain + '/?q=churchservice/ajax&func=editSong'
 
-        existing_song = self.get_songs(song_id=song_id)
+        existing_song = self.get_songs(song_id=song_id)[0]
 
         data = {
             'id': song_id if song_id is not None else existing_song['name'],
@@ -503,6 +531,7 @@ class ChurchToolsApi:
         :param song_id: ChurchTools site specific song_id which should be modified - required
 
         :return: response item
+        :rtype: dict #TODO 49
         """
 
         # system/churchservice/churchservice_db.php
@@ -522,9 +551,12 @@ class ChurchToolsApi:
 
         re-adding existing tag does not cause any issues
         :param song_id: ChurchTools site specific song_id which should be modified - required
+        :type song_id: int
         :param song_tag_id: ChurchTools site specific song_tag_id which should be added - required
+        :type song_tag_id: int
 
         :return: response item
+        :rtype: dict #TODO 49
         """
         url = self.domain + '/?q=churchservice/ajax&func=addSongTag'
 
@@ -536,16 +568,19 @@ class ChurchToolsApi:
         response = self.session.post(url=url, data=data)
         return response
 
-    def remove_song_tag(self, song_id: int, song_tag_id: int):
+    def remove_song_tag(self, song_id, song_tag_id):
         """
         Method to remove a song tag using legacy AJAX API on a specifc song
         reverse engineered based on web developer tools in Firefox and live churchTools instance
-
         re-removing existing tag does not cause any issues
+
         :param song_id: ChurchTools site specific song_id which should be modified - required
+        :type song_id: int
         :param song_tag_id: ChurchTools site specific song_tag_id which should be added - required
+        :type song_tag_id: int
 
         :return: response item
+        :rtype: dict #TODO 49
         """
         url = self.domain + '/?q=churchservice/ajax&func=delSongTag'
 
@@ -557,30 +592,37 @@ class ChurchToolsApi:
         response = self.session.post(url=url, data=data)
         return response
 
-    def get_song_tags(self, song_id: int):
+    def get_song_tags(self, song_id):
         """
         Method to get a song tag workaround using legacy AJAX API for getSong
         :param song_id: ChurchTools site specific song_id which should be modified - required
+        :type song_id: int
         :return: response item
+        :rtype: list
         """
         song = self.get_song_ajax(song_id)
         return song['tags']
 
-    def contains_song_tag(self, song_id: int, song_tag_id: int):
+    def contains_song_tag(self, song_id, song_tag_id):
         """
-        Helper which checks if a specifc song_tag_id is present on a song
+        Helper which checks if a specific song_tag_id is present on a song
         :param song_id: ChurchTools site specific song_id which should checked
+        :type song_id: int
         :param song_tag_id: ChurchTools site specific song_tag_id which should be searched for
+        :type song_tag_id: int
         :return: bool if present
+        :rtype: bool
         """
         tags = self.get_song_tags(song_id)
         return str(song_tag_id) in tags
 
-    def get_songs_by_tag(self, song_tag_id: int):
+    def get_songs_by_tag(self, song_tag_id):
         """
         Helper which returns all songs that contain have a specific tag
         :param song_tag_id: ChurchTools site specific song_tag_id which should be searched for
+        :type song_tag_id: int
         :return: list of songs
+        :rtype: list[dict]
         """
         songs = self.get_songs()
         songs_dict = {song['id']: song for song in songs}
@@ -598,15 +640,15 @@ class ChurchToolsApi:
         """
         Method to get all the events from given timespan or only the next event
         :param kwargs: optional params to modify the search criteria
-        :key eventId: number of event for single event lookup
-        :key from_: str with starting date in format YYYY-MM-DD - added _ to name as opposed to api because of reserved keyword
-        :key to_: str end date in format YYYY-MM-DD ONLY allowed with from_ - added _ to name as opposed to api because of reserved keyword
-        :key canceled: bool If true, include also canceled events
-        :key direction: direction of output 'forward' or 'backward' from the date defined by parameter 'from'
-        :key limit: limits the number of events - Default = 1, if all events shall be retrieved insert 'None', only applies if direction is specified
-        :key include: if Parameter is set to 'eventServices', the services of the event will be included
+        :key eventId: int: number of event for single event lookup
+        :key from_: str:  with starting date in format YYYY-MM-DD - added _ to name as opposed to api because of reserved keyword
+        :key to_: str: end date in format YYYY-MM-DD ONLY allowed with from_ - added _ to name as opposed to api because of reserved keyword
+        :key canceled: bool: If true, include also canceled events
+        :key direction: str: direction of output 'forward' or 'backward' from the date defined by parameter 'from'
+        :key limit: int: limits the number of events - Default = 1, if all events shall be retrieved insert 'None', only applies if direction is specified
+        :key include: str: if Parameter is set to 'eventServices', the services of the event will be included
         :return: list of events
-        :rtype: list
+        :rtype: list[dict]
         """
         url = self.domain + '/api/events'
 
@@ -651,7 +693,6 @@ class ChurchToolsApi:
             if 'pagination' not in response_content['meta'].keys():
                 return [response_data] if isinstance(response_data, dict) else response_data
 
-
             # Long part extending results with pagination
             # TODO #1 copied from other method unsure if pagination works the same as with groups
             while response_content['meta']['pagination']['current'] \
@@ -667,13 +708,15 @@ class ChurchToolsApi:
         else:
             logging.warning("Something went wrong fetching events: {}".format(response.status_code))
 
-    def get_AllEventData_ajax(self, eventId: int):
+    def get_AllEventData_ajax(self, eventId):
         """
         Reverse engineered function from legacy AJAX API which is used to get all event data for one event
         Required to read special params not yet included in REST getEvents()
         Legacy AJAX request might stop working with any future release ... CSRF-Token is required in session header
         :param eventId: number of the event to be requested
-        :return:
+        :type eventId: int
+        :return: event information
+        :rtype: dict
         """
         url = self.domain + '/index.php'
         headers = {
@@ -801,7 +844,8 @@ class ChurchToolsApi:
         get the admin id list of an event using legacy AJAX API
         :param eventId: number of the event to be changed
         :type eventId: int
-        :return:
+        :return: list of admin ids
+        :rtype: list
         """
 
         event_data = self.get_AllEventData_ajax(eventId)
@@ -822,7 +866,8 @@ class ChurchToolsApi:
         :type eventId: int
         :param admin_ids: list of admin user ids to be set as admin for event
         :type admin_ids: list
-        :return:
+        :return: if successful
+        :rtype: bool
         """
 
         url = self.domain + '/index.php'
@@ -854,7 +899,8 @@ class ChurchToolsApi:
         Retrieve agenda for event by ID from ChurchTools
         :param eventId: number of the event
         :type eventId: int
-        :return:
+        :return: list of event agenda items
+        :rtype: list
         """
         url = self.domain + '/api/events/{}/agenda'.format(eventId)
         headers = {
@@ -885,7 +931,8 @@ class ChurchToolsApi:
         :key append_arrangement: if True, the name of the arrangement will be included within the agenda caption
         :key export_Songs: if True, the songfiles will be in the folder "Songs" within the zip file
         :key with_category: has no effect when exported in target format 'SONG_BEAMER'
-        :return: bool if success
+        :return: if successful
+        :rtype: bool
         """
         if 'eventId' in kwargs.keys():
             if 'agendaId' in kwargs.keys():
@@ -964,6 +1011,7 @@ class ChurchToolsApi:
         :keyword type: str with name of the masterdata type (not datatype) common types are 'absenceReasons', 'songCategories', 'services', 'serviceGroups'
         :keyword returnAsDict: if the list with one type should be returned as dict by ID
         :return: list of masterdata items, if multiple types list of lists (by type)
+        :rtype: list | list[list] | dict | list[dict]
         """
         url = self.domain + '/api/event/masterdata'
 
@@ -995,7 +1043,8 @@ class ChurchToolsApi:
         :param kwargs: optional keywords as listed
         :keyword serviceId: id of a single item for filter
         :keyword returnAsDict: true if should return a dict instead of list (not combineable if serviceId)
-        :return:
+        :return: list of services
+        :rtype: list[dict]
         """
         url = self.domain + '/api/services'
         if 'serviceId' in kwargs.keys():
@@ -1029,7 +1078,9 @@ class ChurchToolsApi:
         Purpose: be able to find out tag-ids of all available tags for filtering by tag
 
         :param type: 'songs' (default) or 'persons'
+        :type type: str
         :return: list of dicts describing each tag. Each contains keys 'id' and 'name'
+        :rtype list[dict]
         """
 
         url = self.domain + '/api/tags'
@@ -1061,7 +1112,7 @@ class ChurchToolsApi:
         :type domain_identifier: str
         :param target_path: local path as target for the download (without filename) - will be created if not exists
         :type target_path: str
-        :return: if success
+        :return: if successful
         :rtype: bool
         """
         StateOK = False
@@ -1110,7 +1161,7 @@ class ChurchToolsApi:
         :type file_url: str
         :param target_path: directory to drop the download into - must exist before use!
         :type target_path: str
-        :return: if success
+        :return: if successful
         :rtype: bool
         """
         # NOTE the stream=True parameter below
