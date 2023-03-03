@@ -13,20 +13,20 @@ class TestsChurchToolsApi(unittest.TestCase):
 
         if 'CT_TOKEN' in os.environ:
             self.ct_token = os.environ['CT_TOKEN']
-            self.domain = os.environ['CT_DOMAIN']
+            self.ct_domain = os.environ['CT_DOMAIN']
             users_string = os.environ['CT_USERS']
-            self.users = ast.literal_eval(users_string)
+            self.ct_users = ast.literal_eval(users_string)
             logging.info('using connection details provided with ENV variables')
         else:
-            from secure.secrets import ct_token
+            from secure.config import ct_token
             self.ct_token = ct_token
-            from secure.defaults import domain
-            self.domain = domain
-            from secure.secrets import users
-            self.users = users
+            from secure.config import ct_domain
+            self.ct_domain = ct_domain
+            from secure.config import ct_users
+            self.ct_users = ct_users
             logging.info('using connection details provided from secrets folder')
 
-        self.api = ChurchToolsApi(domain=self.domain, ct_token=self.ct_token)
+        self.api = ChurchToolsApi(domain=self.ct_domain, ct_token=self.ct_token)
         logging.basicConfig(filename='logs/TestsChurchToolsApi.log', encoding='utf-8',
                             format="%(asctime)s %(name)-10s %(levelname)-8s %(message)s",
                             level=logging.DEBUG)
@@ -46,8 +46,8 @@ class TestsChurchToolsApi(unittest.TestCase):
         """
         if self.api.session is not None:
             self.api.session.close()
-        result = self.api.login_ct_ajax_api(list(self.users.keys())[0],
-                                            self.users[list(self.users.keys())[0]])
+        result = self.api.login_ct_ajax_api(list(self.ct_users.keys())[0],
+                                            self.ct_users[list(self.ct_users.keys())[0]])
         self.assertTrue(result)
 
     def test_init_userpwd(self):
@@ -57,9 +57,9 @@ class TestsChurchToolsApi(unittest.TestCase):
         """
         if self.api.session is not None:
             self.api.session.close()
-        username = list(self.users.keys())[0]
-        password = list(self.users.values())[0]
-        ct_api = ChurchToolsApi(self.domain, ct_user=username, ct_password=password)
+        username = list(self.ct_users.keys())[0]
+        password = list(self.ct_users.values())[0]
+        ct_api = ChurchToolsApi(self.ct_domain, ct_user=username, ct_password=password)
         self.assertIsNotNone(ct_api)
         ct_api.session.close()
 
@@ -73,8 +73,8 @@ class TestsChurchToolsApi(unittest.TestCase):
         result = self.api.login_ct_rest_api(ct_token=self.ct_token)
         self.assertTrue(result)
 
-        username = list(self.users.keys())[0]
-        password = list(self.users.values())[0]
+        username = list(self.ct_users.keys())[0]
+        password = list(self.ct_users.values())[0]
         if self.api.session is not None:
             self.api.session.close()
         result = self.api.login_ct_rest_api(user=username, password=password)
@@ -99,8 +99,8 @@ class TestsChurchToolsApi(unittest.TestCase):
     def test_get_persons(self):
         """
         Tries to get all and a single person from the server
-        Be aware that only users that are visible to the user associated with the login token can be viewed!
-        On any elkw.KRZ.TOOLS personId 1 'firstName' starts with 'Ben' and more than 10 users exist(13. Jan 2023)
+        Be aware that only ct_users that are visible to the user associated with the login token can be viewed!
+        On any elkw.KRZ.TOOLS personId 1 'firstName' starts with 'Ben' and more than 10 ct_users exist(13. Jan 2023)
         :return:
         """
 

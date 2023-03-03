@@ -9,7 +9,7 @@ import requests
 class ChurchToolsApi:
     def __init__(self, domain, ct_token=None, ct_user=None, ct_password=None):
         """
-        Setup of a ChurchToolsApi object for the specified domain using a token login
+        Setup of a ChurchToolsApi object for the specified ct_domain using a token login
         :param domain: including https:// ending on e.g. .de
         :type domain: str
         :param ct_token: direct access using a user token
@@ -35,9 +35,9 @@ class ChurchToolsApi:
         """
         Login function using AJAX with Username and Password
         not saving a cookie / session
-        :param user: Username - default saved in secure.token.users dict for tests using project files
+        :param user: Username - default saved in secure.token.ct_users dict for tests using project files
         :type user: str
-        :param password: Password - default saved in secure.token.users dict for tests using project files
+        :param password: Password - default saved in secure.token.ct_users dict for tests using project files
         :type password: str
         :return: is successful
         :rtype: bool
@@ -186,7 +186,7 @@ class ChurchToolsApi:
             logging.debug("First response of GET Persons successful {}".format(response_content))
 
             if len(response_data) == 0:
-                logging.warning('Requesting users {} returned an empty response - '
+                logging.warning('Requesting ct_users {} returned an empty response - '
                                 'make sure the user has correct permissions'.format(params))
 
             if 'meta' not in response_content.keys():  # Shortcut without Pagination
@@ -345,7 +345,7 @@ class ChurchToolsApi:
         Helper function to upload an attachment to any module of ChurchTools
         :param source_filepath: file to be opened e.g. with open('media/pinguin.png', 'rb')
         :type source_filepath: str
-        :param domain_type:  The domain type, currently supported are 'avatar', 'groupimage', 'logo', 'attatchments',
+        :param domain_type:  The ct_domain type, currently supported are 'avatar', 'groupimage', 'logo', 'attatchments',
          'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
         :type domain_type: str
         :param domain_identifier: ID of the object in ChurchTools
@@ -410,7 +410,7 @@ class ChurchToolsApi:
         """
         Helper function to delete ALL attachments of any specified module of ChurchTools#
         or identifying individual file_name_ids and deleting specifc files only
-        :param domain_type:  The domain type, currently supported are 'avatar', 'groupimage', 'logo', 'attatchments',
+        :param domain_type:  The ct_domain type, currently supported are 'avatar', 'groupimage', 'logo', 'attatchments',
          'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
         :type domain_type: str
         :param domain_identifier: ID of the object in ChurchTools
@@ -1074,7 +1074,7 @@ class ChurchToolsApi:
 
     def get_tags(self, type='songs'):
         """
-        Retrieve a list of all available tags of a specific domain type from ChurchTools
+        Retrieve a list of all available tags of a specific ct_domain type from ChurchTools
         Purpose: be able to find out tag-ids of all available tags for filtering by tag
 
         :param type: 'songs' (default) or 'persons'

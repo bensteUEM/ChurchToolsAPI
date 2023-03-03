@@ -30,7 +30,7 @@ def login():
     if request.method == 'POST':
         user = request.form['user']
         password = request.form['password']
-        domain = request.form['domain']
+        domain = request.form['ct_domain']
 
         session['ct_api'] = CTAPI(domain, ct_user=user, ct_password=password)
         if session['ct_api'].who_am_i() is not False:

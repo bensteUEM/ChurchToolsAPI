@@ -1,6 +1,6 @@
-import secure.defaults
+import secure.config
 from ChurchToolsWebService import *
 
 if __name__ == '__main__':
-    app.domain = secure.defaults.domain
+    app.ct_domain = secure.config.ct_domain
     app.run(debug=True)
