@@ -5,8 +5,15 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div style="color:#ff0000"> {{error}}</div>
+    {% if error %}
+        <div style="color:#ff0000"> {{error}}</div>
+    {% endif %}
     <form action="/login" method="POST">
+		<label for="domain">Domain:</label>
+		<input type="text" id="domain" name="domain"
+			   {% if domain %}value="{{domain}}" {% endif %}
+			   required><br>
+
 		<label for="user">User:</label>
 		<input type="text" id="user" name="user" required><br>
 

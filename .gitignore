@@ -133,4 +133,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-/secure*
+
+# User sessions
+/ChurchToolsWebService/flask_session/
+
+# Pycharm Run Configurations
+/run_configs/

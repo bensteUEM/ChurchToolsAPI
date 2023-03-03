@@ -1,14 +1,32 @@
+import ast
+import logging
+import os
 import unittest
+from datetime import datetime, timedelta
 
-from ChurchToolsAPI.ChurchToolsApi import *
-from secure.defaults import domain
+from ChurchToolsApi import ChurchToolsApi
 
 
 class TestsChurchToolsApi(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(TestsChurchToolsApi, self).__init__(*args, **kwargs)
-        from secure.secrets import ct_token
-        self.api = ChurchToolsApi(domain, ct_token)
+
+        if 'CT_TOKEN' in os.environ:
+            self.ct_token = os.environ['CT_TOKEN']
+            self.ct_domain = os.environ['CT_DOMAIN']
+            users_string = os.environ['CT_USERS']
+            self.ct_users = ast.literal_eval(users_string)
+            logging.info('using connection details provided with ENV variables')
+        else:
+            from secure.config import ct_token
+            self.ct_token = ct_token
+            from secure.config import ct_domain
+            self.ct_domain = ct_domain
+            from secure.config import ct_users
+            self.ct_users = ct_users
+            logging.info('using connection details provided from secrets folder')
+
+        self.api = ChurchToolsApi(domain=self.ct_domain, ct_token=self.ct_token)
         logging.basicConfig(filename='logs/TestsChurchToolsApi.log', encoding='utf-8',
                             format="%(asctime)s %(name)-10s %(levelname)-8s %(message)s",
                             level=logging.DEBUG)
@@ -26,11 +44,10 @@ class TestsChurchToolsApi(unittest.TestCase):
         Checks that Userlogin using AJAX is working with provided credentials
         :return:
         """
-        from secure.secrets import users
         if self.api.session is not None:
             self.api.session.close()
-        result = self.api.login_ct_ajax_api(list(users.keys())[0],
-                                            users[list(users.keys())[0]])
+        result = self.api.login_ct_ajax_api(list(self.ct_users.keys())[0],
+                                            self.ct_users[list(self.ct_users.keys())[0]])
         self.assertTrue(result)
 
     def test_init_userpwd(self):
@@ -38,26 +55,26 @@ class TestsChurchToolsApi(unittest.TestCase):
         Tries to create a login with churchTools using specified username and password
         :return:
         """
-        from secure.secrets import users
-        username = list(users.keys())[0]
-        password = list(users.values())[0]
-        ct_api = ChurchToolsApi(domain, ct_user=username, ct_password=password)
+        if self.api.session is not None:
+            self.api.session.close()
+        username = list(self.ct_users.keys())[0]
+        password = list(self.ct_users.values())[0]
+        ct_api = ChurchToolsApi(self.ct_domain, ct_user=username, ct_password=password)
         self.assertIsNotNone(ct_api)
+        ct_api.session.close()
 
     def test_login_ct_rest_api(self):
         """
         Checks that Userlogin using REST is working with provided TOKEN
         :return:
         """
-        from secure.secrets import ct_token
         if self.api.session is not None:
             self.api.session.close()
-        result = self.api.login_ct_rest_api(ct_token)
+        result = self.api.login_ct_rest_api(ct_token=self.ct_token)
         self.assertTrue(result)
 
-        from secure.secrets import users
-        username = list(users.keys())[0]
-        password = list(users.values())[0]
+        username = list(self.ct_users.keys())[0]
+        password = list(self.ct_users.values())[0]
         if self.api.session is not None:
             self.api.session.close()
         result = self.api.login_ct_rest_api(user=username, password=password)
@@ -82,8 +99,8 @@ class TestsChurchToolsApi(unittest.TestCase):
     def test_get_persons(self):
         """
         Tries to get all and a single person from the server
-        Be aware that only users that are visible to the user associated with the login token can be viewed!
-        On any elkw.KRZ.TOOLS personId 1 'firstName' starts with 'Ben' and more than 10 users exist(13. Jan 2023)
+        Be aware that only ct_users that are visible to the user associated with the login token can be viewed!
+        On any elkw.KRZ.TOOLS personId 1 'firstName' starts with 'Ben' and more than 10 ct_users exist(13. Jan 2023)
         :return:
         """
 
@@ -94,8 +111,9 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertGreater(len(result1), 10)
 
         result2 = self.api.get_persons(ids=[personId])
-        self.assertIsInstance(result2, dict)
-        self.assertEqual(result2['firstName'][0:3], 'Ben')
+        self.assertIsInstance(result2, list)
+        self.assertIsInstance(result2[0], dict)
+        self.assertEqual(result2[0]['firstName'][0:3], 'Ben')
 
         result3 = self.api.get_persons(returnAsDict=True)
         self.assertIsInstance(result3, dict)
@@ -113,7 +131,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         songs = self.api.get_songs()
         self.assertGreater(len(songs), 10)
 
-        song = self.api.get_songs(song_id=408)
+        song = self.api.get_songs(song_id=408)[0]
         self.assertEqual(song['id'], 408)
         self.assertEqual(song['name'], 'Test')
 
@@ -158,7 +176,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         """
         # 0. Clean and delete files in test
         self.api.file_delete('song_arrangement', 417)
-        song = self.api.get_songs(song_id=408)
+        song = self.api.get_songs(song_id=408)[0]
         self.assertEqual(song['arrangements'][0]['id'], 417, 'check that default arrangement exists')
         self.assertEqual(len(song['arrangements'][0]['files']), 0, 'check that ono files exist')
 
@@ -168,7 +186,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.api.file_upload('samples/pinguin_shell.png', "song_arrangement", 417, 'pinguin_shell_rename.png')
         self.api.file_upload('samples/pinguin.png', "song_arrangement", 417, 'pinguin.png')
 
-        song = self.api.get_songs(song_id=408)
+        song = self.api.get_songs(song_id=408)[0]
         self.assertIsInstance(song, dict, 'Should be a single song instead of list of songs')
         self.assertEqual(song['arrangements'][0]['id'], 417, 'check that default arrangement exsits')
         self.assertEqual(len(song['arrangements'][0]['files']), 3, 'check that only the 3 test attachments exist')
@@ -178,27 +196,27 @@ class TestsChurchToolsApi(unittest.TestCase):
 
         # 2. Reupload pinguin.png using overwrite which will remove both old files but keep one
         self.api.file_upload('samples/pinguin.png', "song_arrangement", 417, 'pinguin.png', overwrite=True)
-        song = self.api.get_songs(song_id=408)
+        song = self.api.get_songs(song_id=408)[0]
         self.assertEqual(len(song['arrangements'][0]['files']), 2, 'check that overwrite is applied on upload')
 
         # 3. Overwrite without existing file
         self.api.file_upload('samples/pinguin.png', "song_arrangement", 417, 'pinguin2.png', overwrite=True)
-        song = self.api.get_songs(song_id=408)
+        song = self.api.get_songs(song_id=408)[0]
         self.assertEqual(len(song['arrangements'][0]['files']), 3, 'check that both file with overwrite of new file')
 
         # 3.b Try overwriting again and check that number of files does not increase
         self.api.file_upload('samples/pinguin.png', "song_arrangement", 417, 'pinguin.png', overwrite=True)
-        song = self.api.get_songs(song_id=408)
+        song = self.api.get_songs(song_id=408)[0]
         self.assertEqual(len(song['arrangements'][0]['files']), 3, 'check that still only 3 file exists')
 
         # 4. Delete only one file
         self.api.file_delete("song_arrangement", 417, "pinguin.png")
-        song = self.api.get_songs(song_id=408)
+        song = self.api.get_songs(song_id=408)[0]
         self.assertEqual(len(song['arrangements'][0]['files']), 2, 'check that still only 2 file exists')
 
         # cleanup delete all files
         self.api.file_delete('song_arrangement', 417)
-        song = self.api.get_songs(song_id=408)
+        song = self.api.get_songs(song_id=408)[0]
         self.assertEqual(len(song['arrangements'][0]['files']), 0, 'check that files are deleted')
 
     def test_create_edit_delete_song(self):
@@ -206,7 +224,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         Test method used to create a new song, edit it's metadata and remove the song
         Does only test metadata not attachments or arrangements
         IMPORTANT - This test method and the parameters used depend on the target system!
-        On ELKW1610.KRZ.TOOLS songcategory_id 13 ist TEST
+        On ELKW1610.KRZ.TOOLS songcategory_id 13 is TEST
         :return:
         """
         title = 'Test_bezeichnung1'
@@ -217,14 +235,14 @@ class TestsChurchToolsApi(unittest.TestCase):
         song_id = self.api.create_song(title, songcategory_id)
         self.assertIsNotNone(song_id)
 
-        ct_song = self.api.get_songs(song_id=song_id)
+        ct_song = self.api.get_songs(song_id=song_id)[0]
         self.assertEqual(ct_song['name'], title)
         self.assertEqual(ct_song['author'], '')
         self.assertEqual(ct_song['category']['id'], songcategory_id)
 
         # 2. Edit Song title and check it exists with all params
         self.api.edit_song(song_id, title='Test_bezeichnung2')
-        ct_song = self.api.get_songs(song_id=song_id)
+        ct_song = self.api.get_songs(song_id=song_id)[0]
         self.assertEqual(ct_song['author'], '')
         self.assertEqual(ct_song['name'], 'Test_bezeichnung2')
 
@@ -239,7 +257,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         }
         self.api.edit_song(song_id, data['songcategory_id'], data['bezeichnung'], data['author'], data['copyright'],
                            data['ccli'], data['practice_yn'])
-        ct_song = self.api.get_songs(song_id=song_id)
+        ct_song = self.api.get_songs(song_id=song_id)[0]
         self.assertEqual(ct_song['name'], data['bezeichnung'])
         self.assertEqual(ct_song['category']['id'], data['songcategory_id'])
         self.assertEqual(ct_song['author'], data['author'])
@@ -310,18 +328,22 @@ class TestsChurchToolsApi(unittest.TestCase):
 
         eventId = 484
         result = self.api.get_events(eventId=eventId)
-        self.assertIsInstance(result, dict)
+        self.assertIsInstance(result, list)
+        self.assertEqual(1, len(result))
+        self.assertIsInstance(result[0], dict)
 
         # load next event (limit)
         result = self.api.get_events(limit=1, direction='forward')
-        self.assertIsInstance(result, dict)
-        result_date = datetime.strptime(result['startDate'], '%Y-%m-%dT%H:%M:%S%z').date()
+        self.assertIsInstance(result, list)
+        self.assertEqual(1, len(result))
+        self.assertIsInstance(result[0], dict)
+        result_date = datetime.strptime(result[0]['startDate'], '%Y-%m-%dT%H:%M:%S%z').date()
         today_date = datetime.today().date()
         self.assertGreaterEqual(result_date, today_date)
 
         # load last event (direction, limit)
         result = self.api.get_events(limit=1, direction='backward')
-        result_date = datetime.strptime(result['startDate'], '%Y-%m-%dT%H:%M:%S%z').date()
+        result_date = datetime.strptime(result[0]['startDate'], '%Y-%m-%dT%H:%M:%S%z').date()
         self.assertLessEqual(result_date, today_date)
 
         # Load events after 7 days (from)
@@ -460,9 +482,10 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertEqual(len(captured.records), 1)
         self.assertFalse(download_result)
 
-        for file in os.listdir('downloads'):
-            os.remove('downloads/' + file)
-        self.assertEqual(len(os.listdir('downloads')), 0)
+        if os.path.exists('downloads'):
+            for file in os.listdir('downloads'):
+                os.remove('downloads/' + file)
+            self.assertEqual(len(os.listdir('downloads')), 0)
 
         download_result = self.api.export_event_agenda('SONG_BEAMER', agendaId=agendaId)
         self.assertTrue(download_result)

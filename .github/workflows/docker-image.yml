@@ -1,0 +1,39 @@
+name: Docker Image CI pushing to GHCR
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  GHCR_REGISTRY: ghcr.io
+  GHCR_USERNAME: ${{ github.actor }}
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.GHCR_REGISTRY }}
+          username: ${{ env.GHCR_USERNAME }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: ChurchToolsWebService
+          file: ChurchToolsWebService/docker/Dockerfile
+          push: true
+          tags: ${{ env.GHCR_REGISTRY }}/bensteuem/churchtools_webservice:${{ github.sha }}
+        env:
+          username: ${{ env.GHCR_USERNAME }}
+          CR_PAT: ${{ secrets.CR_PAT }}
