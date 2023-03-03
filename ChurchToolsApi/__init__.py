@@ -712,7 +712,7 @@ class ChurchToolsApi:
         :rtype: dict
         """
 
-        event = self.get_events(eventId=eventId)
+        event = self.get_events(eventId=eventId)[0]
 
         if 'serviceId' in kwargs.keys() and 'serviceGroupId' not in kwargs.keys():
             service_count = 0
