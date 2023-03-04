@@ -9,16 +9,16 @@
         <div style="color:#ff0000"> {{error}}</div>
     {% endif %}
     <form action="/login" method="POST">
-		<label for="domain">Domain:</label>
-		<input type="text" id="domain" name="domain"
-			   {% if domain %}value="{{domain}}" {% endif %}
+		<label for="ct_domain">Domain:</label>
+		<input type="text" id="ct_domain" name="ct_domain"
+			   {% if ct_domain %}value="{{ct_domain}}" {% endif %}
 			   required><br>
 
-		<label for="user">User:</label>
-		<input type="text" id="user" name="user" required><br>
+		<label for="ct_user">User:</label>
+		<input type="text" id="ct_user" name="ct_user" required><br>
 
-		<label for="password">Password:</label>
-		<input type="password" id="password" name="password" required><br>
+		<label for="ct_password">Password:</label>
+		<input type="password" id="ct_password" name="ct_password" required><br>
 
 		<input type="submit" value="Login">
 	</form>
