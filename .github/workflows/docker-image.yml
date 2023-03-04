@@ -19,16 +19,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Login to GHCR
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ env.GHCR_REGISTRY }}
-          username: ${{ env.GHCR_USERNAME }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Version from python file to variable
         run: python versions.py
         id: version_action
+        outputs:
+          VERSION::${{ steps.version_action.outputs.VERSION }}
 
       - name: print env var
         run: echo $VERSION
