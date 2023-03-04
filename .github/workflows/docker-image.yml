@@ -28,7 +28,11 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Execute Python script to set VERSION
+        id: version_action
         run: python versions.py
+        outputs:
+          VERSION: ${{ steps.version_action.outputs.VERSION }}
+
       - name: print env var
         run: echo $VERSION
 
