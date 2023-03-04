@@ -28,8 +28,8 @@ def login():
     :return:
     """
     if request.method == 'POST':
-        user = request.form['user']
-        password = request.form['password']
+        user = request.form['ct_user']
+        password = request.form['ct_password']
         domain = request.form['ct_domain']
 
         session['ct_api'] = CTAPI(domain, ct_user=user, ct_password=password)
@@ -37,12 +37,12 @@ def login():
             return redirect('/main')
 
         error = 'Invalid Login'
-        return render_template('login.html', error=error, domain=app.ct_domain)
+        return render_template('login.html', error=error, ct_domain=app.ct_domain)
     else:
-        return render_template('login.html', domain=app.ct_domain)
+        return render_template('login.html', ct_domain=app.ct_domain)
 
 
 @app.route('/main')
 def main():
     user = session['ct_api'].who_am_i()
-    return render_template('main.html', user=user, domain=app.ct_domain)
+    return render_template('main.html', ct_user=user, ct_domain=app.ct_domain)
