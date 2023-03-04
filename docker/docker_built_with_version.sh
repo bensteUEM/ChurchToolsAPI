@@ -1,8 +1,4 @@
 #!/bin/bash
-#echo $(python3 -c "print('from python')")
-export VERSION='TEST FROM SH replace'
-#$(python3 -c "import versions; print(versions.VERSION)")
-
 docker build --no-cache --build-arg \
 VERSION="$(python3 -c "import versions; print(versions.VERSION)")" \
 -f docker/Dockerfile -t churchtools_web_service_docker . \

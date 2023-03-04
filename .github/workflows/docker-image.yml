@@ -26,7 +26,10 @@ jobs:
           registry: ${{ env.GHCR_REGISTRY }}
           username: ${{ env.GHCR_USERNAME }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
+      - name: Execute Python script to set VERSION
+        run: python versions.py
+      - name: print env var
+        run: echo $VERSION
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
@@ -34,6 +37,8 @@ jobs:
           file: docker/Dockerfile
           push: true
           tags: ${{ env.GHCR_REGISTRY }}/bensteuem/churchtools_webservice:${{ github.sha }}
+          build-args: VERSION={{VERSION}}
         env:
           username: ${{ env.GHCR_USERNAME }}
           CR_PAT: ${{ secrets.CR_PAT }}
+          VERSION: ${{ VERSION }}
