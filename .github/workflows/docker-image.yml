@@ -11,22 +11,6 @@ env:
   GHCR_USERNAME: ${{ github.actor }}
 
 jobs:
-  preparation:
-    runs-on: ubuntu-latest
-    outputs:
-      VERSION: ${{ steps.version_action.outputs.VERSION }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Version from python file to variable
-        run: python versions.py
-        id: version_action
-
-      - name: print env var
-        run: echo $VERSION
-
-
   build:
 
     runs-on: ubuntu-latest
@@ -35,17 +19,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Version from python file to variable
+        run: python versions.py
+
+      - name: Print Env Var
+        run: echo $VERSION
+
+      - name: print env var
+        env:
+          VERSION: ${{ needs.preparation.outputs.VERSION }}
+        run: echo $VERSION
+
       - name: Login to GHCR
         uses: docker/login-action@v1
         with:
           registry: ${{ env.GHCR_REGISTRY }}
           username: ${{ env.GHCR_USERNAME }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: print env var
-        env:
-          VERSION: ${{ needs.preparation.outputs.VERSION }}
-        run: echo $VERSION
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
