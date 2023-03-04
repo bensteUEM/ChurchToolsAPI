@@ -4,7 +4,7 @@ from versions import VERSION
 with open("README.md", "r") as file:
     description = file.read()
 
-with open('ChurchToolsWebService/docker/requirements.txt') as f:
+with open('docker/requirements.txt') as f:
     requirements = f.read().splitlines()
 
 setup(

@@ -2,6 +2,7 @@ import os
 
 from flask import Flask, render_template, request, redirect, session
 from flask_session import Session
+from versions import VERSION
 
 from ChurchToolsApi import ChurchToolsApi as CTAPI
 
@@ -37,12 +38,12 @@ def login():
             return redirect('/main')
 
         error = 'Invalid Login'
-        return render_template('login.html', error=error, domain=app.domain)
+        return render_template('login.html', error=error, domain=app.ct_domain, version=VERSION)
     else:
-        return render_template('login.html', domain=app.domain)
+        return render_template('login.html', domain=app.ct_domain, version=VERSION)
 
 
 @app.route('/main')
 def main():
     user = session['ct_api'].who_am_i()
-    return render_template('main.html', user=user, domain=app.domain)
+    return render_template('main.html', user=user, domain=app.ct_domain, version=VERSION)

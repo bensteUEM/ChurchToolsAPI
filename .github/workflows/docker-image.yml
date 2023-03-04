@@ -2,9 +2,9 @@ name: Docker Image CI pushing to GHCR
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", 'dev_benste' ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", 'dev_benste' ]
 
 env:
   GHCR_REGISTRY: ghcr.io
@@ -30,8 +30,8 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
-          context: ChurchToolsWebService
-          file: ChurchToolsWebService/docker/Dockerfile
+          context: .
+          file: docker/Dockerfile
           push: true
           tags: ${{ env.GHCR_REGISTRY }}/bensteuem/churchtools_webservice:${{ github.sha }}
         env:
