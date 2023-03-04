@@ -22,8 +22,6 @@ jobs:
       - name: Version from python file to variable
         run: python versions.py
         id: version_action
-        outputs:
-          VERSION::${{ steps.version_action.outputs.VERSION }}
 
       - name: print env var
         run: echo $VERSION
