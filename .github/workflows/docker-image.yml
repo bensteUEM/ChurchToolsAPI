@@ -27,9 +27,9 @@ jobs:
           username: ${{ env.GHCR_USERNAME }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Execute Python script to set VERSION
-        id: version_action
+      - name: Version from python file to variable
         run: python versions.py
+        id: version_action
         outputs:
           VERSION: ${{ steps.version_action.outputs.VERSION }}
 
