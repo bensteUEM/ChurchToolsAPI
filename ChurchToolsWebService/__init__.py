@@ -7,9 +7,12 @@ from ChurchToolsApi import ChurchToolsApi as CTAPI
 
 app = Flask(__name__)
 app.secret_key = os.urandom(16)
+if 'CT_DOMAIN' in os.environ.keys():
+    app.ct_domain = os.environ['CT_DOMAIN']
 
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
+
 Session(app)
 
 

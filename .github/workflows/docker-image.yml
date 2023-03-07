@@ -2,9 +2,9 @@ name: Docker Image CI pushing to GHCR
 
 on:
   push:
-    branches: [ "master", 'dev_benste' ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "master", 'dev_benste' ]
+    branches: [ "master"]
 
 env:
   GHCR_REGISTRY: ghcr.io
@@ -19,15 +19,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Version from python file to variable
-        run: python versions.py
+      - name: Version from Python
+        run:  echo "VERSION=$(python3 -c 'import versions; print(versions.VERSION)')" >> $GITHUB_ENV
 
-      - name: Print Env Var
-        run: echo $VERSION
+      - name: SHA_short
+        run:  echo "GITHUB_SHA_SHORT=$(echo $GITHUB_SHA | cut -c 1-6)" >> $GITHUB_ENV
 
-      - name: print env var
-        env:
-          VERSION: ${{ needs.preparation.outputs.VERSION }}
+      - name: Show detected version number
         run: echo $VERSION
 
       - name: Login to GHCR
@@ -43,7 +41,7 @@ jobs:
           context: .
           file: docker/Dockerfile
           push: true
-          tags: ${{ env.GHCR_REGISTRY }}/bensteuem/churchtools_webservice:${{ github.sha }}
+          tags: ${{ env.GHCR_REGISTRY }}/bensteuem/churchtools_webservice:${{ env.GITHUB_SHA_SHORT }}
           build-args: VERSION=${{ env.VERSION }}
         env:
           username: ${{ env.GHCR_USERNAME }}
