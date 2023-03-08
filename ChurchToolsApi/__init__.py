@@ -27,7 +27,7 @@ class ChurchToolsApi:
         if ct_token is not None:
             self.login_ct_rest_api(ct_token=ct_token)
         elif ct_user is not None and ct_password is not None:
-            self.login_ct_ajax_api(ct_user, ct_password)
+            self.login_ct_rest_api(ct_user=ct_user, ct_password=ct_password)
 
         logging.debug('ChurchToolsApi init finished')
 
@@ -641,8 +641,8 @@ class ChurchToolsApi:
         Method to get all the events from given timespan or only the next event
         :param kwargs: optional params to modify the search criteria
         :key eventId: int: number of event for single event lookup
-        :key from_: str:  with starting date in format YYYY-MM-DD - added _ to name as opposed to api because of reserved keyword
-        :key to_: str: end date in format YYYY-MM-DD ONLY allowed with from_ - added _ to name as opposed to api because of reserved keyword
+        :key from_: str: with starting date in format YYYY-MM-DD - added _ to name as opposed to ct_api because of reserved keyword
+        :key to_: str: end date in format YYYY-MM-DD ONLY allowed with from_ - added _ to name as opposed to ct_api because of reserved keyword
         :key canceled: bool: If true, include also canceled events
         :key direction: str: direction of output 'forward' or 'backward' from the date defined by parameter 'from'
         :key limit: int: limits the number of events - Default = 1, if all events shall be retrieved insert 'None', only applies if direction is specified

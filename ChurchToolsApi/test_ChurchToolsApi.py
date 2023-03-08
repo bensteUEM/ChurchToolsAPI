@@ -90,7 +90,7 @@ class TestsChurchToolsApi(unittest.TestCase):
 
     def test_check_connection_ajax(self):
         """
-        Test checks that a connection can be established using the AJAX endpoints with current session / api
+        Test checks that a connection can be established using the AJAX endpoints with current session / ct_api
         :return:
         """
         result = self.api.check_connection_ajax()
