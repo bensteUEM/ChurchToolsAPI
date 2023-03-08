@@ -6,16 +6,20 @@
 </head>
 <body>
     {% if error %}
-        <div style="color:#ff0000"> {{error}}</div>
+    <div style="color:#ff0000"> {{error}}</div>
     {% endif %}
+
+    {% if ct_user %}
     <h1>Welcome {{ ct_user.firstName }} {{ ct_user.lastName }}</h1>
     You are authorized as user {{ct_user.id}} on {{ct_domain}} </br>
     Please be aware that some of the functionality listed below might require special permissions!</br>
+    {% endif %}
+
 
     <h2>Functions</h2>
     <ul>
-        <li> function 1</li>
-        <li> function 2</li>
+        <li><a href="./login">New Login</a></li>
+        <li><a href="./events">Events</a></li>
     </ul>
 </body>
 </html>
