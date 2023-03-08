@@ -77,7 +77,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         password = list(self.ct_users.values())[0]
         if self.api.session is not None:
             self.api.session.close()
-        result = self.api.login_ct_rest_api(user=username, password=password)
+        result = self.api.login_ct_rest_api(ct_user=username, ct_password=password)
         self.assertTrue(result)
 
     def test_get_ct_csrf_token(self):

@@ -65,8 +65,8 @@ class ChurchToolsApi:
 
         :param kwargs: optional keyword arguments as listed
         :keyword ct_token: str : token to be used for login into CT
-        :keyword user: str: the username to be used in case of unknown login token
-        :keyword password: str: the password to be used in case of unknown login token
+        :keyword ct_user: str: the username to be used in case of unknown login token
+        :keyword ct_password: str: the password to be used in case of unknown login token
         :return: personId if login successful otherwise False
         :rtype: int | bool
         """
@@ -87,10 +87,10 @@ class ChurchToolsApi:
                 logging.warning("Token Login failed with {}".format(response.content.decode()))
                 return False
 
-        elif 'user' in kwargs.keys() and 'password' in kwargs.keys():
+        elif 'ct_user' in kwargs.keys() and 'ct_password' in kwargs.keys():
             logging.info('Trying Login with Username/Password')
             url = self.domain + '/api/login'
-            data = {'username': kwargs['user'], 'password': kwargs['password']}
+            data = {'username': kwargs['ct_user'], 'password': kwargs['ct_password']}
             response = self.session.post(url=url, data=data)
 
             if response.status_code == 200:
