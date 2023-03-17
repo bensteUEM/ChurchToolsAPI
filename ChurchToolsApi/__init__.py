@@ -32,30 +32,6 @@ class ChurchToolsApi:
 
         logging.debug('ChurchToolsApi init finished')
 
-    def login_ct_ajax_api(self, user, password):
-        """
-        Login function using AJAX with Username and Password
-        not saving a cookie / session
-        :param user: Username - default saved in secure.token.ct_users dict for tests using project files
-        :type user: str
-        :param password: Password - default saved in secure.token.ct_users dict for tests using project files
-        :type password: str
-        :return: is successful
-        :rtype: bool
-        """
-        self.session = requests.Session()
-        login_url = self.domain + '/?q=login/ajax&func=login'
-        data = {'email': user, 'password': password}
-
-        response = self.session.post(url=login_url, data=data)
-        if response.status_code == 200:
-            logging.info('Ajax User Login Successful')
-            self.session.headers['CSRF-Token'] = self.get_ct_csrf_token()
-            return json.loads(response.content)["status"] == 'success'
-        else:
-            logging.warning("Ajax User Login failed with {}".format(response.content.decode()))
-            return False
-
     def login_ct_rest_api(self, **kwargs):
         """
         Authorization: Login<token>

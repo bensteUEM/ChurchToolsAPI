@@ -39,17 +39,6 @@ class TestsChurchToolsApi(unittest.TestCase):
         """
         self.api.session.close()
 
-    def test_login_ct_ajax_api(self):
-        """
-        Checks that Userlogin using AJAX is working with provided credentials
-        :return:
-        """
-        if self.api.session is not None:
-            self.api.session.close()
-        result = self.api.login_ct_ajax_api(list(self.ct_users.keys())[0],
-                                            self.ct_users[list(self.ct_users.keys())[0]])
-        self.assertTrue(result)
-
     def test_init_userpwd(self):
         """
         Tries to create a login with churchTools using specified username and password
