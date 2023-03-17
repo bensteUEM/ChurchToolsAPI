@@ -113,16 +113,33 @@ class TestsChurchToolsApi(unittest.TestCase):
     def test_get_songs(self):
         """
         1. Test requests all songs and checks that result has more than 10 elements (hence default pagination works)
-        2. Test requests song 383 and checks that result matches Test song
+        2. Test requests song 408 and checks that result matches Test song
         IMPORTANT - This test method and the parameters used depend on the target system!
         :return:
         """
+        test_song_id = 408
+
         songs = self.api.get_songs()
         self.assertGreater(len(songs), 10)
 
-        song = self.api.get_songs(song_id=408)[0]
+        song = self.api.get_songs(song_id=test_song_id)[0]
         self.assertEqual(song['id'], 408)
         self.assertEqual(song['name'], 'Test')
+
+    def test_get_song_ajax(self):
+        """
+        Testing legacy AJAX API to request one specific song
+        1. Test requests song 408 and checks that result matches Test song
+        IMPORTANT - This test method and the parameters used depend on the target system!
+        :return:
+        """
+        test_song_id = 408
+        song = self.api.get_song_ajax(song_id=test_song_id)
+        self.assertIsInstance(song, dict)
+        self.assertEqual(len(song), 14)
+
+        self.assertEqual(int(song['id']), test_song_id)
+        self.assertEqual(song['bezeichnung'], 'Test')
 
     def test_get_song_category_map(self):
         """

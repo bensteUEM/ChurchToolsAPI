@@ -237,6 +237,7 @@ class ChurchToolsApi:
         Legacy AJAX function to get a specific song
         used to e.g. check for tags requires requesting full song list
         for efficiency reasons songs are cached and not updated unless older than 15sec or update_required
+        Be aware that params of the returned object might differ from REST API responsens (e.g. Bezeichnung instead of name)
         :param song_id: the id of the song to be searched for
         :type song_id: int
         :param require_update_after_seconds: number of seconds after which an update of ajax song cache is required
