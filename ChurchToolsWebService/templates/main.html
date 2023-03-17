@@ -1,13 +1,10 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>{{ title }}</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-</head>
+<html xmlns="http://www.w3.org/1999/html" lang="en">
+{% include 'header.html' %}
 <body>
-    {% if error %}
-    <div style="color:#ff0000"> {{error}}</div>
-    {% endif %}
+{% include 'error.html' %}
+
+<div class="container">
 
     {% if ct_user %}
     <h1>Welcome {{ ct_user.firstName }} {{ ct_user.lastName }}</h1>
@@ -17,9 +14,11 @@
 
 
     <h2>Functions</h2>
-    <ul>
-        <li><a href="./login">New Login</a></li>
-        <li><a href="./events">Events</a></li>
-    </ul>
+    <div class="list-group">
+        <a class="list-group-item list-group-item-action" href="./login">New Login</a></li>
+        <a class="list-group-item list-group-item-action" href="./events">Events</a></li>
+
+    </div>
+</div>
 </body>
 </html>

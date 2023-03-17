@@ -1,25 +1,35 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/html">
-<head>
-    <title>{{ title }}</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-</head>
+<html xmlns="http://www.w3.org/1999/html" lang="en">
+{% include 'header.html' %}
 <body>
-    {% if error %}
-        <div style="color:#ff0000"> {{error}}</div>
-    {% endif %}
+{% include 'error.html' %}
+
+<div class="container">
+    {% include 'error.html' %}
     <h1>Next Events:</h1>
+    Select any event and respective options in order to execute an event specifc action
     <form action="/events" method="POST">
-        {% for event in event_choices %}
-            <input type="radio" id="event_id" name="event_id" value="{{event.id}}">
-            <label for="event_id">{{event.label}}</label></br>
-        {% endfor %}
-        {% for service_group in service_groups.values() %}
-            <input type="checkbox" id="service_groups {{service_group.id}}" name="service_group {{service_group.id}}" checked>
-            <label for="service_groups {{service_group.id}}">{{service_group.name}}</label>
-        {% endfor %}
-        <input type="submit" name="submit_docx" value="DOCx Document Download"> </br>
-        <input type="submit" name="submit_communi" value="Update Communi group">
-	</form>
+        <div class="form-group">
+            {% for event in event_choices %}
+            <input class="form-check-input" type="radio" id="event_id" name="event_id" value="{{event.id}}">
+            <label class="form-check-label" for="event_id">{{event.label}}</label></br>
+            {% endfor %}
+        </div>
+
+        <div class="form-group">
+            {% for service_group in service_groups.values() %}
+
+            <input type="checkbox" class="form-check-input" id="service_groups {{service_group.id}}"
+                   name="service_group {{service_group.id}}"
+                   checked>
+            <label class="form-check-label" for="service_groups {{service_group.id}}">{{service_group.name}}</label>
+
+            {% endfor %}
+        </div>
+
+        <input type="submit" name="submit_docx" class="btn btn-primary" value="DOCx Document Download"> </br>
+        <!--<input type="submit" name="submit_communi" class="btn btn-secondary" value="Update Communi group">-->
+    </form>
+</div>
 </body>
 </html>
