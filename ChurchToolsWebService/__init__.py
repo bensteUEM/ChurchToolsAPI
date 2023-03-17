@@ -2,10 +2,10 @@ import logging
 import os
 from datetime import datetime
 
-from flask import Flask, render_template, request, redirect, session, send_file
-from flask_session import Session
+from flask import Flask, render_template, request, redirect, session, send_file, url_for
 
 from ChurchToolsApi import ChurchToolsApi as CTAPI
+from flask_session import Session
 
 app = Flask(__name__)
 app.secret_key = os.urandom(16)
@@ -20,10 +20,16 @@ Session(app)
 
 @app.route('/')
 def index():
-    if 'ct_api' in session:
-        return redirect('/main')
-    else:
-        return redirect('/login')
+    return redirect('/main')
+
+
+@app.before_request
+def check_session():
+    if request.endpoint != 'login':
+        if 'ct_api' not in session:
+            return redirect(url_for('login'))
+        elif not session['ct_api'].who_am_i():
+            return redirect(url_for('login'))
 
 
 @app.route('/login', methods=['GET', 'POST'])
