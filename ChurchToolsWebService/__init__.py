@@ -55,33 +55,7 @@ def main():
 
 @app.route('/events', methods=['GET', 'POST'])
 def events():
-    if request.method == 'POST':
-        if 'event_id' not in request.form.keys():
-            redirect('/events')
-        event_id = int(request.form['event_id'])
-        if 'submit_docx' in request.form.keys():
-            event = session['events'][event_id]
-            agenda = session['event_agendas'][event_id]
-
-            selectedServiceGroups = \
-                {key: value for key, value in session['serviceGroups'].items()
-                 if 'service_group {}'.format(key) in request.form}
-
-            document = session['ct_api'].get_event_agenda_docx(agenda, serviceGroups=selectedServiceGroups,
-                                                               excludeBeforeEvent=False)
-            filename = agenda['name'] + '.docx'
-            document.save(filename)
-            response = send_file(path_or_file=os.getcwd() + '/' + filename, as_attachment=True)
-            os.remove(filename)
-            return response
-
-        elif 'submit_communi' in request.form.keys():
-            error = 'Communi Group update not yet implemented'
-        else:
-            error = 'Requested function not detected in request'
-        return render_template('main.html', error=error)
-
-    elif request.method == 'GET':
+    if request.method == 'GET':
         session['serviceGroups'] = session['ct_api'].get_event_masterdata(type='serviceGroups', returnAsDict=True)
 
         events_temp = session['ct_api'].get_events()
@@ -107,3 +81,28 @@ def events():
 
         return render_template('events.html', ct_domain=app.ct_domain, event_choices=event_choices,
                                service_groups=session['serviceGroups'])
+    elif request.method == 'POST':
+        if 'event_id' not in request.form.keys():
+            redirect('/events')
+        event_id = int(request.form['event_id'])
+        if 'submit_docx' in request.form.keys():
+            event = session['events'][event_id]
+            agenda = session['event_agendas'][event_id]
+
+            selectedServiceGroups = \
+                {key: value for key, value in session['serviceGroups'].items()
+                 if 'service_group {}'.format(key) in request.form}
+
+            document = session['ct_api'].get_event_agenda_docx(agenda, serviceGroups=selectedServiceGroups,
+                                                               excludeBeforeEvent=False)
+            filename = agenda['name'] + '.docx'
+            document.save(filename)
+            response = send_file(path_or_file=os.getcwd() + '/' + filename, as_attachment=True)
+            os.remove(filename)
+            return response
+
+        elif 'submit_communi' in request.form.keys():
+            error = 'Communi Group update not yet implemented'
+        else:
+            error = 'Requested function not detected in request'
+        return render_template('main.html', error=error)
