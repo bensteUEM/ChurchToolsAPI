@@ -65,8 +65,8 @@ def events():
         session['serviceGroups'] = session['ct_api'].get_event_masterdata(type='serviceGroups', returnAsDict=True)
 
         events_temp = session['ct_api'].get_events()
-        events_temp.extend(session['ct_api'].get_events(eventId=2147))  # debugging
-        events_temp.extend(session['ct_api'].get_events(eventId=2129))  # debugging
+        # events_temp.extend(session['ct_api'].get_events(eventId=2147))  # debugging
+        # events_temp.extend(session['ct_api'].get_events(eventId=2129))  # debugging
         logging.debug("{} Events loaded".format(len(events_temp)))
 
         event_choices = []
