@@ -8,7 +8,7 @@ on:
       - 'v*'
 jobs:
   build:
-    if: github.ref == 'refs/heads/master' OR github.ref == 'refs/heads/dev_benste'
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev_benste'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
