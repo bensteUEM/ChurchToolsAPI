@@ -71,8 +71,9 @@ def events():
                                                                excludeBeforeEvent=False)
             filename = agenda['name'] + '.docx'
             document.save(filename)
-            return send_file(path_or_file=os.getcwd() + '/' + filename, as_attachment=True)
-            # TODO #57 cleanup files after download ...
+            response = send_file(path_or_file=os.getcwd() + '/' + filename, as_attachment=True)
+            os.remove(filename)
+            return response
 
         elif 'submit_communi' in request.form.keys():
             error = 'Communi Group update not yet implemented'
