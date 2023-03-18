@@ -1,4 +1,4 @@
-name: Docker Image CI pushing to GHCR
+name: Docker Image CI pushing to GHCR for stable release
 
 on:
   push:
@@ -41,7 +41,7 @@ jobs:
           context: .
           file: docker/Dockerfile
           push: true
-          tags: ${{ env.GHCR_REGISTRY }}/bensteuem/churchtools_webservice:${{ env.GITHUB_SHA_SHORT }}
+          tags: ${{ env.GHCR_REGISTRY }}/bensteuem/churchtools_webservice:latest
           build-args: VERSION=${{ env.VERSION }}
         env:
           username: ${{ env.GHCR_USERNAME }}

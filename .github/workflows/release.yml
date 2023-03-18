@@ -41,8 +41,14 @@ jobs:
           body: |
             Automated Release preparation using Git Tag
             - make sure tests didn't fail
-            - upload package files
             - needs to be published from draft online
+            
+            Install as package using:
+            pip install git+https://github.com/bensteUEM/ChurchToolsAPI.git@${{env.VERSION}}#egg=ChurchToolsAPI
+            
+            or use docker image at
+            ghcr.io/bensteuem/churchtools_webservice:latest            
+
           draft: true
           prerelease: false
           artifacts: dist/*
