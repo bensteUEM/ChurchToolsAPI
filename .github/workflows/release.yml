@@ -1,14 +1,15 @@
 name: Create Release
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - dev_benste
+      - master
   pull_request:
-    tags:
-      - 'v*'
+    branches:
+      - dev_benste
+      - master
 jobs:
   build:
-    if: github.head_ref == 'master' || github.head_ref == 'dev_benste'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -35,7 +36,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag: ${{ github.ref }}
+          tag: ${{ env.VERSION}}
           name: Version ${{env.VERSION}}
           body: |
             Automated Release preparation using Git Tag
