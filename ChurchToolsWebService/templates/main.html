@@ -1,21 +1,24 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>{{ title }}</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-</head>
+<html xmlns="http://www.w3.org/1999/html" lang="en">
+{% include 'header.html' %}
 <body>
-    {% if error %}
-        <div style="color:#ff0000"> {{error}}</div>
-    {% endif %}
+{% include 'error.html' %}
+
+<div class="container">
+
+    {% if ct_user %}
     <h1>Welcome {{ ct_user.firstName }} {{ ct_user.lastName }}</h1>
     You are authorized as user {{ct_user.id}} on {{ct_domain}} </br>
     Please be aware that some of the functionality listed below might require special permissions!</br>
+    {% endif %}
+
 
     <h2>Functions</h2>
-    <ul>
-        <li> function 1</li>
-        <li> function 2</li>
-    </ul>
+    <div class="list-group">
+        <a class="list-group-item list-group-item-action" href="./login">New Login</a></li>
+        <a class="list-group-item list-group-item-action" href="./events">Events</a></li>
+
+    </div>
+</div>
 </body>
 </html>

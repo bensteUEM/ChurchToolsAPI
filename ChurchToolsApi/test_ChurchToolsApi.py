@@ -39,17 +39,6 @@ class TestsChurchToolsApi(unittest.TestCase):
         """
         self.api.session.close()
 
-    def test_login_ct_ajax_api(self):
-        """
-        Checks that Userlogin using AJAX is working with provided credentials
-        :return:
-        """
-        if self.api.session is not None:
-            self.api.session.close()
-        result = self.api.login_ct_ajax_api(list(self.ct_users.keys())[0],
-                                            self.ct_users[list(self.ct_users.keys())[0]])
-        self.assertTrue(result)
-
     def test_init_userpwd(self):
         """
         Tries to create a login with churchTools using specified username and password
@@ -77,7 +66,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         password = list(self.ct_users.values())[0]
         if self.api.session is not None:
             self.api.session.close()
-        result = self.api.login_ct_rest_api(user=username, password=password)
+        result = self.api.login_ct_rest_api(ct_user=username, ct_password=password)
         self.assertTrue(result)
 
     def test_get_ct_csrf_token(self):
@@ -90,7 +79,7 @@ class TestsChurchToolsApi(unittest.TestCase):
 
     def test_check_connection_ajax(self):
         """
-        Test checks that a connection can be established using the AJAX endpoints with current session / api
+        Test checks that a connection can be established using the AJAX endpoints with current session / ct_api
         :return:
         """
         result = self.api.check_connection_ajax()
@@ -124,16 +113,33 @@ class TestsChurchToolsApi(unittest.TestCase):
     def test_get_songs(self):
         """
         1. Test requests all songs and checks that result has more than 10 elements (hence default pagination works)
-        2. Test requests song 383 and checks that result matches Test song
+        2. Test requests song 408 and checks that result matches Test song
         IMPORTANT - This test method and the parameters used depend on the target system!
         :return:
         """
+        test_song_id = 408
+
         songs = self.api.get_songs()
         self.assertGreater(len(songs), 10)
 
-        song = self.api.get_songs(song_id=408)[0]
+        song = self.api.get_songs(song_id=test_song_id)[0]
         self.assertEqual(song['id'], 408)
         self.assertEqual(song['name'], 'Test')
+
+    def test_get_song_ajax(self):
+        """
+        Testing legacy AJAX API to request one specific song
+        1. Test requests song 408 and checks that result matches Test song
+        IMPORTANT - This test method and the parameters used depend on the target system!
+        :return:
+        """
+        test_song_id = 408
+        song = self.api.get_song_ajax(song_id=test_song_id)
+        self.assertIsInstance(song, dict)
+        self.assertEqual(len(song), 14)
+
+        self.assertEqual(int(song['id']), test_song_id)
+        self.assertEqual(song['bezeichnung'], 'Test')
 
     def test_get_song_category_map(self):
         """

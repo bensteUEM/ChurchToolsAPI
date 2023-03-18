@@ -1,26 +1,27 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>{{ title }}</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-</head>
+<html xmlns="http://www.w3.org/1999/html" lang="en">
+{% include 'header.html' %}
 <body>
-    {% if error %}
-        <div style="color:#ff0000"> {{error}}</div>
-    {% endif %}
+{% include 'error.html' %}
+
+<div class="container">
     <form action="/login" method="POST">
-		<label for="ct_domain">Domain:</label>
-		<input type="text" id="ct_domain" name="ct_domain"
-			   {% if ct_domain %}value="{{ct_domain}}" {% endif %}
-			   required><br>
-
-		<label for="ct_user">User:</label>
-		<input type="text" id="ct_user" name="ct_user" required><br>
-
-		<label for="ct_password">Password:</label>
-		<input type="password" id="ct_password" name="ct_password" required><br>
-
-		<input type="submit" value="Login">
-	</form>
+        <div class="form-group">
+            <label for="ct_domain">Domain:</label>
+            <input type="text" id="ct_domain" class="form-control" name="ct_domain"
+                   {% if ct_domain %}value="{{ct_domain}}" {% endif %}
+                   required><br>
+        </div>
+        <div class="form-group">
+            <label for="ct_user">User:</label>
+            <input type="text" id="ct_user" class="form-control" name="ct_user" required><br>
+        </div>
+        <div class="form-group">
+            <label for="ct_password">Password:</label>
+            <input type="password" id="ct_password" class="form-control" name="ct_password" required><br>
+        </div>
+        <input type="submit" class="btn btn-primary" value="Login">
+    </form>
+</div>
 </body>
 </html>

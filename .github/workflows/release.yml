@@ -1,0 +1,54 @@
+name: Create Release
+on:
+  push:
+    branches:
+      - dev_benste
+      - master
+  pull_request:
+    branches:
+      - dev_benste
+      - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Version from Python
+        run: echo "VERSION=$(python3 -c 'import versions; print(versions.VERSION)')" >> $GITHUB_ENV
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel
+
+      - name: Run setup.py
+        run: python setup.py sdist bdist_wheel
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1.12.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag: ${{ env.VERSION}}
+          name: Version ${{env.VERSION}}
+          body: |
+            Automated Release preparation using Git Tag
+            - make sure tests didn't fail
+            - needs to be published from draft online
+            
+            Install as package using:
+            pip install git+https://github.com/bensteUEM/ChurchToolsAPI.git@${{env.VERSION}}#egg=ChurchToolsAPI
+            
+            or use docker image at
+            ghcr.io/bensteuem/churchtools_webservice:latest            
+
+          draft: true
+          prerelease: false
+          artifacts: dist/*
