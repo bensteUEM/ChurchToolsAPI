@@ -78,7 +78,7 @@ def events():
             if agenda is not None:
                 session['event_agendas'][event['id']] = agenda
                 session['events'][event['id']] = event
-                startdate = datetime.fromisoformat(event['startDate'][:-1])
+                startdate = datetime.strptime(event['startDate'], '%Y-%m-%dT%H:%M:%S%z')
                 datetext = startdate.astimezone().strftime('%a %b %d\t%H:%M')
                 event = {'id': event['id'], 'label': datetext + '\t' + event['name']}
                 event_choices.append(event)
