@@ -1,5 +1,5 @@
 Flask==2.2.3
 Flask-Session==0.4.0
-requests==2.27.1
+requests==2.31.0
 python-docx==0.8.11
-requests==2.27.1
+requests==2.31.0
