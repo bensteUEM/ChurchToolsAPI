@@ -343,21 +343,21 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertIsInstance(result, list)
         self.assertEqual(1, len(result))
         self.assertIsInstance(result[0], dict)
-        result_date = datetime.strptime(result[0]['startDate'], '%Y-%m-%dT%H:%M:%S%z').date()
+        result_date = datetime.strptime(result[0]['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date()
         today_date = datetime.today().date()
         self.assertGreaterEqual(result_date, today_date)
 
         # load last event (direction, limit)
         result = self.api.get_events(limit=1, direction='backward')
-        result_date = datetime.strptime(result[0]['startDate'], '%Y-%m-%dT%H:%M:%S%z').date()
+        result_date = datetime.strptime(result[0]['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date()
         self.assertLessEqual(result_date, today_date)
 
         # Load events after 7 days (from)
         next_week_date = today_date + timedelta(days=7)
         next_week_formatted = next_week_date.strftime('%Y-%m-%d')
         result = self.api.get_events(from_=next_week_formatted)
-        result_min_date = min([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').date() for item in result])
-        result_max_date = max([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').date() for item in result])
+        result_min_date = min([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date() for item in result])
+        result_max_date = max([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date() for item in result])
         self.assertGreaterEqual(result_min_date, next_week_date)
         self.assertGreaterEqual(result_max_date, next_week_date)
 
@@ -367,8 +367,8 @@ class TestsChurchToolsApi(unittest.TestCase):
         today_date_formatted = today_date.strftime('%Y-%m-%d')
 
         result = self.api.get_events(from_=today_date_formatted, to_=next2_week_formatted)
-        result_min = min([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').date() for item in result])
-        result_max = max([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').date() for item in result])
+        result_min = min([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date() for item in result])
+        result_max = max([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date() for item in result])
         self.assertLessEqual(result_min, next_week_date)  # only works if there is an event within 7 days on demo system
         self.assertLessEqual(result_max, next2_week_date)
 
