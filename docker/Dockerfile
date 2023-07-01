@@ -14,6 +14,7 @@ RUN echo "Trying to install package from $URL"
 RUN pip install --no-cache-dir $URL
 
 # Unset the environment variables
+ENV URL=
 RUN unset URL
 
 CMD [ "python", "-m", "ChurchToolsWebService"]

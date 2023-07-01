@@ -19,7 +19,7 @@ jobs:
         run: echo "VERSION=$(python3 -c 'import versions; print(versions.VERSION)')" >> $GITHUB_ENV
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4.6.1
         with:
           python-version: 3.x
 
@@ -33,8 +33,6 @@ jobs:
 
       - name: Create Release
         uses: ncipollo/release-action@v1.12.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag: ${{ env.VERSION}}
           name: Version ${{env.VERSION}}

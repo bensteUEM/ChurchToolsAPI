@@ -5,16 +5,23 @@ from datetime import datetime
 from flask import Flask, render_template, request, redirect, session, send_file, url_for
 
 from ChurchToolsApi import ChurchToolsApi as CTAPI
+from CommuniApi import CommuniApi
 from flask_session import Session
 
 app = Flask(__name__)
 app.secret_key = os.urandom(16)
+
+config = {"SESSION_PERMANENT": False,
+          "SESSION_TYPE" : "filesystem"
+          }
+
 if 'CT_DOMAIN' in os.environ.keys():
-    app.ct_domain = os.environ['CT_DOMAIN']
+    config['CT_DOMAIN'] = os.environ['CT_DOMAIN']
 
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
+if 'COMMUNI_SERVER' in os.environ.keys():
+    app.config['COMMUNI_SERVER'] = os.environ['COMMUNI_SERVER']
 
+app.config.update(config)
 Session(app)
 
 
@@ -32,32 +39,65 @@ def check_session():
             return redirect(url_for('login'))
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login_churchtools', methods=['GET', 'POST'])
 def login():
     """
-    Request login information for CT
+    Update login information for CT
     :return:
     """
     if request.method == 'POST':
         user = request.form['ct_user']
         password = request.form['ct_password']
-        domain = request.form['ct_domain']
+        ct_domain = request.form['ct_domain']
 
-        session['ct_api'] = CTAPI(domain, ct_user=user, ct_password=password)
+        session['ct_api'] = CTAPI(ct_domain, ct_user=user, ct_password=password)
         if session['ct_api'].who_am_i() is not False:
+            app.config['CT_DOMAIN'] = ct_domain
             return redirect('/main')
 
         error = 'Invalid Login'
-        return render_template('login.html', error=error, ct_domain=app.ct_domain)
+        return render_template('login_churchtools.html', error=error, ct_domain=app.config['CT_DOMAIN'])
     else:
-        return render_template('login.html', ct_domain=app.ct_domain)
+        if 'ct_api' not in session:
+            user = None
+        else:
+            user = session["ct_api"].who_am_i()
+        return render_template('login_churchtools.html', user=user, ct_domain=app.config['CT_DOMAIN'])
+         
+@app.route('/login_communi', methods=['GET', 'POST'])
+def login_communi():
+    """
+    Update login information for Communi Login
+    :return:
+    """
+    if request.method == 'POST':
+        communi_server = request.form['communi_server']
+        communi_token = request.form['communi_token']
+        communi_appid = request.form['communi_appid']
+
+        session['communi_api'] = CommuniApi(communi_server=communi_server,communi_token=communi_token,communi_appid=communi_appid)
+        if session['communi_api'].who_am_i() is not False:
+            app.config['COMMUNI_SERVER'] = communi_server
+            return redirect('/main')
+
+        error = 'Invalid Login'
+        return render_template('login_communi.html', error=error, communi_server=communi_server)
+    else:
+        if 'communi_api' not in session:
+            user = None
+        else:
+            user = session["communi_api"].who_am_i()
+        return render_template('login_communi.html', user=user, communi_server=app.config['COMMUNI_SERVER'])
 
 
 @app.route('/main')
 def main():
-    user = session['ct_api'].who_am_i()
-    return render_template('main.html', ct_user=user, ct_domain=app.ct_domain)
+    return render_template('main.html')
 
+@app.route('/test')
+def test():
+    test = app.config['CT_DOMAIN'], app.config['COMMUNI_SERVER']
+    return render_template('test.html', test=test)
 
 @app.route('/events', methods=['GET', 'POST'])
 def events():
@@ -85,7 +125,7 @@ def events():
 
         logging.debug("{} Events kept because schedule exists".format(len(events_temp)))
 
-        return render_template('events.html', ct_domain=app.ct_domain, event_choices=event_choices,
+        return render_template('events.html', ct_domain=app.config['CT_DOMAIN'], event_choices=event_choices,
                                service_groups=session['serviceGroups'])
     elif request.method == 'POST':
         if 'event_id' not in request.form.keys():

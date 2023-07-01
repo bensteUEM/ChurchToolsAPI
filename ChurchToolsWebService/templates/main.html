@@ -6,18 +6,15 @@
 
 <div class="container">
 
-    {% if ct_user %}
-    <h1>Welcome {{ ct_user.firstName }} {{ ct_user.lastName }}</h1>
-    You are authorized as user {{ct_user.id}} on {{ct_domain}} </br>
-    Please be aware that some of the functionality listed below might require special permissions!</br>
-    {% endif %}
-
+    Please be aware that some of the functionality listed below might require a login!</br>
+    Login status is displayed on the respective login pages
 
     <h2>Functions</h2>
     <div class="list-group">
-        <a class="list-group-item list-group-item-action" href="./login">New Login</a></li>
+        <a class="list-group-item list-group-item-action" href="./login_churchtools">ChurchTools Login</a></li>
+        <a class="list-group-item list-group-item-action" href="./login_communi">Communi Login</a></li>
         <a class="list-group-item list-group-item-action" href="./events">Events</a></li>
-
+        <a class="list-group-item list-group-item-action" href="./test">Test page</a></li>
     </div>
 </div>
 </body>

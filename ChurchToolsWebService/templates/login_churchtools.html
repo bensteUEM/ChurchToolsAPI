@@ -5,7 +5,16 @@
 {% include 'error.html' %}
 
 <div class="container">
-    <form action="/login" method="POST">
+    <h1>Login into ChurchTools</h1>
+
+    {% if user %}
+    <h2>Welcome {{ user.firstName }} {{ user.lastName }}</h2>
+    You are authorized on {{ct_domain}} </br>
+    Please be aware that some of the functionality listed below might require special permissions!</br>
+    </br></br>
+    ReSubmit to change the authenticated user or server
+    {% endif %}
+    <form action="/login_churchtools" method="POST">
         <div class="form-group">
             <label for="ct_domain">Domain:</label>
             <input type="text" id="ct_domain" class="form-control" name="ct_domain"
