@@ -4,4 +4,4 @@ requests==2.31.0
 python-docx==0.8.11
 requests==2.31.0
 python-docx
-CommuniApi @ git+https://github.com/bensteUEM/CommuniAPI.git@1.0.3#egg=CommuniAPIpython
+CommuniApi @ git+https://github.com/bensteUEM/CommuniAPI.git@1.0.3#egg=CommuniAPI
