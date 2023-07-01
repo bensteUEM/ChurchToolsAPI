@@ -388,12 +388,13 @@ class TestsChurchToolsApi(unittest.TestCase):
     def test_get_AllEventData_ajax(self):
         """
         Test function to check the get_AllEventData_ajax function for a specific ID
-        On ELKW1610.KRZ.TOOLS event ID 2626 is an existing Test Event with schedule (1. Jan 2023)
+        On ELKW1610.KRZ.TOOLS event ID 2799 is an existing Test Event with schedule (1. Jan 2023)
         Please be aware that this function is limited to the timeframe configured for cache in CT (by default -90days)
         :return:
         """
-        eventId = 2626
+        eventId = 2799
         result = self.api.get_AllEventData_ajax(eventId)
+        self.assertIn('id', result.keys())
         self.assertEqual(result['id'], str(eventId))
 
     def test_get_set_event_services_counts(self):
@@ -428,11 +429,11 @@ class TestsChurchToolsApi(unittest.TestCase):
     def test_get_set_event_admins(self):
         """
         Test function to get list of event admins, change it and check again (and reset to original)
-         On ELKW1610.KRZ.TOOLS event ID 2626 is an existing Test Event with schedule (1. Jan 2023)
+        On ELKW1610.KRZ.TOOLS event ID 2799 is an existing Test Event with schedule (1. Jul 2023)
         Please be aware that this function is limited to the timeframe configured for cache in CT (by default -90days)
         :return:
         """
-        eventId = 2626
+        eventId = 2799
         admin_ids_original_test = [9]
 
         admin_ids_original = self.api.get_event_admins_ajax(eventId)
@@ -450,10 +451,11 @@ class TestsChurchToolsApi(unittest.TestCase):
     def test_get_event_masterdata(self):
         """
         Tries to get a list of event masterdata and a type of masterdata from CT
+        The values depend on your system data! - Test case is valid against ELKW1610.KRZ.TOOLS
         :return:
         """
         result = self.api.get_event_masterdata()
-        self.assertEqual(len(result), 4)
+        self.assertEqual(len(result), 5)
 
         result = self.api.get_event_masterdata(type='serviceGroups')
         self.assertGreater(len(result), 1)
