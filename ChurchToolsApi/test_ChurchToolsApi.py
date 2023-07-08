@@ -343,21 +343,21 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertIsInstance(result, list)
         self.assertEqual(1, len(result))
         self.assertIsInstance(result[0], dict)
-        result_date = datetime.strptime(result[0]['startDate'], '%Y-%m-%dT%H:%M:%S%z').date()
+        result_date = datetime.strptime(result[0]['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date()
         today_date = datetime.today().date()
         self.assertGreaterEqual(result_date, today_date)
 
         # load last event (direction, limit)
         result = self.api.get_events(limit=1, direction='backward')
-        result_date = datetime.strptime(result[0]['startDate'], '%Y-%m-%dT%H:%M:%S%z').date()
+        result_date = datetime.strptime(result[0]['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date()
         self.assertLessEqual(result_date, today_date)
 
         # Load events after 7 days (from)
         next_week_date = today_date + timedelta(days=7)
         next_week_formatted = next_week_date.strftime('%Y-%m-%d')
         result = self.api.get_events(from_=next_week_formatted)
-        result_min_date = min([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').date() for item in result])
-        result_max_date = max([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').date() for item in result])
+        result_min_date = min([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date() for item in result])
+        result_max_date = max([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date() for item in result])
         self.assertGreaterEqual(result_min_date, next_week_date)
         self.assertGreaterEqual(result_max_date, next_week_date)
 
@@ -367,8 +367,8 @@ class TestsChurchToolsApi(unittest.TestCase):
         today_date_formatted = today_date.strftime('%Y-%m-%d')
 
         result = self.api.get_events(from_=today_date_formatted, to_=next2_week_formatted)
-        result_min = min([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').date() for item in result])
-        result_max = max([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').date() for item in result])
+        result_min = min([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date() for item in result])
+        result_max = max([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date() for item in result])
         self.assertLessEqual(result_min, next_week_date)  # only works if there is an event within 7 days on demo system
         self.assertLessEqual(result_max, next2_week_date)
 
@@ -388,12 +388,13 @@ class TestsChurchToolsApi(unittest.TestCase):
     def test_get_AllEventData_ajax(self):
         """
         Test function to check the get_AllEventData_ajax function for a specific ID
-        On ELKW1610.KRZ.TOOLS event ID 2626 is an existing Test Event with schedule (1. Jan 2023)
+        On ELKW1610.KRZ.TOOLS event ID 2799 is an existing Test Event with schedule (1. Jan 2023)
         Please be aware that this function is limited to the timeframe configured for cache in CT (by default -90days)
         :return:
         """
-        eventId = 2626
+        eventId = 2799
         result = self.api.get_AllEventData_ajax(eventId)
+        self.assertIn('id', result.keys())
         self.assertEqual(result['id'], str(eventId))
 
     def test_get_set_event_services_counts(self):
@@ -428,11 +429,11 @@ class TestsChurchToolsApi(unittest.TestCase):
     def test_get_set_event_admins(self):
         """
         Test function to get list of event admins, change it and check again (and reset to original)
-         On ELKW1610.KRZ.TOOLS event ID 2626 is an existing Test Event with schedule (1. Jan 2023)
+        On ELKW1610.KRZ.TOOLS event ID 2799 is an existing Test Event with schedule (1. Jul 2023)
         Please be aware that this function is limited to the timeframe configured for cache in CT (by default -90days)
         :return:
         """
-        eventId = 2626
+        eventId = 2799
         admin_ids_original_test = [9]
 
         admin_ids_original = self.api.get_event_admins_ajax(eventId)
@@ -450,10 +451,11 @@ class TestsChurchToolsApi(unittest.TestCase):
     def test_get_event_masterdata(self):
         """
         Tries to get a list of event masterdata and a type of masterdata from CT
+        The values depend on your system data! - Test case is valid against ELKW1610.KRZ.TOOLS
         :return:
         """
         result = self.api.get_event_masterdata()
-        self.assertEqual(len(result), 4)
+        self.assertEqual(len(result), 5)
 
         result = self.api.get_event_masterdata(type='serviceGroups')
         self.assertGreater(len(result), 1)
