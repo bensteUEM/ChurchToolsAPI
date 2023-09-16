@@ -214,6 +214,17 @@ class TestsChurchToolsApi(unittest.TestCase):
         group = self.api.update_group(id=103, data={"note": "TestNote"})
         self.assertEqual(group['information']['note'], "TestNote")
 
+    def test_get_global_permissions(self):
+        """
+        IMPORTANT - This test method and the parameters used depend on the target system!
+        Checks that the global permissions for the current user can be retrieved
+        and one core permission and one db permission matches the expected value.
+        :return:
+        """
+        permissions = self.api.get_global_permissions()
+        self.assertFalse(permissions['churchcore']['administer settings'])
+        self.assertFalse(permissions['churchdb']['view birthdaylist'])
+
     def test_file_upload_replace_delete(self):
         """
         IMPORTANT - This test method and the parameters used depend on the target system!
