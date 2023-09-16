@@ -179,6 +179,22 @@ class TestsChurchToolsApi(unittest.TestCase):
             self.assertTrue('parents' in hierarchy)
             self.assertTrue('children' in hierarchy)
 
+    def test_get_grouptypes(self):
+        """
+        IMPORTANT - This test method and the parameters used depend on the target system!
+        1. Check that the list of grouptypes can be retrieved and each element contains the keys 'id' and 'name'.
+        2. Check that a single grouptype can be retrieved and id and name are matching.
+        :return:
+        """
+        grouptypes = self.api.get_grouptypes()
+        for grouptype in grouptypes:
+            self.assertTrue('id' in grouptype)
+            self.assertTrue('name' in grouptype)
+
+        grouptype = self.api.get_grouptypes(grouptype_id=2)
+        self.assertEqual(grouptype['id'], 2)
+        self.assertEqual(grouptype['name'], 'Gruppe')
+
     def test_file_upload_replace_delete(self):
         """
         IMPORTANT - This test method and the parameters used depend on the target system!

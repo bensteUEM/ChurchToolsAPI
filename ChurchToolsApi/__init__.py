@@ -339,6 +339,30 @@ class ChurchToolsApi:
         else:
             logging.warning("Something went wrong fetching groups hierarchies: {}".format(response.status_code))
 
+    def get_grouptypes(self, **kwargs):
+        """
+        Get list of all grouptypes
+        :keyword grouptype_id: int: optional filter by grouptype id
+        :return: dict with all grouptypes
+        :rtype: dict
+        """
+        url = self.domain + '/api/group/grouptypes'
+        if 'grouptype_id' in kwargs.keys():
+            url = url + '/{}'.format(kwargs['grouptype_id'])
+        headers = {
+            'accept': 'application/json'
+        }
+        response = self.session.get(url=url, headers=headers)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_data = response_content['data'].copy()
+            logging.debug("First response of Grouptypes successful {}".format(response_content))
+
+            return response_data
+        else:
+            logging.warning("Something went wrong fetching grouptypes: {}".format(response.status_code))
+
     def file_upload(self, source_filepath, domain_type, domain_identifier, custom_file_name=None, overwrite=False):
         """
         Helper function to upload an attachment to any module of ChurchTools
