@@ -167,6 +167,18 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertEqual(group['id'], 103)
         self.assertEqual(group['name'], 'TestGruppe')
 
+    def test_get_groups_hierarchies(self):
+        """
+        Checks that the list of group hierarchies can be retrieved and each
+        element contains the keys 'groupId', 'parents' and 'children'.
+        :return:
+        """
+        hierarchies = self.api.get_groups_hierarchies()
+        for hierarchy in hierarchies:
+            self.assertTrue('groupId' in hierarchy)
+            self.assertTrue('parents' in hierarchy)
+            self.assertTrue('children' in hierarchy)
+
     def test_file_upload_replace_delete(self):
         """
         IMPORTANT - This test method and the parameters used depend on the target system!
