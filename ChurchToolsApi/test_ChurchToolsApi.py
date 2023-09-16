@@ -205,6 +205,15 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertEqual(permissions['churchdb']['+see group'], 0)
         self.assertFalse(permissions['churchdb']['+edit group infos'])
 
+    def test_update_group(self):
+        """
+        IMPORTANT - This test method and the parameters used depend on the target system!
+        Checks that a field in a group can be set to some value and the returned group has this field value set.
+        :return:
+        """
+        group = self.api.update_group(id=103, data={"note": "TestNote"})
+        self.assertEqual(group['information']['note'], "TestNote")
+
     def test_file_upload_replace_delete(self):
         """
         IMPORTANT - This test method and the parameters used depend on the target system!
