@@ -37,8 +37,9 @@ However please check the log files and expect incomplete results if the user is 
 
 # Development use
 
-The script was coded using PyCharm Community edition. 
-Test cases are automatically run when pushed to GitHub. This ensures that basic functionality is checked against at least one environment.
+The script was last updated using VS Code. 
+Test cases (e.g. from test_ChurchToolsApi.py) are automatically run when pushed to GitHub. This ensures that basic functionality is checked against at least one environment.
+The Github Repo tests against against the owners production instance in order to ensure matching data for tests.
 
 Please be aware that some of the test cases require specific IDs to be present on the CT server which is tested against.
 The respective function do have a hint like the one below in the docstring of the respective functions
@@ -47,20 +48,19 @@ The respective function do have a hint like the one below in the docstring of th
 IMPORTANT - This test method and the parameters used depend on the target system!
 ```
 
-You are more than welcome to contribute additional code using respective feature branches and pull requests.
+You are more than welcome to contribute additional code using respective feature branches and pull requests. New functions should always include respective test cases (that can be adjusted to the automated test system upon merge request)
 
 ## Compatibility
 
-Tested against the current Churchtools APIs as of March 2023.
-More information is provided on the respective ChurchTools pages.
+Tested against the current Churchtools APIs as of Sept 2024 (CT 3.101). More information is provided on the respective ChurchTools pages.
 
 ### REST API
 
 https://YOUR_DOMAIN/api/
 
-More recent and should be used for anything that is accessible through this API.
+Most recent access method - should be used for anything that is accessible through this API.
 Documentation of additional endpoints can be found opening the respective URL.
-The API was developed to support the ChurchTools Web App and does not yet include th full feature set of CT Web
+The module was developed to support the specific use-cases by all contributors - some endpoints might not be implemented yet!
 
 ### Legacy API
 
@@ -86,4 +86,5 @@ Anybody using this code is more than welcome to contribute with change requests 
 ## Contributors
 
 * benste - implemented for use at Evangelische Kirchengemeinde Baiersbronn (https://www.evang-kirche-baiersbronn.de/)
-* kolibri52 - Jonathan supporting Liebenzeller Gemeinschaft Oettingen (https://lgv-oe.de/)"
+* kolibri52 - Jonathan supporting Liebenzeller Gemeinschaft Oettingen (https://lgv-oe.de/)
+* fschrempf - Frieder supporting CVJM Esslingen e. V. (https://cvjm-esslingen.de)

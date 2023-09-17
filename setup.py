@@ -20,8 +20,5 @@ setup(
     python_requires='>=3.8',
     packages=find_packages(),
     include_package_data=True,
-    package_data={
-        'ChurchToolsWebService': ['templates/*.html', 'static/*']
-    },
     install_requires=requirements,
 )
