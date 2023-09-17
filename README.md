@@ -48,7 +48,9 @@ The respective function do have a hint like the one below in the docstring of th
 IMPORTANT - This test method and the parameters used depend on the target system!
 ```
 
-You are more than welcome to contribute additional code using respective feature branches and pull requests. New functions should always include respective test cases (that can be adjusted to the automated test system upon merge request)
+You are more than welcome to contribute additional code using respective feature branches and pull requests. New functions should always include respective test cases (that can be adjusted to the automated test system upon merge request)+
+
+There is also a main.ipynb which can be used to quickly execute single actions without writing a seperate python project
 
 ## Compatibility
 
