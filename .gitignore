@@ -135,7 +135,7 @@ dmypy.json
 .pyre/
 
 # User sessions
-/ChurchToolsWebService/flask_session/
+flask_session
 
 # Pycharm Run Configurations
 /run_configs/

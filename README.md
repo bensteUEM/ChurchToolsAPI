@@ -29,18 +29,6 @@ It can be installed using
 ```pip install git+https://github.com/bensteUEM/ChurchToolsAPI.git@vX.X.X#egg=ChurchToolsAPI'```
 replacing X.X.X by a released version number
 
-## Using it via docker or github actions
-
-For use within a Docker container or for tests using GithubActions ENV variables can be used to pass the required
-configurations values these are
-
-* CT_DOMAIN
-* CT_TOKEN
-* CT_USERS
-
-Values can be written like entered in a text box - no quotation marks are required. The CT_Users String is interpreted
-as dict like shown in the sample of config.py but must include {}
-
 ### CT Token
 
 CT_TOKEN can be obtained / changed using the "Berechtigungen" option of the user which should be used to access the CT

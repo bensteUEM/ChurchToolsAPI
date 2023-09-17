@@ -44,9 +44,6 @@ jobs:
             Install as package using:
             pip install git+https://github.com/bensteUEM/ChurchToolsAPI.git@${{env.VERSION}}#egg=ChurchToolsAPI
             
-            or use docker image at
-            ghcr.io/bensteuem/churchtools_webservice:latest            
-
           draft: true
           prerelease: false
           artifacts: dist/*
