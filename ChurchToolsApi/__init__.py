@@ -365,6 +365,25 @@ class ChurchToolsApi:
         else:
             logging.warning("Something went wrong updating group: {}".format(response.status_code))
 
+    def get_global_permissions(self) -> dict:
+        """
+        Get global permissions of the current user
+        :return: dict with module names which contain dicts with individual permissions items
+        """
+        url = self.domain + '/api/permissions/global'
+        headers = {
+            'accept': 'application/json'
+        }
+        response = self.session.get(url=url, headers=headers)
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_data = response_content['data'].copy()
+            logging.debug("First response of Global Permissions successful {}".format(response_content))
+
+            return response_data
+        else:
+            logging.warning("Something went wrong fetching global permissions: {}".format(response.status_code))
+
     def get_grouptypes(self, **kwargs):
         """
         Get list of all grouptypes
