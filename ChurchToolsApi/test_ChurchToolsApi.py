@@ -387,18 +387,22 @@ class TestsChurchToolsApi(unittest.TestCase):
 
     def test_get_AllEventData_ajax(self):
         """
+        IMPORTANT - This test method and the parameters used depend on the target system!
+
         Test function to check the get_AllEventData_ajax function for a specific ID
-        On ELKW1610.KRZ.TOOLS event ID 2799 is an existing Test Event with schedule (1. Jan 2023)
+        On ELKW1610.KRZ.TOOLS event ID 3396 is an existing Test Event with schedule (1. Jan 2024)
         Please be aware that this function is limited to the timeframe configured for cache in CT (by default -90days)
         :return:
         """
-        eventId = 2799
+        eventId = 3396
         result = self.api.get_AllEventData_ajax(eventId)
         self.assertIn('id', result.keys())
         self.assertEqual(result['id'], str(eventId))
 
     def test_get_set_event_services_counts(self):
         """
+        IMPORTANT - This test method and the parameters used depend on the target system!
+
         Test function for get and set methods related to event services counts
         tries to get the number of specicifc service in an id
         tries to increase that number
@@ -428,12 +432,14 @@ class TestsChurchToolsApi(unittest.TestCase):
 
     def test_get_set_event_admins(self):
         """
+        IMPORTANT - This test method and the parameters used depend on the target system!
+
         Test function to get list of event admins, change it and check again (and reset to original)
-        On ELKW1610.KRZ.TOOLS event ID 2799 is an existing Test Event with schedule (1. Jul 2023)
+        On ELKW1610.KRZ.TOOLS event ID 3396 is an existing Test Event with schedule (1. Jan 2024)
         Please be aware that this function is limited to the timeframe configured for cache in CT (by default -90days)
         :return:
         """
-        eventId = 2799
+        eventId = 3396
         admin_ids_original_test = [9]
 
         admin_ids_original = self.api.get_event_admins_ajax(eventId)
@@ -450,6 +456,8 @@ class TestsChurchToolsApi(unittest.TestCase):
 
     def test_get_event_masterdata(self):
         """
+        IMPORTANT - This test method and the parameters used depend on the target system!
+
         Tries to get a list of event masterdata and a type of masterdata from CT
         The values depend on your system data! - Test case is valid against ELKW1610.KRZ.TOOLS
         :return:
@@ -468,6 +476,8 @@ class TestsChurchToolsApi(unittest.TestCase):
 
     def test_get_event_agenda(self):
         """
+        IMPORTANT - This test method and the parameters used depend on the target system!
+
         Tries to get an event agenda from a CT Event
         Event ID may vary depending on the server used
         On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
@@ -478,7 +488,10 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertIsNotNone(result)
 
     def test_export_event_agenda(self):
-        """ Test function to download an Event Agenda file package for e.g. Songbeamer
+        """ 
+        IMPORTANT - This test method and the parameters used depend on the target system!
+
+        Test function to download an Event Agenda file package for e.g. Songbeamer
         Event ID may vary depending on the server used
         On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
          """
