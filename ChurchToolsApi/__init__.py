@@ -329,7 +329,6 @@ class ChurchToolsApi:
             'accept': 'application/json'
         }
         response = self.session.get(url=url, headers=headers)
-
         if response.status_code == 200:
             response_content = json.loads(response.content)
             response_data = response_content['data'].copy()
@@ -340,6 +339,31 @@ class ChurchToolsApi:
             
         else:
             logging.warning("Something went wrong fetching groups hierarchies: {}".format(response.status_code))
+
+    def update_group(self, group_id: int, data: dict):
+        """
+        Update a field of the given group
+        to loookup available names use get_group(group_id=xxx)
+        :param group_id: int: required group_id
+        :param data: dict: required group fields data
+        :return: dict with updated group
+        :rtype: dict
+        """
+        url = self.domain + '/api/groups/{}'.format(group_id)
+        headers = {
+            'accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+        response = self.session.patch(url=url, headers=headers, data=json.dumps(data))
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_data = response_content['data'].copy()
+            logging.debug("First response of Update Group successful {}".format(response_content))
+
+            return response_data
+        else:
+            logging.warning("Something went wrong updating group: {}".format(response.status_code))
 
     def get_grouptypes(self, **kwargs):
         """
@@ -385,7 +409,6 @@ class ChurchToolsApi:
             response_content = json.loads(response.content)
             response_data = response_content['data'].copy()
             logging.debug("First response of Group Permissions successful {}".format(response_content))
-
             return response_data
         else:
             logging.warning("Something went wrong fetching group permissions: {}".format(response.status_code))

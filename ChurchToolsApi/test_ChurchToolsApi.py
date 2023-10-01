@@ -205,7 +205,7 @@ class TestsChurchToolsApi(unittest.TestCase):
             self.assertTrue('name' in grouptype)
             self.assertEqual(grouptype['id'], 2)
             self.assertEqual(grouptype['name'], 'Dienst')
-            
+           
     def test_get_group_permissions(self):
         """
         IMPORTANT - This test method and the parameters used depend on the target system!
@@ -213,8 +213,27 @@ class TestsChurchToolsApi(unittest.TestCase):
         :return:
         """
         permissions = self.api.get_group_permissions(group_id=103)
-        self.assertEqual(permissions['churchdb']['+see group'], 0)
-        self.assertFalse(permissions['churchdb']['+edit group infos'])
+        self.assertEqual(permissions['churchdb']['+see group'], 2)
+        self.assertTrue(permissions['churchdb']['+edit group infos'])
+
+    def test_update_group(self):
+        """
+        IMPORTANT - This test method and the parameters used depend on the target system!
+        The user needs to be able to change group information - usually "Leiter" permission enables this
+         
+        Checks that a field in a group can be set to some value and the returned group has this field value set.
+        Also cleans the field after executing the test
+        :return:
+        """
+        test_group_id = 103
+        data = {"note": "TestNote - if this exists an automated test case failed"}
+        group = self.api.update_group(group_id=test_group_id, data=data)
+        self.assertEqual(group['information']['note'], data['note'])
+        
+        group = self.api.update_group(group_id=test_group_id, data={"note": ""})
+        group = self.api.get_groups(group_id=test_group_id)
+        self.assertEqual(group['information']['note'], '')
+
 
     def test_file_upload_replace_delete(self):
         """
