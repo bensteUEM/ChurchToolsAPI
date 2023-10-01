@@ -4,7 +4,7 @@ import os
 import unittest
 from datetime import datetime, timedelta
 
-from ChurchToolsApi import ChurchToolsApi
+from churchtools_api.churchtools_api import ChurchToolsApi
 
 
 class TestsChurchToolsApi(unittest.TestCase):
@@ -16,7 +16,8 @@ class TestsChurchToolsApi(unittest.TestCase):
             self.ct_domain = os.environ['CT_DOMAIN']
             users_string = os.environ['CT_USERS']
             self.ct_users = ast.literal_eval(users_string)
-            logging.info('using connection details provided with ENV variables')
+            logging.info(
+                'using connection details provided with ENV variables')
         else:
             from secure.config import ct_token
             self.ct_token = ct_token
@@ -24,9 +25,12 @@ class TestsChurchToolsApi(unittest.TestCase):
             self.ct_domain = ct_domain
             from secure.config import ct_users
             self.ct_users = ct_users
-            logging.info('using connection details provided from secrets folder')
+            logging.info(
+                'using connection details provided from secrets folder')
 
-        self.api = ChurchToolsApi(domain=self.ct_domain, ct_token=self.ct_token)
+        self.api = ChurchToolsApi(
+            domain=self.ct_domain,
+            ct_token=self.ct_token)
         logging.basicConfig(filename='logs/TestsChurchToolsApi.log', encoding='utf-8',
                             format="%(asctime)s %(name)-10s %(levelname)-8s %(message)s",
                             level=logging.DEBUG)
@@ -48,7 +52,10 @@ class TestsChurchToolsApi(unittest.TestCase):
             self.api.session.close()
         username = list(self.ct_users.keys())[0]
         password = list(self.ct_users.values())[0]
-        ct_api = ChurchToolsApi(self.ct_domain, ct_user=username, ct_password=password)
+        ct_api = ChurchToolsApi(
+            self.ct_domain,
+            ct_user=username,
+            ct_password=password)
         self.assertIsNotNone(ct_api)
         ct_api.session.close()
 
@@ -66,7 +73,8 @@ class TestsChurchToolsApi(unittest.TestCase):
         password = list(self.ct_users.values())[0]
         if self.api.session is not None:
             self.api.session.close()
-        result = self.api.login_ct_rest_api(ct_user=username, ct_password=password)
+        result = self.api.login_ct_rest_api(
+            ct_user=username, ct_password=password)
         self.assertTrue(result)
 
     def test_get_ct_csrf_token(self):
@@ -75,7 +83,10 @@ class TestsChurchToolsApi(unittest.TestCase):
         :return:
         """
         token = self.api.get_ct_csrf_token()
-        self.assertGreater(len(token), 0, "Token should be more than one letter but changes each time")
+        self.assertGreater(
+            len(token),
+            0,
+            "Token should be more than one letter but changes each time")
 
     def test_check_connection_ajax(self):
         """
@@ -180,7 +191,7 @@ class TestsChurchToolsApi(unittest.TestCase):
             self.assertTrue('groupId' in hierarchy)
             self.assertTrue('parents' in hierarchy)
             self.assertTrue('children' in hierarchy)
-            
+
     def test_get_grouptypes(self):
         """
         1. Check that the list of grouptypes can be retrieved and each element contains the keys 'id' and 'name'.
@@ -189,23 +200,23 @@ class TestsChurchToolsApi(unittest.TestCase):
 
         :return:
         """
-        #multiple group types
+        # multiple group types
         grouptypes = self.api.get_grouptypes()
-        self.assertIsInstance(grouptypes,dict)
-        self.assertGreater(len(grouptypes),2)
+        self.assertIsInstance(grouptypes, dict)
+        self.assertGreater(len(grouptypes), 2)
         for grouptype in grouptypes.values():
             self.assertTrue('id' in grouptype)
             self.assertTrue('name' in grouptype)
 
-        #one type only
+        # one type only
         grouptypes = self.api.get_grouptypes(grouptype_id=2)
-        self.assertEqual(len(grouptypes),1)
+        self.assertEqual(len(grouptypes), 1)
         for grouptype in grouptypes.values():
             self.assertTrue('id' in grouptype)
             self.assertTrue('name' in grouptype)
             self.assertEqual(grouptype['id'], 2)
             self.assertEqual(grouptype['name'], 'Dienst')
-           
+
     def test_get_group_permissions(self):
         """
         IMPORTANT - This test method and the parameters used depend on the target system!
@@ -220,7 +231,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         """
         IMPORTANT - This test method and the parameters used depend on the target system!
         The user needs to be able to change group information - usually "Leiter" permission enables this
-         
+
         Checks that a field in a group can be set to some value and the returned group has this field value set.
         Also cleans the field after executing the test
         :return:
@@ -229,22 +240,23 @@ class TestsChurchToolsApi(unittest.TestCase):
         data = {"note": "TestNote - if this exists an automated test case failed"}
         group = self.api.update_group(group_id=test_group_id, data=data)
         self.assertEqual(group['information']['note'], data['note'])
-        
-        group = self.api.update_group(group_id=test_group_id, data={"note": ""})
+
+        group = self.api.update_group(
+            group_id=test_group_id, data={"note": ""})
         group = self.api.get_groups(group_id=test_group_id)
         self.assertEqual(group['information']['note'], '')
 
     def test_get_global_permissions(self):
         """
         IMPORTANT - This test method and the parameters used depend on the target system!
-        
+
         Checks that the global permissions for the current user can be retrieved
         and one core permission and one db permission matches the expected value.
         :return:
         """
         permissions = self.api.get_global_permissions()
-        self.assertIn('churchcore',permissions.keys())
-        self.assertIn('administer settings',permissions['churchcore'].keys())
+        self.assertIn('churchcore', permissions.keys())
+        self.assertIn('administer settings', permissions['churchcore'].keys())
 
         self.assertFalse(permissions['churchcore']['administer settings'])
         self.assertFalse(permissions['churchdb']['view birthdaylist'])
@@ -266,47 +278,89 @@ class TestsChurchToolsApi(unittest.TestCase):
         # 0. Clean and delete files in test
         self.api.file_delete('song_arrangement', 417)
         song = self.api.get_songs(song_id=408)[0]
-        self.assertEqual(song['arrangements'][0]['id'], 417, 'check that default arrangement exists')
-        self.assertEqual(len(song['arrangements'][0]['files']), 0, 'check that ono files exist')
+        self.assertEqual(
+            song['arrangements'][0]['id'],
+            417,
+            'check that default arrangement exists')
+        self.assertEqual(len(song['arrangements'][0]
+                         ['files']), 0, 'check that ono files exist')
 
         # 1. Tries 3 uploads to the test song with ID 408 and arrangement 417
         # Adds the same file again without overwrite - should exist twice
         self.api.file_upload('samples/pinguin.png', "song_arrangement", 417)
-        self.api.file_upload('samples/pinguin_shell.png', "song_arrangement", 417, 'pinguin_shell_rename.png')
-        self.api.file_upload('samples/pinguin.png', "song_arrangement", 417, 'pinguin.png')
+        self.api.file_upload(
+            'samples/pinguin_shell.png',
+            "song_arrangement",
+            417,
+            'pinguin_shell_rename.png')
+        self.api.file_upload(
+            'samples/pinguin.png',
+            "song_arrangement",
+            417,
+            'pinguin.png')
 
         song = self.api.get_songs(song_id=408)[0]
-        self.assertIsInstance(song, dict, 'Should be a single song instead of list of songs')
-        self.assertEqual(song['arrangements'][0]['id'], 417, 'check that default arrangement exsits')
-        self.assertEqual(len(song['arrangements'][0]['files']), 3, 'check that only the 3 test attachments exist')
+        self.assertIsInstance(
+            song, dict, 'Should be a single song instead of list of songs')
+        self.assertEqual(
+            song['arrangements'][0]['id'],
+            417,
+            'check that default arrangement exsits')
+        self.assertEqual(len(song['arrangements'][0]['files']),
+                         3, 'check that only the 3 test attachments exist')
         filenames = [i['name'] for i in song['arrangements'][0]['files']]
-        filenames_target = ['pinguin.png', 'pinguin_shell_rename.png', 'pinguin.png']
+        filenames_target = [
+            'pinguin.png',
+            'pinguin_shell_rename.png',
+            'pinguin.png']
         self.assertEqual(filenames, filenames_target)
 
-        # 2. Reupload pinguin.png using overwrite which will remove both old files but keep one
-        self.api.file_upload('samples/pinguin.png', "song_arrangement", 417, 'pinguin.png', overwrite=True)
+        # 2. Reupload pinguin.png using overwrite which will remove both old
+        # files but keep one
+        self.api.file_upload(
+            'samples/pinguin.png',
+            "song_arrangement",
+            417,
+            'pinguin.png',
+            overwrite=True)
         song = self.api.get_songs(song_id=408)[0]
-        self.assertEqual(len(song['arrangements'][0]['files']), 2, 'check that overwrite is applied on upload')
+        self.assertEqual(len(song['arrangements'][0]['files']),
+                         2, 'check that overwrite is applied on upload')
 
         # 3. Overwrite without existing file
-        self.api.file_upload('samples/pinguin.png', "song_arrangement", 417, 'pinguin2.png', overwrite=True)
+        self.api.file_upload(
+            'samples/pinguin.png',
+            "song_arrangement",
+            417,
+            'pinguin2.png',
+            overwrite=True)
         song = self.api.get_songs(song_id=408)[0]
-        self.assertEqual(len(song['arrangements'][0]['files']), 3, 'check that both file with overwrite of new file')
+        self.assertEqual(len(song['arrangements'][0]['files']),
+                         3, 'check that both file with overwrite of new file')
 
-        # 3.b Try overwriting again and check that number of files does not increase
-        self.api.file_upload('samples/pinguin.png', "song_arrangement", 417, 'pinguin.png', overwrite=True)
+        # 3.b Try overwriting again and check that number of files does not
+        # increase
+        self.api.file_upload(
+            'samples/pinguin.png',
+            "song_arrangement",
+            417,
+            'pinguin.png',
+            overwrite=True)
         song = self.api.get_songs(song_id=408)[0]
-        self.assertEqual(len(song['arrangements'][0]['files']), 3, 'check that still only 3 file exists')
+        self.assertEqual(len(song['arrangements'][0]['files']),
+                         3, 'check that still only 3 file exists')
 
         # 4. Delete only one file
         self.api.file_delete("song_arrangement", 417, "pinguin.png")
         song = self.api.get_songs(song_id=408)[0]
-        self.assertEqual(len(song['arrangements'][0]['files']), 2, 'check that still only 2 file exists')
+        self.assertEqual(len(song['arrangements'][0]['files']),
+                         2, 'check that still only 2 file exists')
 
         # cleanup delete all files
         self.api.file_delete('song_arrangement', 417)
         song = self.api.get_songs(song_id=408)[0]
-        self.assertEqual(len(song['arrangements'][0]['files']), 0, 'check that files are deleted')
+        self.assertEqual(
+            len(song['arrangements'][0]['files']), 0, 'check that files are deleted')
 
     def test_create_edit_delete_song(self):
         """
@@ -426,21 +480,27 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertIsInstance(result, list)
         self.assertEqual(1, len(result))
         self.assertIsInstance(result[0], dict)
-        result_date = datetime.strptime(result[0]['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date()
+        result_date = datetime.strptime(
+            result[0]['startDate'],
+            '%Y-%m-%dT%H:%M:%S%z').astimezone().date()
         today_date = datetime.today().date()
         self.assertGreaterEqual(result_date, today_date)
 
         # load last event (direction, limit)
         result = self.api.get_events(limit=1, direction='backward')
-        result_date = datetime.strptime(result[0]['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date()
+        result_date = datetime.strptime(
+            result[0]['startDate'],
+            '%Y-%m-%dT%H:%M:%S%z').astimezone().date()
         self.assertLessEqual(result_date, today_date)
 
         # Load events after 7 days (from)
         next_week_date = today_date + timedelta(days=7)
         next_week_formatted = next_week_date.strftime('%Y-%m-%d')
         result = self.api.get_events(from_=next_week_formatted)
-        result_min_date = min([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date() for item in result])
-        result_max_date = max([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date() for item in result])
+        result_min_date = min([datetime.strptime(
+            item['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date() for item in result])
+        result_max_date = max([datetime.strptime(
+            item['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date() for item in result])
         self.assertGreaterEqual(result_min_date, next_week_date)
         self.assertGreaterEqual(result_max_date, next_week_date)
 
@@ -449,19 +509,27 @@ class TestsChurchToolsApi(unittest.TestCase):
         next2_week_formatted = next2_week_date.strftime('%Y-%m-%d')
         today_date_formatted = today_date.strftime('%Y-%m-%d')
 
-        result = self.api.get_events(from_=today_date_formatted, to_=next2_week_formatted)
-        result_min = min([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date() for item in result])
-        result_max = max([datetime.strptime(item['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date() for item in result])
-        self.assertLessEqual(result_min, next_week_date)  # only works if there is an event within 7 days on demo system
+        result = self.api.get_events(
+            from_=today_date_formatted,
+            to_=next2_week_formatted)
+        result_min = min([datetime.strptime(
+            item['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date() for item in result])
+        result_max = max([datetime.strptime(
+            item['startDate'], '%Y-%m-%dT%H:%M:%S%z').astimezone().date() for item in result])
+        # only works if there is an event within 7 days on demo system
+        self.assertLessEqual(result_min, next_week_date)
         self.assertLessEqual(result_max, next2_week_date)
 
         # missing keyword pair warning
         with self.assertLogs(level=logging.WARNING) as captured:
             item = self.api.get_events(to_=next2_week_formatted)
         self.assertEqual(len(captured.records), 1)
-        self.assertEqual(['WARNING:root:Use of to_ is only allowed together with from_'], captured.output)
+        self.assertEqual(
+            ['WARNING:root:Use of to_ is only allowed together with from_'],
+            captured.output)
 
-        # load more than 10 events (pagination #TODO #1 improve test case for pagination
+        # load more than 10 events (pagination #TODO #1 improve test case for
+        # pagination
         result = self.api.get_events(direction='forward', limit=11)
         self.assertIsInstance(result, list)
         self.assertGreaterEqual(len(result), 11)
@@ -501,16 +569,19 @@ class TestsChurchToolsApi(unittest.TestCase):
 
         event = self.api.get_events(eventId=eventId)
 
-        original_count = self.api.get_event_services_counts_ajax(eventId=eventId, serviceId=serviceId)
+        original_count = self.api.get_event_services_counts_ajax(
+            eventId=eventId, serviceId=serviceId)
         self.assertEqual(original_count, {serviceId: original_count_comapre})
 
         result = self.api.set_event_services_counts_ajax(eventId, serviceId, 2)
         self.assertTrue(result)
 
-        new_count = self.api.get_event_services_counts_ajax(eventId=eventId, serviceId=serviceId)
+        new_count = self.api.get_event_services_counts_ajax(
+            eventId=eventId, serviceId=serviceId)
         self.assertEqual(new_count, {serviceId: 2})
 
-        result = self.api.set_event_services_counts_ajax(eventId, serviceId, original_count[serviceId])
+        result = self.api.set_event_services_counts_ajax(
+            eventId, serviceId, original_count[serviceId])
         self.assertTrue(result)
 
     def test_get_set_event_admins(self):
@@ -535,7 +606,9 @@ class TestsChurchToolsApi(unittest.TestCase):
         admin_ids_test = self.api.get_event_admins_ajax(eventId)
         self.assertEqual(admin_ids_change, admin_ids_test)
 
-        self.assertTrue(self.api.set_event_admins_ajax(eventId, admin_ids_original_test))
+        self.assertTrue(
+            self.api.set_event_admins_ajax(
+                eventId, admin_ids_original_test))
 
     def test_get_event_masterdata(self):
         """
@@ -552,9 +625,11 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertGreater(len(result), 1)
         self.assertEqual(result[0]['name'], 'Programm')
 
-        result = self.api.get_event_masterdata(type='serviceGroups', returnAsDict=True)
+        result = self.api.get_event_masterdata(
+            type='serviceGroups', returnAsDict=True)
         self.assertIsInstance(result, dict)
-        result = self.api.get_event_masterdata(type='serviceGroups', returnAsDict=False)
+        result = self.api.get_event_masterdata(
+            type='serviceGroups', returnAsDict=False)
         self.assertIsInstance(result, list)
 
     def test_get_event_agenda(self):
@@ -571,7 +646,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertIsNotNone(result)
 
     def test_export_event_agenda(self):
-        """ 
+        """
         IMPORTANT - This test method and the parameters used depend on the target system!
 
         Test function to download an Event Agenda file package for e.g. Songbeamer
@@ -591,10 +666,12 @@ class TestsChurchToolsApi(unittest.TestCase):
                 os.remove('downloads/' + file)
             self.assertEqual(len(os.listdir('downloads')), 0)
 
-        download_result = self.api.export_event_agenda('SONG_BEAMER', agendaId=agendaId)
+        download_result = self.api.export_event_agenda(
+            'SONG_BEAMER', agendaId=agendaId)
         self.assertTrue(download_result)
 
-        download_result = self.api.export_event_agenda('SONG_BEAMER', eventId=eventId)
+        download_result = self.api.export_event_agenda(
+            'SONG_BEAMER', eventId=eventId)
         self.assertTrue(download_result)
 
         self.assertEqual(len(os.listdir('downloads')), 2)

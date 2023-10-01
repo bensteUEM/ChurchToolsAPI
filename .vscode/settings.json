@@ -2,10 +2,15 @@
     "python.testing.unittestArgs": [
         "-v",
         "-s",
-        ".",
+        "./tests",
         "-p",
-        "test*.py"
+        "test_*.py"
     ],
     "python.testing.pytestEnabled": false,
-    "python.testing.unittestEnabled": true
+    "python.testing.unittestEnabled": true,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.autopep8",
+        "editor.formatOnSave": true
+    },
+    "python.formatting.provider": "none"
 }
