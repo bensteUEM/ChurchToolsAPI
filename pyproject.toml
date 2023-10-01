@@ -1,20 +1,29 @@
 [tool.poetry]
-name = "churchtools-api"
+name = "ChurchToolsApi"
 version = "1.4.2"
 description = "A python wrapper for use with ChurchToolsAPI"
-authors = ["bensteUEM", "kolibri52", "fschrempf"]
+authors = [
+    "bensteUEM",
+    "kolibri52",
+    "fschrempf",
+]
+homepage = "https://github.com/bensteUEM/ChurchToolsAPI"
 license = "CC-BY-SA"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 python-docx = ">=0.8.11"
 requests = ">=2.31.0"
 
 [tool.poetry.group.dev.dependencies]
 poetry = ">=1.6.1"
-tomli ) ">=2.0.1"
+tomli_w = ">=1.0.0"
+wheel = ">=0.41.2"
+setuptools = ">= 66.1.1"
 
 [build-system]
-requires = ["poetry-core"]
+requires = [
+    "poetry-core",
+]
 build-backend = "poetry.core.masonry.api"

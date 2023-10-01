@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-from versions import VERSION
+from version import VERSION
 
 with open("README.md", "r") as file:
     description = file.read()
@@ -12,7 +12,7 @@ setup(
     version=VERSION,
     author='bensteUEM',
     author_email='benedict.stein@gmail.com',
-    description='A python package to make use of ChurchTools API and offer a Basic WebUI for some functions',
+    description='A python package to make use of ChurchTools API',
     long_description=description,
     long_description_content_type="text/markdown",
     url='https://github.com/bensteUEM/ChurchToolsAPI',
