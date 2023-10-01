@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "churchtools-api"
+version = "1.4.2"
+description = "A python wrapper for use with ChurchToolsAPI"
+authors = ["bensteUEM", "kolibri52", "fschrempf"]
+license = "CC-BY-SA"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+python-docx = ">=0.8.11"
+requests = ">=2.31.0"
+
+[tool.poetry.group.dev.dependencies]
+poetry = ">=1.6.1"
+tomli ) ">=2.0.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
