@@ -205,6 +205,16 @@ class TestsChurchToolsApi(unittest.TestCase):
             self.assertTrue('name' in grouptype)
             self.assertEqual(grouptype['id'], 2)
             self.assertEqual(grouptype['name'], 'Dienst')
+            
+    def test_get_group_permissions(self):
+        """
+        IMPORTANT - This test method and the parameters used depend on the target system!
+        Checks that the permissions for a group can be retrieved and matches the test permissions.
+        :return:
+        """
+        permissions = self.api.get_group_permissions(group_id=103)
+        self.assertEqual(permissions['churchdb']['+see group'], 0)
+        self.assertFalse(permissions['churchdb']['+edit group infos'])
 
     def test_file_upload_replace_delete(self):
         """
