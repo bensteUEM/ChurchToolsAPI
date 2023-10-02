@@ -20,17 +20,17 @@ pyproject_toml_content = {
             "readme": "README.md",
             "dependencies": {
                 "python": "^3.8",
-                "python-docx": ">=0.8.11",
-                "requests": ">=2.31.0"
+                "python-docx": "^0.8.11",
+                "requests": "^2.31.0"
             },
             "group": {
                 "dev": {
                     "dependencies": {
-                        "poetry": ">=1.6.1",
-                        "tomli_w": ">=1.0.0",
-                        "wheel": ">=0.41.2",
-                        "setuptools": ">= 66.1.1",
-                        "autopep": ">= 2.0.4"
+                        "poetry": "^1.6.1",
+                        "tomli_w": "^1.0.0",
+                        "wheel": "^0.41.2",
+                        "setuptools": "^66.1.1",
+                        "autopep8": "^2.0.4"
                     }
                 }
             }
