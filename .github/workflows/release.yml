@@ -12,7 +12,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Version from Python
-        run: echo "VERSION=$(python3 -c 'import versions; print(versions.VERSION)')" >> $GITHUB_ENV
+        run: echo "VERSION=$(python3 -c 'import version; print(version.VERSION)')" >> $GITHUB_ENV
 
       - name: Set up Python
         uses: actions/setup-python@v4.6.1
