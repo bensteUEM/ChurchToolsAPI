@@ -11,7 +11,7 @@ version = version_module.__version__
 pyproject_toml_content = {
     "tool": {
         "poetry": {
-            "name": "ChurchToolsApi",
+            "name": "churchtools_api",
             "version": version,
             "description": "A python wrapper for use with ChurchToolsAPI",
             "authors": ["bensteUEM", "kolibri52", "fschrempf"],

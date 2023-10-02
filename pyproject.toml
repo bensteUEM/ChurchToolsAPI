@@ -21,6 +21,7 @@ poetry = ">=1.6.1"
 tomli_w = ">=1.0.0"
 wheel = ">=0.41.2"
 setuptools = ">= 66.1.1"
+autopep = ">= 2.0.4"
 
 [build-system]
 requires = [
