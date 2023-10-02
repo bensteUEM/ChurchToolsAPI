@@ -4,7 +4,7 @@ import os
 import unittest
 from datetime import datetime, timedelta
 
-from ChurchToolsApi import ChurchToolsApi
+from churchtools_api.churchtools_api import ChurchToolsApi
 
 
 class TestsChurchToolsApi(unittest.TestCase):
