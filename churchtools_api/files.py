@@ -23,9 +23,10 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
         Args:
             source_filepath: file to be opened e.g. with open('media/pinguin.png', 'rb')
             domain_type: The ct_domain type, currently supported are 'avatar', 'groupimage', 'logo', 'attatchments',
-                     'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
+                'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
             domain_identifier: ID of the object in ChurchTools
-                     (HINT to work with attachments in songs please keep in mind these are linked with song_arrangements and these IDs differ from songId!)
+                (HINT to work with attachments in songs please keep in mind these are linked with song_arrangements and these IDs differ from songId!)
+                e.g. of song_arrangement - For songs this technical number can be obtained running get_songs()
             custom_file_name: optional file name - if not specified the one from the file is used
             overwrite: if true delete existing file before upload of new one to replace
 
@@ -85,21 +86,25 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
             logging.warning(response.content.decode())
             return False
 
-    def file_delete(self, domain_type, domain_identifier,
-                    filename_for_selective_delete=None):
+    def file_delete(self, domain_type: str, domain_identifier: int,
+                    filename_for_selective_delete: bool = None) -> bool:
         """
         Helper function to delete ALL attachments of any specified module of ChurchTools#
         or identifying individual file_name_ids and deleting specifc files only
-        :param domain_type:  The ct_domain type, currently supported are 'avatar', 'groupimage', 'logo', 'attatchments',
-         'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
-        :type domain_type: str
-        :param domain_identifier: ID of the object in ChurchTools
-        :type domain_identifier: int
-        :param filename_for_selective_delete: name of the file to be deleted - all others will be kept
-        :type filename_for_selective_delete: str
-        :return: if successful
-        :rtype: bool
+
+        Args:
+            filename: display name of the file as shown in ChurchTools
+            domain_type: The ct_domain type, currently supported are 'avatar', 'groupimage', 'logo', 'attatchments',
+                'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
+            domain_identifier: ID of the object in ChurchTools
+                (HINT to work with attachments in songs please keep in mind these are linked with song_arrangements and these IDs differ from songId!)
+                e.g. of song_arrangement - For songs this technical number can be obtained running get_songs()
+            filename_for_selective_delete: name of the file to be deleted - all others will be kept
+
+        Returns:
+            if successful
         """
+
         url = self.domain + \
             '/api/files/{}/{}'.format(domain_type, domain_identifier)
 
@@ -118,21 +123,24 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
 
         return response.status_code == 204  # success code for delete action upload
 
-    def file_download(self, filename, domain_type,
-                      domain_identifier, target_path='./downloads'):
+    def file_download(self, filename: str, domain_type: str,
+                      domain_identifier: int, target_path: str = './downloads') -> bool:
         """
         Retrieves the first file from ChurchTools for specific filename, domain_type and domain_identifier from churchtools
-        :param filename: display name of the file as shown in ChurchTools
-        :type filename: str
-        :param domain_type: Currently supported are either 'avatar', 'groupimage', 'logo', 'attatchments', 'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'
-        :type domain_type: str
-        :param domain_identifier: = Id e.g. of song_arrangement - For songs this technical number can be obtained running get_songs()
-        :type domain_identifier: str
-        :param target_path: local path as target for the download (without filename) - will be created if not exists
-        :type target_path: str
-        :return: if successful
-        :rtype: bool
+
+        Args:
+            filename: display name of the file as shown in ChurchTools
+            domain_type: The ct_domain type, currently supported are 'avatar', 'groupimage', 'logo', 'attatchments',
+                     'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
+            domain_identifier: ID of the object in ChurchTools
+                     (HINT to work with attachments in songs please keep in mind these are linked with song_arrangements and these IDs differ from songId!)
+                     e.g. of song_arrangement - For songs this technical number can be obtained running get_songs()
+            target_path: local path as target for the download (without filename) - will be created if not exists Defaults to './downloads'.
+
+        Returns:
+            if successful
         """
+
         StateOK = False
         CHECK_FOLDER = os.path.isdir(target_path)
 
@@ -173,17 +181,18 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
             logging.warning(
                 "Something went wrong fetching SongArrangement-Files: {}".format(response.status_code))
 
-    def file_download_from_url(self, file_url, target_path):
+    def file_download_from_url(self, file_url: str, target_path: str) -> bool:
         """
         Retrieves file from ChurchTools for specific file_url from churchtools
         This function is used by file_download(...)
-        :param file_url: Example file_url=https://lgv-oe.church.tools/?q=public/filedownload&id=631&filename=738db42141baec592aa2f523169af772fd02c1d21f5acaaf0601678962d06a00
+
+        Args:
+            file_url: Example file_url=https://lgv-oe.church.tools/?q=public/filedownload&id=631&filename=738db42141baec592aa2f523169af772fd02c1d21f5acaaf0601678962d06a00
                 Pay Attention: this file-url consists of a specific / random filename which was created by churchtools
-        :type file_url: str
-        :param target_path: directory to drop the download into - must exist before use!
-        :type target_path: str
-        :return: if successful
-        :rtype: bool
+            target_path: directory to drop the download into - must exist before use!
+
+        Returns:
+            if successful
         """
         # NOTE the stream=True parameter below
         with self.session.get(url=file_url, stream=True) as r:
