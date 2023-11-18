@@ -15,24 +15,22 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
     def __init__(self):
         super()
 
-    def file_upload(self, source_filepath, domain_type,
-                    domain_identifier, custom_file_name=None, overwrite=False):
+    def file_upload(self, source_filepath: str, domain_type: str,
+                    domain_identifier: int, custom_file_name: str = None, overwrite: bool = False) -> bool:
         """
         Helper function to upload an attachment to any module of ChurchTools
-        :param source_filepath: file to be opened e.g. with open('media/pinguin.png', 'rb')
-        :type source_filepath: str
-        :param domain_type:  The ct_domain type, currently supported are 'avatar', 'groupimage', 'logo', 'attatchments',
-         'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
-        :type domain_type: str
-        :param domain_identifier: ID of the object in ChurchTools
-        :type domain_identifier: int
-        :param custom_file_name: optional file name - if not specified the one from the file is used
-        :type custom_file_name: str
-        :param overwrite: if true delete existing file before upload of new one to replace \
-        it's content instead of creating a copy
-        :type overwrite: bool
-        :return: if successful
-        :rtype: bool
+
+        Args:
+            source_filepath: file to be opened e.g. with open('media/pinguin.png', 'rb')
+            domain_type: The ct_domain type, currently supported are 'avatar', 'groupimage', 'logo', 'attatchments',
+                     'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
+            domain_identifier: ID of the object in ChurchTools
+                     (HINT to work with attachments in songs please keep in mind these are linked with song_arrangements and these IDs differ from songId!)
+            custom_file_name: optional file name - if not specified the one from the file is used
+            overwrite: if true delete existing file before upload of new one to replace
+
+        Returns:
+            if successful
         """
 
         source_file = open(source_filepath, 'rb')

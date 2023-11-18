@@ -141,29 +141,49 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertEqual(
             len(song['arrangements'][0]['files']), 0, 'check that files are deleted')
 
-    def test_file_download(self):
-        """ Test of file_download and file_download_from_url on https://elkw1610.krz.tools on any song
-        IDs  vary depending on the server used
-        On ELKW1610.KRZ.TOOLS song ID 762 has arrangement 774 does exist
+    def test_file_upload_download(self):
+        """ Test of file_upload, file_download and file_download_from_url
 
-        Uploads a test file
-        downloads the file via same ID
-        checks that file and content match
-        deletes test file
+        IDs vary depending on the server used
+        On ELKW1610.KRZ.TOOLS song ID 750 has one arrangement with ID 762
+
+        1. Uploads a test file
+        2. downloads the file via same ID
+        3. checks that file and content match
+        4. deletes test file
+
+        uses test.txt and test_umläut.txt
         """
-        test_id = 762
+        for filename in ['test.txt', 'test_umläut.txt']:
+            # 1 Upload
+            song_test_id = 762
+            filePath_sample = f'samples/{filename}'
+            self.api.file_upload(
+                filePath_sample,
+                'song_arrangement',
+                song_test_id)
 
-        self.api.file_upload('samples/test.txt', 'song_arrangement', test_id)
+            # 2. Download
+            filePath_test = f'downloads/{filename}'
+            if os.path.exists(filePath_test):
+                os.remove(filePath_test)
 
-        filePath = 'downloads/test.txt'
-        if os.path.exists(filePath):
-            os.remove(filePath)
+            self.api.file_download(
+                filename,
+                'song_arrangement',
+                song_test_id)
 
-        self.api.file_download('test.txt', 'song_arrangement', test_id)
-        with open(filePath, "r") as file:
-            download_text = file.read()
-        self.assertEqual('TEST CONTENT', download_text)
+            # 3. Compare
+            with open(filePath_sample, "r", encoding='utf8') as file:
+                sample_text = file.read()
+            with open(filePath_test, "r", encoding='utf8') as file:
+                test_text = file.read()
+            self.assertEqual(
+                sample_text,
+                test_text,
+                'If download and upload are successful the text should match')
 
-        self.api.file_delete('song_arrangement', test_id, 'test.txt')
-        if os.path.exists(filePath):
-            os.remove(filePath)
+            # 4. Cleanup
+            self.api.file_delete('song_arrangement', song_test_id, filename)
+            if os.path.exists(filePath_test):
+                os.remove(filePath_test)
