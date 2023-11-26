@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import docx
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
@@ -27,8 +27,8 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         Keyword Arguments:
             eventId (int): number of event for single event lookup
 
-            from_ (str|datetime): with starting date in format YYYY-MM-DD - added _ to name as opposed to ct_api because of reserved keyword
-            to_ (str|datetime): end date in format YYYY-MM-DD ONLY allowed with from_ - added _ to name as opposed to ct_api because of reserved keyword
+            from_ (str|datetime): used as >= with starting date in format YYYY-MM-DD - added _ to name as opposed to ct_api because of reserved keyword
+            to_ (str|datetime): used as < end date in format YYYY-MM-DD ONLY allowed with from_ - added _ to name as opposed to ct_api because of reserved keyword
             canceled (bool): If true, include also canceled events
             direction (str): direction of output 'forward' or 'backward' from the date defined by parameter 'from'
             limit (int): limits the number of events - Default = 1, if all events shall be retrieved insert 'None', only applies if direction is specified
@@ -110,6 +110,43 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             logging.warning(
                 "Something went wrong fetching events: {}".format(
                     response.status_code))
+
+    def get_event_by_calendar_appointment(self, appointment_id: int,
+                                          start_date: str | datetime) -> int:
+        """
+        This method is a helper to retrieve an event for a specific calendar appointment
+
+        Args:
+            appointment_id: _description_
+            start_date: either "2023-11-26T09:00:00Z", "2023-11-26" str or datetime
+
+        Returns:
+            event_id
+        """
+
+        if not isinstance(start_date, datetime):
+            formats = {'iso': '%Y-%m-%dT%H:%M:%SZ', 'date': "%Y-%m-%d"}
+            for format in formats:
+                try:
+                    start_date = datetime.strptime(start_date, format)
+                    break
+                except ValueError:
+                    continue
+
+        events = self.get_events(
+            from_=start_date,
+            to_=start_date +
+            timedelta(days=1))
+
+        for event in events:
+            if event['appointmentId'] == appointment_id:
+                return event
+
+        logging.info(
+            'no event references appointment ID %s on start %s',
+            appointment_id,
+            start_date)
+        return None
 
     def get_AllEventData_ajax(self, eventId):
         """
