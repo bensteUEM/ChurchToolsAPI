@@ -1,6 +1,7 @@
 import json
 import logging
 
+from datetime import datetime
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
 
@@ -48,8 +49,8 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
             kwargs: optional params to limit the results
 
         Keyword Arguments:
-            from_ (str): with starting date in format YYYY-MM-DD - added _ to name as opposed to ct_api because of reserved keyword
-            to_ (str): end date in format YYYY-MM-DD ONLY allowed with from_ - added _ to name as opposed to ct_api because of reserved keyword
+            from_ (str|datetime): with starting date in format YYYY-MM-DD - added _ to name as opposed to ct_api because of reserved keyword
+            to_ (str|datetime): end date in format YYYY-MM-DD ONLY allowed with from_ - added _ to name as opposed to ct_api because of reserved keyword
             appointment_id (int): limit to one appointment only - requires calendarId keyword!
 
         Returns:
@@ -74,11 +75,17 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         }
 
         if 'from_' in kwargs.keys():
-            if len(kwargs['from_']) == 10:
-                params['from'] = kwargs['from_']
+            from_ = kwargs['from_']
+            if isinstance(from_, datetime):
+                from_ = from_.strftime("%Y-%m-%d")
+            if len(from_) == 10:
+                params['from'] = from_
         if 'to_' in kwargs.keys() and 'from_' in kwargs.keys():
-            if len(kwargs['to_']) == 10:
-                params['to'] = kwargs['to_']
+            to_ = kwargs['to_']
+            if isinstance(to_, datetime):
+                to_ = to_.strftime("%Y-%m-%d")
+            if len(to_) == 10:
+                params['to'] = to_
         elif 'to_' in kwargs.keys():
             logging.warning(
                 'Use of to_ is only allowed together with from_')

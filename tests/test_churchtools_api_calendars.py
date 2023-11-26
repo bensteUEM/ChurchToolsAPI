@@ -90,6 +90,24 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertIn('id', result[0].keys())
         self.assertEqual(test_appointment_id, result[0]['id'])
 
+    def test_get_calendar_apointments_datetime(self):
+        """
+        Tries to retrieve calendar appointments using datetime instead of str params
+        IMPORTANT - This test method and the parameters used depend on the target system!
+        Requires the connected test system to have a calendar mapped as ID 2 (or changed if other system)
+        Calendar 2 should have 3 appointments on 19.11.2023
+        One event should be appointment ID=327032
+        """
+
+        # One calendar with from and to date (exactly 4 appointments)
+        from_ = datetime(year=2023, month=11, day=19)
+        to_ = datetime(year=2023, month=11, day=19)
+        result = self.api.get_calendar_appointments(
+            calendar_ids=[2], from_=from_, to_=to_)
+        self.assertEqual(len(result), 3)
+        self.assertIsInstance(result, list)
+        self.assertIn('id', result[0].keys())
+
     def test_get_calendar_appoints_on_seriess(self):
         """
         This test should check the behaviour of get_calendar_appointments on a series

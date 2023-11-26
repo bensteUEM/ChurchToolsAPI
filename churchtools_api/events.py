@@ -17,19 +17,25 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
     def __init__(self):
         super()
 
-    def get_events(self, **kwargs):
+    def get_events(self, **kwargs) -> list[dict]:
         """
         Method to get all the events from given timespan or only the next event
-        :param kwargs: optional params to modify the search criteria
-        :key eventId: int: number of event for single event lookup
-        :key from_: str: with starting date in format YYYY-MM-DD - added _ to name as opposed to ct_api because of reserved keyword
-        :key to_: str: end date in format YYYY-MM-DD ONLY allowed with from_ - added _ to name as opposed to ct_api because of reserved keyword
-        :key canceled: bool: If true, include also canceled events
-        :key direction: str: direction of output 'forward' or 'backward' from the date defined by parameter 'from'
-        :key limit: int: limits the number of events - Default = 1, if all events shall be retrieved insert 'None', only applies if direction is specified
-        :key include: str: if Parameter is set to 'eventServices', the services of the event will be included
-        :return: list of events
-        :rtype: list[dict]
+
+        Arguments:
+            kwargs: optional params to modify the search criteria
+
+        Keyword Arguments:
+            eventId (int): number of event for single event lookup
+
+            from_ (str|datetime): with starting date in format YYYY-MM-DD - added _ to name as opposed to ct_api because of reserved keyword
+            to_ (str|datetime): end date in format YYYY-MM-DD ONLY allowed with from_ - added _ to name as opposed to ct_api because of reserved keyword
+            canceled (bool): If true, include also canceled events
+            direction (str): direction of output 'forward' or 'backward' from the date defined by parameter 'from'
+            limit (int): limits the number of events - Default = 1, if all events shall be retrieved insert 'None', only applies if direction is specified
+            include (str): if Parameter is set to 'eventServices', the services of the event will be included
+
+        Returns:
+            list of events
         """
         url = self.domain + '/api/events'
 
@@ -43,11 +49,17 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
 
         else:
             if 'from_' in kwargs.keys():
-                if len(kwargs['from_']) == 10:
-                    params['from'] = kwargs['from_']
+                from_ = kwargs['from_']
+                if isinstance(from_, datetime):
+                    from_ = from_.strftime("%Y-%m-%d")
+                if len(from_) == 10:
+                    params['from'] = from_
             if 'to_' in kwargs.keys() and 'from_' in kwargs.keys():
-                if len(kwargs['to_']) == 10:
-                    params['to'] = kwargs['to_']
+                to_ = kwargs['to_']
+                if isinstance(to_, datetime):
+                    to_ = to_.strftime("%Y-%m-%d")
+                if len(to_) == 10:
+                    params['to'] = to_
             elif 'to_' in kwargs.keys():
                 logging.warning(
                     'Use of to_ is only allowed together with from_')
