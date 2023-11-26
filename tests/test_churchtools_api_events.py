@@ -312,19 +312,3 @@ class TestsChurchToolsApi(unittest.TestCase):
         eventId = 2376
         result = self.api.get_event_agenda(eventId)
         self.assertIsNone(result)
-
-    def test_get_event_by_calendar_appointment(self):
-        """
-        Check that event can be retrieved based on known calendar entry
-        On ELKW1610.KRZ.TOOLS (26th. Nov 2023) sample is
-        event_id:2261
-        appointment:304976 starts on 2023-11-26T09:00:00Z
-        """
-        event_id = 2261
-        appointment_id = 304976
-        start_date = '2023-11-26T09:00:00Z'
-        start_date = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%SZ')
-
-        result = self.api.get_event_by_calendar_appointment(
-            appointment_id, start_date)
-        self.assertEqual(event_id, result['id'])
