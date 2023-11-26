@@ -148,3 +148,14 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertEqual(result[-1]['caption'], "Gottesdienst Friedrichstal")
         self.assertEqual(result[-1]['startDate'], "2023-11-26T08:00:00Z")
         self.assertEqual(result[-1]['endDate'], "2023-11-26T09:00:00Z")
+
+    def test_get_calendar_appointments_none(self):
+        """
+        Check that there is no error if no item can be found
+        There should be no calendar appointments on the specified day
+        """
+        # Appointment Series by ID
+        result = self.api.get_calendar_appointments(
+            calendar_ids=[52], from_="2023-12-03", to_="2023-12-04")
+
+        self.assertIsNone(result)

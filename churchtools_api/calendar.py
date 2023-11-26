@@ -57,6 +57,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
             list of calendar appointment / appointments
             simplified to appointments only if indidividual occurance is relevant (e.g. lookup by date)
             startDate and endDate overwritten by actual date if calculated date of series is unambiguous
+            Nothing in case something is off or nothing exists
         """
 
         url = self.domain + '/api/calendars'
@@ -123,8 +124,12 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
                     response_data.extend(response_content['data'])
                 result = response_data
 
+            if len(result) == 0:
+                logging.info(
+                    'There are not calendar appointments with the requested params')
+                return
             # clean result
-            if 'base' in result[0].keys():
+            elif 'base' in result[0].keys():
                 merged_appointments = []
                 for appointment in result:
                     appointment['base']['startDate'] = appointment['calculated']['startDate']
