@@ -251,3 +251,47 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             logging.warning(
                 "Something went wrong fetching group permissions: {}".format(
                     response.status_code))
+
+    def get_group_members(self, group_id: int, **kwargs):
+        """
+        Get list of members for the given group
+        :param group_id: int: required group id
+        :keyword role_ids: list[int]: optional filter list of role ids
+        :return: list of group member dicts
+        :rtype: list[dict]
+        """
+        url = self.domain + '/api/groups/{}/members'.format(group_id)
+        headers = {
+            'accept': 'application/json'
+        }
+        params = {}
+
+        if 'role_ids' in kwargs.keys():
+            params['role_ids[]'] = kwargs['role_ids']
+
+        response = self.session.get(url=url, headers=headers, params=params)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_data = response_content['data'].copy()
+            logging.debug(
+                "First response of Group Members successful {}".format(response_content))
+
+            if 'meta' not in response_content.keys():  # Shortcut without Pagination
+                return response_data
+
+             # Long part extending results with pagination
+            while response_content['meta']['pagination']['current'] \
+                    < response_content['meta']['pagination']['lastPage']:
+                logging.info("page {} of {}".format(response_content['meta']['pagination']['current'],
+                                                    response_content['meta']['pagination']['lastPage']))
+                params['page'] = response_content['meta']['pagination']['current'] + 1
+                response = self.session.get(
+                    url=url, headers=headers, params=params)
+                response_content = json.loads(response.content)
+                response_data.extend(response_content['data'])
+
+            return response_data
+        else:
+            logging.warning(
+                "Something went wrong fetching group members: {}".format(response.status_code))

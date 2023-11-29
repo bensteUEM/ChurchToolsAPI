@@ -326,6 +326,31 @@ class TestsChurchToolsApi(unittest.TestCase):
         group = self.api.get_groups(group_id=test_group_id)
         self.assertEqual(group['information']['note'], '')
 
+    def test_get_group_members(self):
+        """
+        IMPORTANT - This test method and the parameters used depend on the target system!
+        Checks if group members can be retrieved from the group and filtering
+        for role ids works.
+        :return:
+        """
+        test_group_id = 103
+        grouptype_role_id = 2
+        members = self.api.get_group_members(group_id=test_group_id)
+        self.assertIsNotNone(members)
+        self.assertNotEqual(members, [])
+        for member in members:
+            self.assertIn('personId', member)
+
+        members = self.api.get_group_members(
+            group_id=test_group_id,
+            role_ids=[grouptype_role_id]
+        )
+        self.assertIsNotNone(members)
+        self.assertNotEqual(members, [])
+        for member in members:
+            self.assertIn('personId', member)
+            self.assertEqual(member['groupTypeRoleId'], grouptype_role_id)
+
     def test_get_global_permissions(self):
         """
         IMPORTANT - This test method and the parameters used depend on the target system!
