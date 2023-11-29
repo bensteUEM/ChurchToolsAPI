@@ -192,6 +192,18 @@ class TestsChurchToolsApi(unittest.TestCase):
             self.assertTrue('parents' in hierarchy)
             self.assertTrue('children' in hierarchy)
 
+    def test_get_group_statistics(self):
+        """
+        Checks that the statistics for a group can be retrieved and certain keys
+        exist in the dict.
+        :return:
+        """
+        stats = self.api.get_group_statistics(group_id=103)
+        self.assertIsNotNone(stats)
+        self.assertIn('unfiltered', stats)
+        self.assertIn('freePlaces', stats['unfiltered'])
+        self.assertIn('takenPlaces', stats['unfiltered'])
+
     def test_get_grouptypes(self):
         """
         1. Check that the list of grouptypes can be retrieved and each element contains the keys 'id' and 'name'.
