@@ -377,3 +377,41 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         else:
             logging.warning(
                 "Something went wrong fetching group roles: {}".format(response.status_code))
+
+    def add_parent_group(self, group_id: int, parent_group_id: int):
+        """
+        Add a parent group for a group
+        :param group_id: int: required group id
+        :param parent_group_id: int: required parent group id
+        :return: True if successful
+        :rtype: bool
+        """
+        url = self.domain + \
+            '/api/groups/{}/parents/{}'.format(group_id, parent_group_id)
+        response = self.session.put(url=url)
+
+        if response.status_code == 201:
+            logging.debug("First response of Add Parent Group successful")
+            return True
+        else:
+            logging.warning("Something went wrong adding parent group: {}".format(
+                response.status_code))
+
+    def remove_parent_group(self, group_id: int, parent_group_id: int):
+        """
+        REmove a parent group from a group
+        :param group_id: int: required group id
+        :param parent_group_id: int: required parent group id
+        :return: True if successful
+        :rtype: bool
+        """
+        url = self.domain + \
+            '/api/groups/{}/parents/{}'.format(group_id, parent_group_id)
+        response = self.session.delete(url=url)
+
+        if response.status_code == 204:
+            logging.debug("First response of Remove Parent Group successful")
+            return True
+        else:
+            logging.warning("Something went wrong removing parent group: {}".format(
+                response.status_code))
