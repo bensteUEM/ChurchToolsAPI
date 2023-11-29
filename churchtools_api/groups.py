@@ -295,3 +295,61 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         else:
             logging.warning(
                 "Something went wrong fetching group members: {}".format(response.status_code))
+
+    def add_group_member(self, group_id: int, person_id: int, **kwargs):
+        """
+        Add a member to a group
+        :param group_id: int: required group id
+        :param person_id: int: required person id
+        :keyword grouptype_role_id: int: optional grouptype role id
+        :keyword group_member_status: str: optional member status
+        :return: dict with group member
+        :rtype: dict
+        """
+        url = self.domain + \
+            '/api/groups/{}/members/{}'.format(group_id, person_id)
+        headers = {
+            'accept': 'application/json',
+        }
+
+        data = {}
+        if 'grouptype_role_id' in kwargs.keys():
+            data['groupTypeRoleId'] = kwargs['grouptype_role_id']
+        if 'group_member_status' in kwargs.keys():
+            data['group_member_status'] = kwargs['group_member_status']
+
+        response = self.session.put(
+            url=url, data=data, headers=headers)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            # For unknown reasons the endpoint returns a list of items instead
+            # of a single item as specified in the API documentation.
+            response_data = response_content['data'][0].copy()
+            logging.debug(
+                "First response of Add Group Member successful {}".format(response_content))
+
+            return response_data
+        else:
+            logging.warning(
+                "Something went wrong adding group member: {}".format(response.status_code))
+
+    def remove_group_member(self, group_id: int, person_id: int):
+        """
+        Remove the given group member
+        :param group_id: int: required group id
+        :param person_id: int: required person id
+        :return: True if successful
+        :rtype: bool
+        """
+        url = self.domain + \
+            '/api/groups/{}/members/{}'.format(group_id, person_id)
+        response = self.session.delete(url=url)
+
+        if response.status_code == 204:
+            logging.debug("First response of Remove Group member successful")
+            return True
+        else:
+            logging.warning(
+                "Something went wrong removing group member: {}".format(
+                    response.status_code))
