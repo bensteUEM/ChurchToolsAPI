@@ -192,6 +192,18 @@ class TestsChurchToolsApi(unittest.TestCase):
             self.assertTrue('parents' in hierarchy)
             self.assertTrue('children' in hierarchy)
 
+    def test_get_group_statistics(self):
+        """
+        Checks that the statistics for a group can be retrieved and certain keys
+        exist in the dict.
+        :return:
+        """
+        stats = self.api.get_group_statistics(group_id=103)
+        self.assertIsNotNone(stats)
+        self.assertIn('unfiltered', stats)
+        self.assertIn('freePlaces', stats['unfiltered'])
+        self.assertIn('takenPlaces', stats['unfiltered'])
+
     def test_get_grouptypes(self):
         """
         1. Check that the list of grouptypes can be retrieved and each element contains the keys 'id' and 'name'.
@@ -227,6 +239,74 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertEqual(permissions['churchdb']['+see group'], 2)
         self.assertTrue(permissions['churchdb']['+edit group infos'])
 
+    def test_create_and_delete_group(self):
+        """
+        IMPORTANT - This test method and the parameters used depend on the
+        target system!
+        1. Checks if groups can be created with minimal and optional parameters.
+        2. Checks if a group can be created with a name of an existing group
+           only when the 'force' parameter is set.
+        3. Checks if groups can be deleted.
+        :return:
+        """
+        grouptype_id = 2
+        group_status_id = 1
+        campus_id = 0
+        group1 = self.api.create_group(
+            "TestGroup", group_status_id=group_status_id, grouptype_id=grouptype_id
+        )
+        self.assertIsNotNone(group1)
+        self.assertEqual(group1['name'], "TestGroup")
+        self.assertEqual(group1['information']['groupTypeId'], grouptype_id)
+        self.assertEqual(
+            group1['information']['groupStatusId'],
+            group_status_id
+        )
+
+        group2 = self.api.create_group(
+            "TestGroup With Campus And Superior",
+            group_status_id=group_status_id,
+            grouptype_id=grouptype_id,
+            campus_id=campus_id,
+            superior_group_id=group1['id']
+        )
+        self.assertIsNotNone(group2)
+        self.assertEqual(group2['name'], "TestGroup With Campus And Superior")
+        self.assertEqual(group2['information']['groupTypeId'], grouptype_id)
+        self.assertEqual(
+            group2['information']['groupStatusId'],
+            group_status_id
+        )
+        self.assertEqual(group2['information']['campusId'], campus_id)
+
+        group3 = self.api.create_group(
+            "TestGroup", group_status_id=group_status_id,
+            grouptype_id=grouptype_id
+        )
+        self.assertIsNone(group3)
+
+        group3 = self.api.create_group(
+            "TestGroup", group_status_id=group_status_id,
+            grouptype_id=grouptype_id,
+            force=True
+        )
+        self.assertIsNotNone(group3)
+        self.assertEqual(group3['name'], "TestGroup")
+        self.assertEqual(group3['information']['groupTypeId'], grouptype_id)
+        self.assertEqual(
+            group3['information']['groupStatusId'],
+            group_status_id
+        )
+
+        ret = self.api.delete_group(group_id=group1['id'])
+        self.assertTrue(ret)
+
+        ret = self.api.delete_group(group_id=group2['id'])
+        self.assertTrue(ret)
+
+        ret = self.api.delete_group(group_id=group3['id'])
+        self.assertTrue(ret)
+
     def test_update_group(self):
         """
         IMPORTANT - This test method and the parameters used depend on the target system!
@@ -245,6 +325,90 @@ class TestsChurchToolsApi(unittest.TestCase):
             group_id=test_group_id, data={"note": ""})
         group = self.api.get_groups(group_id=test_group_id)
         self.assertEqual(group['information']['note'], '')
+
+    def test_get_group_members(self):
+        """
+        IMPORTANT - This test method and the parameters used depend on the target system!
+        Checks if group members can be retrieved from the group and filtering
+        for role ids works.
+        :return:
+        """
+        test_group_id = 103
+        grouptype_role_id = 2
+        members = self.api.get_group_members(group_id=test_group_id)
+        self.assertIsNotNone(members)
+        self.assertNotEqual(members, [])
+        for member in members:
+            self.assertIn('personId', member)
+
+        members = self.api.get_group_members(
+            group_id=test_group_id,
+            role_ids=[grouptype_role_id]
+        )
+        self.assertIsNotNone(members)
+        self.assertNotEqual(members, [])
+        for member in members:
+            self.assertIn('personId', member)
+            self.assertEqual(member['groupTypeRoleId'], grouptype_role_id)
+
+    def test_add_and_remove_group_members(self):
+        """
+        IMPORTANT - This test method and the parameters used depend on the target system!
+        Checks if a group member can be added to and removed from a group.
+        :return:
+        """
+        test_group_id = 103
+        test_person_id = 1
+        grouptype_role_id = 2
+        member = self.api.add_group_member(
+            group_id=test_group_id,
+            person_id=test_person_id,
+            grouptype_role_id=grouptype_role_id,
+            group_member_status='active'
+        )
+        self.assertIsNotNone(member)
+        self.assertEqual(member['personId'], test_person_id)
+        self.assertEqual(member['groupTypeRoleId'], grouptype_role_id)
+        self.assertEqual(member['groupMemberStatus'], 'active')
+
+        ret = self.api.remove_group_member(
+            group_id=test_group_id,
+            person_id=test_person_id
+        )
+        self.assertTrue(ret)
+
+    def test_get_group_roles(self):
+        """
+        Checks if group roles can be retrieved from a group
+        :return:
+        """
+        test_group_id = 103
+        roles = self.api.get_group_roles(group_id=test_group_id)
+        self.assertIsNotNone(roles)
+        self.assertNotEqual(roles, [])
+        for role in roles:
+            self.assertIn('id', role)
+            self.assertIn('groupTypeId', role)
+            self.assertIn('name', role)
+
+    def test_add_and_remove_parent_group(self):
+        """
+        Checks if a parent group can be added to and removed from a group
+        :return:
+        """
+        test_group_id = 103
+        test_parent_group_id = 104
+        ret = self.api.add_parent_group(
+            group_id=test_group_id,
+            parent_group_id=test_parent_group_id
+        )
+        self.assertTrue(ret)
+
+        ret = self.api.remove_parent_group(
+            group_id=test_group_id,
+            parent_group_id=test_parent_group_id
+        )
+        self.assertTrue(ret)
 
     def test_get_global_permissions(self):
         """
