@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "churchtools-api"
-version = "1.5.3"
+version = "1.6.0"
 description = "A python wrapper for use with ChurchToolsAPI"
 authors = [
     "bensteUEM",
@@ -22,6 +22,7 @@ tomli_w = "^1.0.0"
 wheel = "^0.41.2"
 setuptools = "^66.1.1"
 autopep8 = "^2.0.4"
+pytest = "^8.3.3"
 
 [build-system]
 requires = [

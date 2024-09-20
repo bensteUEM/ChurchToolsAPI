@@ -8,10 +8,11 @@ from churchtools_api.groups import ChurchToolsApiGroups
 from churchtools_api.songs import ChurchToolsApiSongs
 from churchtools_api.files import ChurchToolsApiFiles
 from churchtools_api.calendar import ChurchToolsApiCalendar
+from churchtools_api.resources import ChurchToolsApiResources
 
 
 class ChurchToolsApi(ChurchToolsApiPersons, ChurchToolsApiEvents, ChurchToolsApiGroups,
-                     ChurchToolsApiSongs, ChurchToolsApiFiles, ChurchToolsApiCalendar):
+                     ChurchToolsApiSongs, ChurchToolsApiFiles, ChurchToolsApiCalendar, ChurchToolsApiResources):
     """Main class used to combine all api functions
 
     Args:
@@ -21,6 +22,7 @@ class ChurchToolsApi(ChurchToolsApiPersons, ChurchToolsApiEvents, ChurchToolsApi
         ChurchToolsApiSongs: all functions used for songs
         ChurchToolsApiFiles: all functions used for files
         ChurchToolsApiCalendars: all functions used for calendars
+        ChurchToolsApiResources: all functions used for resources
     """
 
     def __init__(self, domain, ct_token=None, ct_user=None, ct_password=None):
