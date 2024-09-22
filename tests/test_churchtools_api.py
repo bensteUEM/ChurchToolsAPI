@@ -380,6 +380,17 @@ class TestsChurchToolsApi(unittest.TestCase):
         )
         self.assertTrue(ret)
 
+    def test_get_group_roles(self) -> None:
+        """Checks if group roles can be retrieved from a group."""
+        SAMPLE_GROUP_ID = 103
+        roles = self.api.get_group_roles(group_id=SAMPLE_GROUP_ID)
+        self.assertIsNotNone(roles)
+        self.assertNotEqual(roles, [])
+        for role in roles:
+            self.assertIn("id", role)
+            self.assertIn("groupTypeId", role)
+            self.assertIn("name", role)
+
     def test_get_global_permissions(self):
         """
         IMPORTANT - This test method and the parameters used depend on the target system!

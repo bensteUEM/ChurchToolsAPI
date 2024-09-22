@@ -373,3 +373,32 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             logging.warning(
                 "Something went wrong removing group member: {}".format(
                     response.status_code))
+
+    def get_group_roles(self, group_id: int) -> list[dict]:
+        """Get list of all roles for the given group.
+
+        Arguments:
+            group_id: int: required group id
+        Returns:
+            list with group roles dicts
+        """
+        url = self.domain + "/api/groups/{}/roles".format(group_id)
+        headers = {"accept": "application/json"}
+        response = self.session.get(url=url, headers=headers)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+
+            response_data = self.combine_paginated_response_data(
+                response_content, url=url, headers=headers
+            )
+            result_list = (
+                [response_data] if isinstance(response_data, dict) else response_data
+            )
+            return result_list
+        else:
+            logging.warning(
+                "Something went wrong fetching group roles: {}".format(
+                    response.status_code
+                )
+            )
