@@ -402,3 +402,53 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
                     response.status_code
                 )
             )
+
+    def add_parent_group(self, group_id: int, parent_group_id: int) -> bool:
+        """Add a parent group for a group.
+
+        Arguments:
+            group_id: required group id
+            parent_group_id: required parent group id
+
+        Returns:
+        True if successful
+        """
+        url = self.domain + "/api/groups/{}/parents/{}".format(
+            group_id, parent_group_id
+        )
+        response = self.session.put(url=url)
+
+        if response.status_code == 201:
+            logging.debug("First response of Add Parent Group successful")
+            return True
+        else:
+            logging.warning(
+                "Something went wrong adding parent group: {}".format(
+                    response.status_code
+                )
+            )
+
+    def remove_parent_group(self, group_id: int, parent_group_id: int) -> bool:
+        """Remove a parent group from a group.
+
+        Arguments:
+            group_id: required group id
+            parent_group_id: required parent group id
+
+        Returns:
+        True if successful
+        """
+        url = self.domain + "/api/groups/{}/parents/{}".format(
+            group_id, parent_group_id
+        )
+        response = self.session.delete(url=url)
+
+        if response.status_code == 204:
+            logging.debug("First response of Remove Parent Group successful")
+            return True
+        else:
+            logging.warning(
+                "Something went wrong removing parent group: {}".format(
+                    response.status_code
+                )
+            )

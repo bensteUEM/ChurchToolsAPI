@@ -391,6 +391,24 @@ class TestsChurchToolsApi(unittest.TestCase):
             self.assertIn("groupTypeId", role)
             self.assertIn("name", role)
 
+    def test_add_and_remove_parent_group(self) -> None:
+        """Checks if a parent group can be added to and removed from a group.
+
+        IMPORTANT - This test method and the parameters used depend on the target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+        """
+        SAMPLE_GROUP_ID = 103
+        SAMPLE_PARENT_GROUP_ID = 50
+        result = self.api.add_parent_group(
+            group_id=SAMPLE_GROUP_ID, parent_group_id=SAMPLE_PARENT_GROUP_ID
+        )
+        self.assertTrue(result)
+
+        result = self.api.remove_parent_group(
+            group_id=SAMPLE_GROUP_ID, parent_group_id=SAMPLE_PARENT_GROUP_ID
+        )
+        self.assertTrue(result)
+
     def test_get_global_permissions(self):
         """
         IMPORTANT - This test method and the parameters used depend on the target system!
