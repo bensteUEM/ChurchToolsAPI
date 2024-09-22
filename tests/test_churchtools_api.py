@@ -192,6 +192,22 @@ class TestsChurchToolsApi(unittest.TestCase):
             self.assertTrue('parents' in hierarchy)
             self.assertTrue('children' in hierarchy)
 
+    def test_get_group_statistics(self) -> None:
+        """
+        Checks that the statistics for a group can be retrieved and certain keys
+        exist in the dict.
+
+        IMPORTANT - This test method and the parameters used depend on the target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+        """
+        SAMPLE_GROUP_ID = 103
+
+        stats = self.api.get_group_statistics(group_id=SAMPLE_GROUP_ID)
+        self.assertIsNotNone(stats)
+        self.assertIn("unfiltered", stats)
+        self.assertIn("freePlaces", stats["unfiltered"])
+        self.assertIn("takenPlaces", stats["unfiltered"])
+
     def test_get_grouptypes(self):
         """
         1. Check that the list of grouptypes can be retrieved and each element contains the keys 'id' and 'name'.

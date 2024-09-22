@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-
+import logging
 
 class ChurchToolsApiAbstract(ABC):
     """This abstract is used to define minimum references available for all api parts

@@ -81,6 +81,39 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
                 "Something went wrong fetching groups hierarchies: {}".format(
                     response.status_code))
 
+    def get_group_statistics(self, group_id: int) -> dict:
+        """Get statistics for the given group.
+
+        Args:
+            group_id: required group_id
+
+        Returns:
+            statistics
+        """
+        url = self.domain + "/api/groups/{}/statistics".format(group_id)
+        headers = {"accept": "application/json"}
+        response = self.session.get(url=url, headers=headers)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_content = json.loads(response.content)
+
+            response_data = self.combine_paginated_response_data(
+                response_content, url=url, headers=headers
+            )
+            logging.debug(
+                "First response of Group Statistics successful {}".format(
+                    response_content
+                )
+            )
+            return response_data
+        else:
+            logging.warning(
+                "Something went wrong fetching group statistics: {}".format(
+                    response.status_code
+                )
+            )
+
     def update_group(self, group_id: int, data: dict):
         """
         Update a field of the given group
