@@ -243,6 +243,73 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertEqual(permissions['churchdb']['+see group'], 2)
         self.assertTrue(permissions['churchdb']['+edit group infos'])
 
+    def test_create_and_delete_group(self):
+        """IMPORTANT - This test method and the parameters used depend on the target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+
+        1. Checks if groups can be created with minimal and optional parameters.
+        2. Checks if a group can be created with a name of an existing group
+           only when the 'force' parameter is set.
+        3. Checks if groups can be deleted.
+        :return:
+        """
+        SAMPLE_NEW_GROUP_TYPE = 2
+        SAMPLE_GROUP_STATUS_ID = 1
+        SAMPLE_CAMPUS_ID = 0
+        SAMPLE_GROUP_NAME = "TestGroup"
+
+        group1 = self.api.create_group(
+            SAMPLE_GROUP_NAME,
+            group_status_id=SAMPLE_GROUP_STATUS_ID,
+            grouptype_id=SAMPLE_NEW_GROUP_TYPE,
+        )
+        self.assertIsNotNone(group1)
+        self.assertEqual(group1["name"], SAMPLE_GROUP_NAME)
+        self.assertEqual(group1["information"]["groupTypeId"], SAMPLE_NEW_GROUP_TYPE)
+        self.assertEqual(group1["information"]["groupStatusId"], SAMPLE_GROUP_STATUS_ID)
+
+        SAMPLE_GROUP_NAME2 = "TestGroup With Campus And Superior"
+        group2 = self.api.create_group(
+            SAMPLE_GROUP_NAME2,
+            group_status_id=SAMPLE_GROUP_STATUS_ID,
+            grouptype_id=SAMPLE_NEW_GROUP_TYPE,
+            campus_id=SAMPLE_CAMPUS_ID,
+            superior_group_id=group1["id"],
+        )
+        self.assertIsNotNone(group2)
+        self.assertEqual(group2["name"], SAMPLE_GROUP_NAME2)
+        self.assertEqual(group2["information"]["groupTypeId"], SAMPLE_NEW_GROUP_TYPE)
+        self.assertEqual(group2["information"]["groupStatusId"], SAMPLE_GROUP_STATUS_ID)
+        self.assertEqual(group2["information"]["campusId"], SAMPLE_CAMPUS_ID)
+
+        group3 = self.api.create_group(
+            SAMPLE_GROUP_NAME,
+            group_status_id=SAMPLE_GROUP_STATUS_ID,
+            grouptype_id=SAMPLE_NEW_GROUP_TYPE,
+        )
+        self.assertIsNone(group3)
+
+        group3 = self.api.create_group(
+            SAMPLE_GROUP_NAME,
+            group_status_id=SAMPLE_GROUP_STATUS_ID,
+            grouptype_id=SAMPLE_NEW_GROUP_TYPE,
+            force=True,
+        )
+        self.assertIsNotNone(group3)
+        self.assertEqual(group3["name"], SAMPLE_GROUP_NAME)
+        self.assertEqual(group3["information"]["groupTypeId"], SAMPLE_NEW_GROUP_TYPE)
+        self.assertEqual(group3["information"]["groupStatusId"], SAMPLE_GROUP_STATUS_ID)
+
+        # cleanup after testing
+        ret = self.api.delete_group(group_id=group1["id"])
+        self.assertTrue(ret)
+
+        ret = self.api.delete_group(group_id=group2["id"])
+        self.assertTrue(ret)
+
+        ret = self.api.delete_group(group_id=group3["id"])
+        self.assertTrue(ret)
+
     def test_update_group(self):
         """
         IMPORTANT - This test method and the parameters used depend on the target system!

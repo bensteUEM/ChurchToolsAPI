@@ -114,6 +114,65 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
                 )
             )
 
+    def create_group(
+        self, name: str, group_status_id: int, grouptype_id: int, **kwargs
+    ) -> dict:
+        """Create a new group.
+
+        Args:
+            name: required name
+            group_status_id: required status id
+            grouptype_id: required grouptype id
+            k
+
+        Kwargs:
+            campus_id: int: optional campus id
+            superior_group_id: int: optional superior group id
+            force: bool: set to force create if a group with this name already exists
+
+        Required Permissions:
+            administer groups
+
+        Returns:
+            dict with created group group - similar to get_group
+        """
+
+        url = self.domain + "/api/groups"
+        headers = {"accept": "application/json"}
+        data = {
+            "groupStatusId": group_status_id,
+            "groupTypeId": grouptype_id,
+            "name": name,
+        }
+
+        if "campus_id" in kwargs.keys():
+            data["campusId"] = kwargs["campus_id"]
+
+        if "force" in kwargs.keys():
+            data["force"] = kwargs["force"]
+
+        if "superior_group_id" in kwargs.keys():
+            data["superiorGroupId"] = kwargs["superior_group_id"]
+
+        response = self.session.post(url=url, headers=headers, data=data)
+
+        if response.status_code == 201:
+            response_content = json.loads(response.content)
+            response_data = self.combine_paginated_response_data(
+                response_content, url=url, headers=headers
+            )
+            logging.debug(
+                "First response of Create Group successful {}".format(response_content)
+            )
+
+            return response_data
+        else:
+            logging.warning(
+                "Something went wrong with creating group: {}".format(
+                    response.status_code
+                )
+            )
+
     def update_group(self, group_id: int, data: dict):
         """
         Update a field of the given group
@@ -142,6 +201,26 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             logging.warning(
                 "Something went wrong updating group: {}".format(
                     response.status_code))
+
+    def delete_group(self, group_id: int) -> bool:
+        """Delete the given group.
+
+        Arguments:
+            group_id: group_id
+
+        Returns:
+            True if successful
+        """
+        url = self.domain + "/api/groups/{}".format(group_id)
+        response = self.session.delete(url=url)
+
+        if response.status_code == 204:
+            logging.debug("First response of Delete Group successful")
+            return True
+        else:
+            logging.warning(
+                "Something went wrong deleting group: {}".format(response.status_code)
+            )
 
     def get_grouptypes(self, **kwargs):
         """
