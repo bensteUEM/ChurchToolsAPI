@@ -354,31 +354,29 @@ class TestsChurchToolsApi(unittest.TestCase):
             self.assertIn("personId", member)
             self.assertEqual(member["groupTypeRoleId"], SAMPLE_GROUPTYPE_ROLE_ID)
 
-    def test_add_and_remove_group_members(self):
+    def test_add_and_remove_group_members(self)->None:
+        """IMPORTANT - This test method and the parameters used depend on the target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
-        IMPORTANT - This test method and the parameters used depend on the target system!
-        Checks if a group member can be added to and removed from a group.
-        :return:
-        """
-        test_group_id = 103
-        test_person_id = 1
-        grouptype_role_id = 2
+        SAMPLE_GROUP_ID = 103
+        SAMPLE_PERSON_ID = 229
+        SAMPLE_GROUPTYPE_ROLE_ID = 15
+
         member = self.api.add_group_member(
-            group_id=test_group_id,
-            person_id=test_person_id,
-            grouptype_role_id=grouptype_role_id,
-            group_member_status='active'
+            group_id=SAMPLE_GROUP_ID,
+            person_id=SAMPLE_PERSON_ID,
+            grouptype_role_id=SAMPLE_GROUPTYPE_ROLE_ID,
+            group_member_status="active",
         )
         self.assertIsNotNone(member)
-        self.assertEqual(member['personId'], test_person_id)
-        self.assertEqual(member['groupTypeRoleId'], grouptype_role_id)
-        self.assertEqual(member['groupMemberStatus'], 'active')
+        self.assertEqual(member["personId"], SAMPLE_PERSON_ID)
+        self.assertEqual(member["groupTypeRoleId"], SAMPLE_GROUPTYPE_ROLE_ID)
+        self.assertEqual(member["groupMemberStatus"], "active")
 
-        ret = self.api.remove_group_member(
-            group_id=test_group_id,
-            person_id=test_person_id
+        result = self.api.remove_group_member(
+            group_id=SAMPLE_GROUP_ID, person_id=SAMPLE_PERSON_ID
         )
-        self.assertTrue(ret)
+        self.assertTrue(result)
 
     def test_get_group_roles(self) -> None:
         """Checks if group roles can be retrieved from a group."""
