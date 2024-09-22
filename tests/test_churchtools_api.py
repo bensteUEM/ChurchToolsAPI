@@ -329,30 +329,30 @@ class TestsChurchToolsApi(unittest.TestCase):
         group = self.api.get_groups(group_id=test_group_id)
         self.assertEqual(group['information']['note'], '')
 
-    def test_get_group_members(self):
-        """
-        IMPORTANT - This test method and the parameters used depend on the target system!
-        Checks if group members can be retrieved from the group and filtering
+    def test_get_group_members(self) -> None:
+        """Checks if group members can be retrieved from the group and filtering
         for role ids works.
-        :return:
+
+        IMPORTANT - This test method and the parameters used depend on the target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
-        test_group_id = 103
-        grouptype_role_id = 2
-        members = self.api.get_group_members(group_id=test_group_id)
+        SAMPLE_GROUP_ID = 103
+        SAMPLE_GROUPTYPE_ROLE_ID = 16
+        members = self.api.get_group_members(group_id=SAMPLE_GROUP_ID)
+
         self.assertIsNotNone(members)
         self.assertNotEqual(members, [])
         for member in members:
-            self.assertIn('personId', member)
+            self.assertIn("personId", member)
 
         members = self.api.get_group_members(
-            group_id=test_group_id,
-            role_ids=[grouptype_role_id]
+            group_id=SAMPLE_GROUP_ID, role_ids=[SAMPLE_GROUPTYPE_ROLE_ID]
         )
         self.assertIsNotNone(members)
         self.assertNotEqual(members, [])
         for member in members:
-            self.assertIn('personId', member)
-            self.assertEqual(member['groupTypeRoleId'], grouptype_role_id)
+            self.assertIn("personId", member)
+            self.assertEqual(member["groupTypeRoleId"], SAMPLE_GROUPTYPE_ROLE_ID)
 
     def test_add_and_remove_group_members(self):
         """
