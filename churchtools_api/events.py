@@ -566,6 +566,24 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
 
         return document
 
+    def get_persons_with_service(self, eventId: int, serviceId: int) -> list[dict]:
+        """helper function which should return the list of persons that are assigned a specific service on a specific event
+
+        Args:
+            eventId: id number from Events
+            serviceId: id number from service masterdata
+
+        Returns:
+            list of persons
+        """
+
+        event = self.get_events(eventId=eventId)
+        eventServices = event[0]["eventServices"]
+        result = [
+            service for service in eventServices if service["serviceId"] == serviceId
+        ]
+        return result
+
     def get_event_masterdata(self, **kwargs):
         """
         Function to get the Masterdata of the event module

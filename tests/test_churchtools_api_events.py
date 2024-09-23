@@ -328,3 +328,16 @@ class TestsChurchToolsApi(unittest.TestCase):
         result = self.api.get_event_by_calendar_appointment(
             appointment_id, start_date)
         self.assertEqual(event_id, result['id'])
+
+    def test_get_persons_with_service(self):
+        """IMPORTANT - This test method and the parameters used depend on the target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS"""
+        SAMPLE_EVENT_ID = 3348
+        SAMPLE_SERVICE_ID = 1
+
+        result = self.api.get_persons_with_service(
+            eventId=SAMPLE_EVENT_ID, serviceId=SAMPLE_SERVICE_ID
+        )
+
+        self.assertGreaterEqual(len(result), 1)
+        self.assertGreaterEqual(result[0]["serviceId"], 1)
