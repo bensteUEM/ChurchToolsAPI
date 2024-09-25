@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import json
 import logging
 
 class ChurchToolsApiAbstract(ABC):
@@ -29,14 +30,19 @@ class ChurchToolsApiAbstract(ABC):
 
         if meta := response_content.get("meta"):
             if pagination := meta.get("pagination"):
-                while pagination["current"] < pagination["lastPage"]:
+                for page in range(pagination["current"], pagination["lastPage"]):
                     logging.debug(
-                        "page {} of {}".format(
-                            pagination["current"],
-                            pagination["lastPage"],
+                        "running paginated request for page {} of {}".format(
+                            page + 1,
+                            pagination["lastPage"] + 1,
                         )
                     )
-                    params = {"page": pagination["current"] + 1}
+                    new_param = {"page": page + 1}
+                    if kwargs.get("params"):
+                        kwargs["params"].update(new_param)
+                    else:
+                        kwargs["params"] = new_param
+
                     response = self.session.get(url=url, **kwargs)
                     response_content = json.loads(response.content)
                     response_data.extend(response_content["data"])

@@ -163,20 +163,23 @@ class TestsChurchToolsApi(unittest.TestCase):
         song_catgegory_dict = self.api.get_song_category_map()
         self.assertEqual(song_catgegory_dict['Test'], 13)
 
-    def test_get_groups(self):
+    def test_get_groups(self) -> None:
         """
-        IMPORTANT - This test method and the parameters used depend on the target system!
         1. Test requests all groups and checks that result has more than 10 elements (hence default pagination works)
         2. Test requests group 103 and checks that result matches Test song
-        :return:
+
+        IMPORTANT - This test method and the parameters used depend on the target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
 
         groups = self.api.get_groups()
+        self.assertTrue(isinstance(groups, list))
+        self.assertTrue(isinstance(groups[0], dict))
         self.assertGreater(len(groups), 10)
 
         group = self.api.get_groups(group_id=103)
-        self.assertEqual(group['id'], 103)
-        self.assertEqual(group['name'], 'TestGruppe')
+        self.assertEqual(group["id"], 103)
+        self.assertEqual(group["name"], "TestGruppe")
 
     def test_get_groups_hierarchies(self):
         """
