@@ -357,6 +357,40 @@ class TestsChurchToolsApi(unittest.TestCase):
             self.assertIn("personId", member)
             self.assertEqual(member["groupTypeRoleId"], SAMPLE_GROUPTYPE_ROLE_ID)
 
+    def test_get_groups_members(self) -> None:
+        """Check that a list of groups is received when asking by person and optional role id
+
+        IMPORTANT - This test method and the parameters used depend on the target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+        """
+        SAMPLE_PERSON_IDS = [513]
+        SAMPLE_ROLE_ID_LEAD = 16
+        SAMPLE_ROLE_ID_MEMBER = 15
+        EXPECTED_GROUP_ID = 103  # a services test group
+
+        # 1. person only
+        group_result = self.api.get_groups_members(person_ids=SAMPLE_PERSON_IDS)
+        compare_result = [group["groupId"] for group in group_result]
+        self.assertIn(EXPECTED_GROUP_ID, compare_result)
+
+        # 2a. person user and role - non lead - no group
+        group_result = self.api.get_groups_members(
+            person_ids=SAMPLE_PERSON_IDS, grouptype_role_ids=[SAMPLE_ROLE_ID_MEMBER]
+        )
+        self.assertEqual(len(group_result), 0)
+
+        # 2b. person and role - lead and non lead
+        group_result = self.api.get_groups_members(
+            person_ids=SAMPLE_PERSON_IDS,
+            groupTypeRoleId=[SAMPLE_ROLE_ID_LEAD, SAMPLE_ROLE_ID_MEMBER],
+        )
+        self.assertTrue(isinstance(group_result, list))
+        self.assertGreater(len(group_result), 0)
+        self.assertTrue(isinstance(group_result[0], dict))
+
+        compare_result = [group["groupId"] for group in group_result]
+        self.assertIn(EXPECTED_GROUP_ID, compare_result)
+
     def test_add_and_remove_group_members(self)->None:
         """IMPORTANT - This test method and the parameters used depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.

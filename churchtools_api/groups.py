@@ -304,6 +304,62 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
                 )
             )
 
+    def get_groups_members(
+        self, group_ids: list[int] = None, with_deleted: bool = False, **kwargs
+    ) -> list[dict]:
+        """Access to /groups/members to lookup group memberships
+        Similar to get_group_members but not specific to a single group
+
+        Args:
+            group_ids: list of group ids to look for. Defaults to Any
+            with_deleted: If true return also delted group members. Defaults to True
+
+        Kwargs:
+            grouptype_role_ids: list[int] of grouptype_role_ids to consider
+            person_ids: list[int]: person to consider for result
+
+        Permissions:
+            requires "administer persons"
+
+        Returns:
+            list of person to group assignments
+        """
+        url = self.domain + "/api/groups/members"
+        headers = {"accept": "application/json"}
+        params = {}
+
+        response = self.session.get(url=url, headers=headers, params=params)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+
+            response_data = self.combine_paginated_response_data(
+                response_content, url=url, headers=headers
+            )
+            result_list = (
+                [response_data] if isinstance(response_data, dict) else response_data
+            )
+            if grouptype_role_ids := kwargs.get("grouptype_role_ids"):
+                result_list = [
+                    group
+                    for group in result_list
+                    if group["groupTypeRoleId"] in grouptype_role_ids
+                ]
+            if person_ids := kwargs.get("person_ids"):
+                result_list = [
+                    group for group in result_list if group["personId"] in person_ids
+                ]
+
+            return result_list
+
+            return result_list
+        else:
+            logging.warning(
+                "Something went wrong fetching group members: {}".format(
+                    response.status_code
+                )
+            )
+
     def add_group_member(self, group_id: int, person_id: int, **kwargs) -> dict:
         """Add a member to a group.
 
