@@ -15,44 +15,28 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
     def __init__(self):
         super()
 
-    def get_songs(self, **kwargs):
-        """ Gets list of all songs from the server
-        :key kwargs song_id: int: optional filter by song id
-        :return: list of songs
-        :rtype: list[dict]
+    def get_songs(self, **kwargs) -> list[dict]:
+        """Gets list of all songs from the server.
+
+        Kwargs:
+            song_id: int: optional filter by song id
+        
+        Returns: list of songs
         """
 
-        url = self.domain + '/api/songs'
+        url = self.domain + "/api/songs"
         if "song_id" in kwargs.keys():
-            url = url + '/{}'.format(kwargs["song_id"])
-        headers = {
-            'accept': 'application/json'
-        }
+            url = url + "/{}".format(kwargs["song_id"])
+        headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
         if response.status_code == 200:
             response_content = json.loads(response.content)
-            response_data = response_content['data'].copy()
-            logging.debug(
-                "First response of GET Songs successful {}".format(response_content))
+            response_data = self.combine_paginated_response_data(
+                response_content, url=url, headers=headers
+            )
+            return [response_data] if isinstance(response_data, dict) else response_data
 
-            if 'meta' not in response_content.keys():  # Shortcut without Pagination
-                return [response_data] if isinstance(
-                    response_data, dict) else response_data
-
-            # Long part extending results with pagination
-            while response_content['meta']['pagination']['current'] \
-                    < response_content['meta']['pagination']['lastPage']:
-                logging.info("page {} of {}".format(response_content['meta']['pagination']['current'],
-                                                    response_content['meta']['pagination']['lastPage']))
-                params = {
-                    'page': response_content['meta']['pagination']['current'] + 1}
-                response = self.session.get(
-                    url=url, headers=headers, params=params)
-                response_content = json.loads(response.content)
-                response_data.extend(response_content['data'])
-
-            return response_data
         else:
             if "song_id" in kwargs.keys():
                 logging.info(

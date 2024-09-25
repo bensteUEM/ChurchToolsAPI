@@ -121,21 +121,22 @@ class TestsChurchToolsApi(unittest.TestCase):
         result4 = self.api.get_persons(returnAsDict=False)
         self.assertIsInstance(result4, list)
 
-    def test_get_songs(self):
+    def test_get_songs(self) -> None:
         """
         1. Test requests all songs and checks that result has more than 10 elements (hence default pagination works)
-        2. Test requests song 408 and checks that result matches Test song
+        2. Test requests song 2034 and checks that result matches "sample"
+
         IMPORTANT - This test method and the parameters used depend on the target system!
-        :return:
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
-        test_song_id = 408
+        test_song_id = 2034
 
         songs = self.api.get_songs()
         self.assertGreater(len(songs), 10)
 
         song = self.api.get_songs(song_id=test_song_id)[0]
-        self.assertEqual(song['id'], 408)
-        self.assertEqual(song['name'], 'Test')
+        self.assertEqual(song["id"], 2034)
+        self.assertEqual(song["name"], "sample")
 
     def test_get_song_ajax(self):
         """

@@ -95,34 +95,11 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
 
         if response.status_code == 200:
             response_content = json.loads(response.content)
-            response_data = response_content['data'].copy()
-            logging.debug(
-                "First response of calendar appointments successful %s", response_content)
+            response_data = self.combine_paginated_response_data(
+                response_content, url=url, headers=headers
+            )
 
-            if 'meta' not in response_content.keys():  # Shortcut without Pagination
-                result = [response_data] if isinstance(
-                    response_data, dict) else response_data
-
-            elif 'pagination' not in response_content['meta'].keys():
-                result = [response_data] if isinstance(
-                    response_data, dict) else response_data
-
-                # Long part extending results with pagination
-                # TODO #1 copied from other method unsure if pagination works the
-                # same as with groups
-            else:
-                while response_content['meta']['pagination']['current'] \
-                        < response_content['meta']['pagination']['lastPage']:
-                    logging.info("page %s of %s",
-                                 response_content['meta']['pagination']['current'],
-                                 response_content['meta']['pagination']['lastPage'])
-                    params = {
-                        'page': response_content['meta']['pagination']['current'] + 1}
-                    response = self.session.get(
-                        url=url, headers=headers, params=params)
-                    response_content = json.loads(response.content)
-                    response_data.extend(response_content['data'])
-                result = response_data
+            result = [response_data] if isinstance(response_data, dict) else response_data
 
             if len(result) == 0:
                 logging.info(

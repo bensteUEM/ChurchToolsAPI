@@ -44,21 +44,10 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
                 logging.warning('Requesting ct_users {} returned an empty response - '
                                 'make sure the user has correct permissions'.format(params))
 
-            if 'meta' not in response_content.keys():  # Shortcut without Pagination
-                return [response_data] if isinstance(
-                    response_data, dict) else response_data
-
-            # Long part extending results with pagination
-            while response_content['meta']['pagination']['current'] \
-                    < response_content['meta']['pagination']['lastPage']:
-                logging.info("page {} of {}".format(response_content['meta']['pagination']['current'],
-                                                    response_content['meta']['pagination']['lastPage']))
-                params = {
-                    'page': response_content['meta']['pagination']['current'] + 1}
-                response = self.session.get(
-                    url=url, headers=headers, params=params)
-                response_content = json.loads(response.content)
-                response_data.extend(response_content['data'])
+            response_data = self.combine_paginated_response_data(
+                response_content, url=url, headers=headers
+            )
+            response_data = [response_data] if isinstance(response_data, dict) else response_data
 
             if 'returnAsDict' in kwargs and not 'serviceId' in kwargs:
                 if kwargs['returnAsDict']:
