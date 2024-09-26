@@ -3,6 +3,7 @@ import logging
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
+logger = logging.getLogger(__name__)
 
 class ChurchToolsApiPersons(ChurchToolsApiAbstract):
     """ Part definition of ChurchToolsApi which focuses on persons
@@ -37,11 +38,11 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
             response_content = json.loads(response.content)
             response_data = response_content['data'].copy()
 
-            logging.debug(
+            logger.debug(
                 "First response of GET Persons successful {}".format(response_content))
 
             if len(response_data) == 0:
-                logging.warning('Requesting ct_users {} returned an empty response - '
+                logger.warning('Requesting ct_users {} returned an empty response - '
                                 'make sure the user has correct permissions'.format(params))
 
             response_data = self.combine_paginated_response_data(
@@ -56,10 +57,10 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
                         result[item['id']] = item
                     response_data = result
 
-            logging.debug("Persons load successful {}".format(response_data))
+            logger.debug("Persons load successful {}".format(response_data))
             return response_data
         else:
-            logging.info(
+            logger.info(
                 "Persons requested failed: {}".format(
                     response.status_code))
             return None

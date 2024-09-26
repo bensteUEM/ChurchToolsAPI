@@ -6,6 +6,7 @@ import docx
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
+logger = logging.getLogger(__name__)
 
 class ChurchToolsApiEvents(ChurchToolsApiAbstract):
     """ Part definition of ChurchToolsApi which focuses on events
@@ -61,7 +62,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
                 if len(to_) == 10:
                     params['to'] = to_
             elif 'to_' in kwargs.keys():
-                logging.warning(
+                logger.warning(
                     'Use of to_ is only allowed together with from_')
             if 'canceled' in kwargs.keys():
                 params['canceled'] = kwargs['canceled']
@@ -70,7 +71,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             if 'limit' in kwargs.keys() and 'direction' in kwargs.keys():
                 params['limit'] = kwargs['limit']
             elif 'direction' in kwargs.keys():
-                logging.warning(
+                logger.warning(
                     'Use of limit is only allowed together with direction keyword')
             if 'include' in kwargs.keys():
                 params['include'] = kwargs['include']
@@ -84,7 +85,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             )
             return [response_data] if isinstance(response_data, dict) else response_data
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong fetching events: {}".format(
                     response.status_code))
 
@@ -121,7 +122,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             if event['appointmentId'] == appointment_id:
                 return event
 
-        logging.info(
+        logger.info(
             'no event references appointment ID %s on start %s',
             appointment_id,
             start_date)
@@ -153,14 +154,14 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             response_content = json.loads(response.content)
             if len(response_content['data']) > 0:
                 response_data = response_content['data'][str(eventId)]
-                logging.debug("AJAX Event data {}".format(response_data))
+                logger.debug("AJAX Event data {}".format(response_data))
                 return response_data
             else:
-                logging.info(
+                logger.info(
                     "AJAX All Event data not successful - no event found: {}".format(response.status_code))
                 return None
         else:
-            logging.info(
+            logger.info(
                 "AJAX All Event data not successful: {}".format(
                     response.status_code))
             return None
@@ -202,7 +203,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
 
             return services
         else:
-            logging.warning(
+            logger.warning(
                 'Illegal combination of kwargs - check documentation either')
 
     def set_event_services_counts_ajax(
@@ -260,11 +261,11 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             if number_match and response_success:
                 return True
             else:
-                logging.warning("Request was successful but serviceId {} not changed to count {} "
+                logger.warning("Request was successful but serviceId {} not changed to count {} "
                                 .format(serviceId, servicesCount))
                 return False
         else:
-            logging.info(
+            logger.info(
                 "set_event_services_counts_ajax not successful: {}".format(
                     response.status_code))
             return False
@@ -286,7 +287,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
                 admin_ids = []
             return admin_ids
         else:
-            logging.info('No admins found because event not found')
+            logger.info('No admins found because event not found')
             return []
 
     def set_event_admins_ajax(self, eventId, admin_ids):
@@ -317,13 +318,13 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         if response.status_code == 200:
             response_content = json.loads(response.content)
             response_data = response_content['status'] == 'success'
-            logging.debug(
+            logger.debug(
                 "Setting Admin IDs {} for event {} success".format(
                     admin_ids, eventId))
 
             return response_data
         else:
-            logging.info(
+            logger.info(
                 "Setting Admin IDs {} for event {} failed with : {}".format(admin_ids, eventId, response.status_code))
             return False
 
@@ -344,11 +345,11 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         if response.status_code == 200:
             response_content = json.loads(response.content)
             response_data = response_content['data'].copy()
-            logging.debug("Agenda load successful {}".format(response_content))
+            logger.debug("Agenda load successful {}".format(response_content))
 
             return response_data
         else:
-            logging.info(
+            logger.info(
                 "Event requested that does not have an agenda with status: {}".format(
                     response.status_code))
             return None
@@ -372,7 +373,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         """
         if 'eventId' in kwargs.keys():
             if 'agendaId' in kwargs.keys():
-                logging.warning(
+                logger.warning(
                     'Invalid use of params - can not combine eventId and agendaId!')
             else:
                 agenda = self.get_event_agenda(eventId=kwargs['eventId'])
@@ -380,7 +381,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         elif 'agendaId' in kwargs.keys():
             agendaId = kwargs['agendaId']
         else:
-            logging.warning('Missing event or agendaId')
+            logger.warning('Missing event or agendaId')
             return False
 
         # note: target path can be either a zip-file defined before function
@@ -391,7 +392,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             # If folder doesn't exist, then create it.
             if not folder_exists:
                 os.makedirs(target_path)
-                logging.debug("created folder : ", target_path)
+                logger.debug("created folder : ", target_path)
 
             if 'eventId' in kwargs.keys():
                 new_file_name = '{}_{}.zip'.format(
@@ -439,13 +440,13 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         if response.status_code == 200:
             response_content = json.loads(response.content)
             agenda_data = response_content['data'].copy()
-            logging.debug("Agenda package found {}".format(response_content))
+            logger.debug("Agenda package found {}".format(response_content))
             result_ok = self.file_download_from_url(
                 '{}/{}'.format(self.domain, agenda_data['url']), target_path)
             if result_ok:
-                logging.debug('download finished')
+                logger.debug('download finished')
         else:
-            logging.warning(
+            logger.warning(
                 "export of event_agenda failed: {}".format(
                     response.status_code))
 
@@ -467,7 +468,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         else:
             excludeBeforeEvent = False
 
-        logging.debug('Trying to get agenda for: ' + agenda['name'])
+        logger.debug('Trying to get agenda for: ' + agenda['name'])
 
         document = docx.Document()
         heading = agenda['name']
@@ -589,12 +590,12 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
                         response_data2 = response_data.copy()
                         response_data = {
                             item['id']: item for item in response_data2}
-            logging.debug(
+            logger.debug(
                 "Event Masterdata load successful {}".format(response_data))
 
             return response_data
         else:
-            logging.info(
+            logger.info(
                 "Event Masterdata requested failed: {}".format(
                     response.status_code))
             return None

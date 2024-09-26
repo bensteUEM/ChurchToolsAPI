@@ -3,6 +3,7 @@ import logging
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
+logger = logging.getLogger(__name__)
 
 class ChurchToolsApiGroups(ChurchToolsApiAbstract):
     """ Part definition of ChurchToolsApi which focuses on groups
@@ -40,7 +41,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
             return response_data
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong fetching groups: {}".format(response.status_code)
             )
 
@@ -58,14 +59,14 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         if response.status_code == 200:
             response_content = json.loads(response.content)
             response_data = response_content['data'].copy()
-            logging.debug(
+            logger.debug(
                 "First response of Groups Hierarchies successful {}".format(response_content))
 
             result = {group['groupId']: group for group in response_data}
             return result
 
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong fetching groups hierarchies: {}".format(
                     response.status_code))
 
@@ -89,14 +90,14 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             response_data = self.combine_paginated_response_data(
                 response_content, url=url, headers=headers
             )
-            logging.debug(
+            logger.debug(
                 "First response of Group Statistics successful {}".format(
                     response_content
                 )
             )
             return response_data
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong fetching group statistics: {}".format(
                     response.status_code
                 )
@@ -149,13 +150,13 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             response_data = self.combine_paginated_response_data(
                 response_content, url=url, headers=headers
             )
-            logging.debug(
+            logger.debug(
                 "First response of Create Group successful {}".format(response_content)
             )
 
             return response_data
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong with creating group: {}".format(
                     response.status_code
                 )
@@ -181,12 +182,12 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         if response.status_code == 200:
             response_content = json.loads(response.content)
             response_data = response_content['data'].copy()
-            logging.debug(
+            logger.debug(
                 "First response of Update Group successful {}".format(response_content))
 
             return response_data
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong updating group: {}".format(
                     response.status_code))
 
@@ -203,10 +204,10 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         response = self.session.delete(url=url)
 
         if response.status_code == 204:
-            logging.debug("First response of Delete Group successful")
+            logger.debug("First response of Delete Group successful")
             return True
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong deleting group: {}".format(response.status_code)
             )
 
@@ -228,7 +229,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         if response.status_code == 200:
             response_content = json.loads(response.content)
             response_data = response_content['data'].copy()
-            logging.debug(
+            logger.debug(
                 "First response of Grouptypes successful {}".format(response_content))
             if isinstance(response_data, list):
                 result = {group['id']: group for group in response_data}
@@ -236,7 +237,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
                 result = {response_data['id']: response_data}
             return result
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong fetching grouptypes: {}".format(
                     response.status_code))
 
@@ -257,11 +258,11 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         if response.status_code == 200:
             response_content = json.loads(response.content)
             response_data = response_content['data'].copy()
-            logging.debug(
+            logger.debug(
                 "First response of Group Permissions successful {}".format(response_content))
             return response_data
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong fetching group permissions: {}".format(
                     response.status_code))
 
@@ -298,7 +299,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
             return result_list
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong fetching group members: {}".format(
                     response.status_code
                 )
@@ -354,7 +355,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
             return result_list
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong fetching group members: {}".format(
                     response.status_code
                 )
@@ -395,7 +396,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
             return response_data
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong adding group member: {}".format(
                     response.status_code
                 )
@@ -417,7 +418,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         if response.status_code == 204:
             return True
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong removing group member: {}".format(
                     response.status_code
                 )
@@ -446,7 +447,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             )
             return result_list
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong fetching group roles: {}".format(
                     response.status_code
                 )
@@ -468,10 +469,10 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         response = self.session.put(url=url)
 
         if response.status_code == 201:
-            logging.debug("First response of Add Parent Group successful")
+            logger.debug("First response of Add Parent Group successful")
             return True
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong adding parent group: {}".format(
                     response.status_code
                 )
@@ -493,10 +494,10 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         response = self.session.delete(url=url)
 
         if response.status_code == 204:
-            logging.debug("First response of Remove Parent Group successful")
+            logger.debug("First response of Remove Parent Group successful")
             return True
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong removing parent group: {}".format(
                     response.status_code
                 )

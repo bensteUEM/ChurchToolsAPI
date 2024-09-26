@@ -3,6 +3,7 @@ import logging
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
+logger = logging.getLogger(__name__)
 
 class ChurchToolsApiResources(ChurchToolsApiAbstract):
     """Part definition of ChurchToolsApi which focuses on resources.
@@ -25,7 +26,7 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
         """
         known_result_types = ["resourceTypes", "resources"]
         if result_type not in known_result_types:
-            logging.error(
+            logger.error(
                 "get_resource_masterdata does not know result_type=%s", result_type
             )
             return
@@ -43,7 +44,7 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
 
             return response_data[result_type]
         else:
-            logging.error(response)
+            logger.error(response)
             return
 
     def get_bookings(self, **kwargs) -> list[dict]:
@@ -67,7 +68,7 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
         # at least one of the following arguments is required
         required_kwargs = ["booking_id", "resource_ids"]
         if not any([kwarg in kwargs for kwarg in required_kwargs]):
-            logging.error(
+            logger.error(
                 "invalid argument combination in get_bookings - please check docstring for requirements"
             )
             return
@@ -83,7 +84,7 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
                 if ("_from" in kwargs and "_to" not in kwargs) or (
                     "_from" not in kwargs and "_to" in kwargs
                 ):
-                    logging.warning(
+                    logger.warning(
                         "See ChurchTools support ticket 130123 - might have unexpected behaviour if to and from are used standalone"
                     )
                 if _from := kwargs.get("_from"):
@@ -92,7 +93,7 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
                     params["to"] = _to.strftime("%Y-%m-%d")
             if appointment_id := kwargs.get("appointment_id"):
                 if "from" not in params:
-                    logging.info(
+                    logger.info(
                         "Performance and stability issues - use appointment_id param together with to and from for faster results and definite time range"
                     )
                 params["appointment_id"] = appointment_id
@@ -118,5 +119,5 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
             else:
                 return result_list
         else:
-            logging.error(response.content)
+            logger.error(response.content)
             return

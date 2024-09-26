@@ -4,6 +4,7 @@ import logging
 from datetime import datetime
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
+logger = logging.getLogger(__name__)
 
 class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
     """ Part definition of ChurchToolsApi which focuses on calendars
@@ -35,7 +36,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
             response_content = json.loads(response.content)
             return response_content['data'].copy()
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong fetching events: %s", response.status_code)
 
     def get_calendar_appointments(
@@ -88,7 +89,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
             if len(to_) == 10:
                 params['to'] = to_
         elif 'to_' in kwargs.keys():
-            logging.warning(
+            logger.warning(
                 'Use of to_ is only allowed together with from_')
 
         response = self.session.get(url=url, params=params, headers=headers)
@@ -102,7 +103,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
             result = [response_data] if isinstance(response_data, dict) else response_data
 
             if len(result) == 0:
-                logging.info(
+                logger.info(
                     'There are not calendar appointments with the requested params')
                 return
             # clean result
@@ -115,17 +116,17 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
                 return merged_appointments
             elif 'appointment' in result[0].keys():
                 if len(result[0]['calculatedDates']) > 2:
-                    logging.info('returning a series calendar appointment!')
+                    logger.info('returning a series calendar appointment!')
                     return result
                 else:
-                    logging.debug(
+                    logger.debug(
                         'returning a simplified single calendar appointment with one date')
                     return [appointment['appointment']
                             for appointment in result]
             else:
-                logging.warning('unexpected result')
+                logger.warning('unexpected result')
 
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong fetching calendar appointments: %s",
                 response.status_code)

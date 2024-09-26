@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 import json
 import logging
 
+logger = logging.getLogger(__name__)
+
 class ChurchToolsApiAbstract(ABC):
     """This abstract is used to define minimum references available for all api parts
 
@@ -31,7 +33,7 @@ class ChurchToolsApiAbstract(ABC):
         if meta := response_content.get("meta"):
             if pagination := meta.get("pagination"):
                 for page in range(pagination["current"], pagination["lastPage"]):
-                    logging.debug(
+                    logger.debug(
                         "running paginated request for page {} of {}".format(
                             page + 1,
                             pagination["lastPage"] + 1,

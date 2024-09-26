@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
+logger = logging.getLogger(__name__)
 
 class ChurchToolsApiSongs(ChurchToolsApiAbstract):
     """ Part definition of ChurchToolsApi which focuses on songs
@@ -40,11 +41,11 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
 
         else:
             if "song_id" in kwargs.keys():
-                logging.info(
+                logger.info(
                     "Did not find song ({}) with CODE {}".format(
                         kwargs["song_id"], response.status_code))
             else:
-                logging.warning(
+                logger.warning(
                     "Something went wrong fetching songs: CODE {}".format(
                         response.status_code))
 
@@ -137,11 +138,11 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         if response.status_code == 200:
             response_content = json.loads(response.content)
             new_id = int(response_content['data'])
-            logging.debug("Song created successful with ID={}".format(new_id))
+            logger.debug("Song created successful with ID={}".format(new_id))
             return new_id
 
         else:
-            logging.info(
+            logger.info(
                 "Creating song failed with {}".format(
                     response.status_code))
             return None

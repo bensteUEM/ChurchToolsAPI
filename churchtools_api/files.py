@@ -4,6 +4,7 @@ import os
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
+logger = logging.getLogger(__name__)
 
 class ChurchToolsApiFiles(ChurchToolsApiAbstract):
     """ Part definition of ChurchToolsApi which focuses on files
@@ -41,7 +42,7 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
                                           domain_type, domain_identifier)
 
         if overwrite:
-            logging.debug(
+            logger.debug(
                 "deleting old file {} before new upload".format(source_file))
             delete_file_name = source_file.name.split(
                 '/')[-1] if custom_file_name is None else custom_file_name
@@ -53,7 +54,7 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
             files = {'files[]': (source_file.name.split('/')[-1], source_file)}
         else:
             if '/' in custom_file_name:
-                logging.warning(
+                logger.warning(
                     '/ in file name ({}) will fail upload!'.format(custom_file_name))
                 files = {}
             else:
@@ -78,13 +79,13 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
         if response.status_code == 200:
             try:
                 response_content = json.loads(response.content)
-                logging.debug("Upload successful {}".format(response_content))
+                logger.debug("Upload successful {}".format(response_content))
                 return True
             except BaseException:
-                logging.warning(response.content.decode())
+                logger.warning(response.content.decode())
                 return False
         else:
-            logging.warning(response.content.decode())
+            logger.warning(response.content.decode())
             return False
 
     def file_delete(self, domain_type, domain_identifier,
@@ -151,7 +152,7 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
         if response.status_code == 200:
             response_content = json.loads(response.content)
             arrangement_files = response_content['data'].copy()
-            logging.debug(
+            logger.debug(
                 "SongArrangement-Files load successful {}".format(response_content))
             file_found = False
 
@@ -162,17 +163,17 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
                     break
 
             if file_found:
-                logging.debug("Found File: {}".format(filename))
+                logger.debug("Found File: {}".format(filename))
                 # Build path OS independent
                 fileUrl = str(file['fileUrl'])
                 path_file = os.sep.join([target_path, filename])
                 StateOK = self.file_download_from_url(fileUrl, path_file)
             else:
-                logging.warning("File {} does not exist".format(filename))
+                logger.warning("File {} does not exist".format(filename))
 
             return StateOK
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong fetching SongArrangement-Files: {}".format(response.status_code))
 
     def file_download_from_url(self, file_url, target_path):
@@ -196,10 +197,10 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
                         # and set chunk_size parameter to None.
                         # if chunk:
                         f.write(chunk)
-                logging.debug("Download of {} successful".format(file_url))
+                logger.debug("Download of {} successful".format(file_url))
                 return True
             else:
-                logging.warning(
+                logger.warning(
                     "Something went wrong during file_download: {}".format(
                         r.status_code))
                 return False

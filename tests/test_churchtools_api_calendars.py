@@ -1,11 +1,23 @@
 import ast
+import json
 import logging
+import logging.config
 import os
+from pathlib import Path
 import unittest
 from datetime import datetime, timedelta
 
 from churchtools_api.churchtools_api import ChurchToolsApi
 
+logger = logging.getLogger(__name__)
+
+config_file = Path("logging_config.json")
+with config_file.open(encoding="utf-8") as f_in:
+    logging_config = json.load(f_in)
+    log_directory = Path(logging_config["handlers"]["file"]["filename"]).parent
+    if not log_directory.exists():
+        log_directory.mkdir(parents=True)
+    logging.config.dictConfig(config=logging_config)
 
 class TestsChurchToolsApi(unittest.TestCase):
     def __init__(self, *args, **kwargs):
@@ -16,7 +28,7 @@ class TestsChurchToolsApi(unittest.TestCase):
             self.ct_domain = os.environ['CT_DOMAIN']
             users_string = os.environ['CT_USERS']
             self.ct_users = ast.literal_eval(users_string)
-            logging.info(
+            logger.info(
                 'using connection details provided with ENV variables')
         else:
             from secure.config import ct_token
@@ -25,16 +37,13 @@ class TestsChurchToolsApi(unittest.TestCase):
             self.ct_domain = ct_domain
             from secure.config import ct_users
             self.ct_users = ct_users
-            logging.info(
+            logger.info(
                 'using connection details provided from secrets folder')
 
         self.api = ChurchToolsApi(
             domain=self.ct_domain,
             ct_token=self.ct_token)
-        logging.basicConfig(filename='logs/TestsChurchToolsApi.log', encoding='utf-8',
-                            format="%(asctime)s %(name)-10s %(levelname)-8s %(message)s",
-                            level=logging.DEBUG)
-        logging.info("Executing Tests RUN")
+        logger.info("Executing Tests RUN")
 
     def tearDown(self):
         """

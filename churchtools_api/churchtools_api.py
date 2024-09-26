@@ -10,6 +10,7 @@ from churchtools_api.files import ChurchToolsApiFiles
 from churchtools_api.calendar import ChurchToolsApiCalendar
 from churchtools_api.resources import ChurchToolsApiResources
 
+logger = logging.getLogger(__name__)
 
 class ChurchToolsApi(ChurchToolsApiPersons, ChurchToolsApiEvents, ChurchToolsApiGroups,
                      ChurchToolsApiSongs, ChurchToolsApiFiles, ChurchToolsApiCalendar, ChurchToolsApiResources):
@@ -48,7 +49,7 @@ class ChurchToolsApi(ChurchToolsApiPersons, ChurchToolsApiEvents, ChurchToolsApi
         elif ct_user is not None and ct_password is not None:
             self.login_ct_rest_api(ct_user=ct_user, ct_password=ct_password)
 
-        logging.debug('ChurchToolsApi init finished')
+        logger.debug('ChurchToolsApi init finished')
 
     def login_ct_rest_api(self, **kwargs):
         """
@@ -68,26 +69,26 @@ class ChurchToolsApi(ChurchToolsApiPersons, ChurchToolsApiEvents, ChurchToolsApi
         self.session = requests.Session()
 
         if 'ct_token' in kwargs.keys():
-            logging.info('Trying Login with token')
+            logger.info('Trying Login with token')
             url = self.domain + '/api/whoami'
             headers = {"Authorization": 'Login ' + kwargs['ct_token']}
             response = self.session.get(url=url, headers=headers)
 
             if response.status_code == 200:
                 response_content = json.loads(response.content)
-                logging.info(
+                logger.info(
                     'Token Login Successful as {}'.format(
                         response_content['data']['email']))
                 self.session.headers['CSRF-Token'] = self.get_ct_csrf_token()
                 return json.loads(response.content)['data']['id']
             else:
-                logging.warning(
+                logger.warning(
                     "Token Login failed with {}".format(
                         response.content.decode()))
                 return False
 
         elif 'ct_user' in kwargs.keys() and 'ct_password' in kwargs.keys():
-            logging.info('Trying Login with Username/Password')
+            logger.info('Trying Login with Username/Password')
             url = self.domain + '/api/login'
             data = {
                 'username': kwargs['ct_user'],
@@ -97,11 +98,11 @@ class ChurchToolsApi(ChurchToolsApiPersons, ChurchToolsApiEvents, ChurchToolsApi
             if response.status_code == 200:
                 response_content = json.loads(response.content)
                 person = self.who_am_i()
-                logging.info(
+                logger.info(
                     'User/Password Login Successful as {}'.format(person['email']))
                 return person['id']
             else:
-                logging.warning(
+                logger.warning(
                     "User/Password Login failed with {}".format(response.content.decode()))
                 return False
 
@@ -118,11 +119,11 @@ class ChurchToolsApi(ChurchToolsApiPersons, ChurchToolsApiEvents, ChurchToolsApi
         response = self.session.get(url=url)
         if response.status_code == 200:
             csrf_token = json.loads(response.content)["data"]
-            logging.info(
+            logger.info(
                 "CSRF Token erfolgreich abgerufen {}".format(csrf_token))
             return csrf_token
         else:
-            logging.warning(
+            logger.warning(
                 "CSRF Token not updated because of Response {}".format(
                     response.content.decode()))
 
@@ -139,17 +140,17 @@ class ChurchToolsApi(ChurchToolsApiPersons, ChurchToolsApiEvents, ChurchToolsApi
         if response.status_code == 200:
             response_content = json.loads(response.content)
             if 'email' in response_content['data'].keys():
-                logging.info(
+                logger.info(
                     'Who am I as {}'.format(
                         response_content['data']['email']))
                 return response_content['data']
             else:
-                logging.warning(
+                logger.warning(
                     'User might not be logged in? {}'.format(
                         response_content['data']))
                 return False
         else:
-            logging.warning(
+            logger.warning(
                 "Checking who am i failed with {}".format(
                     response.status_code))
             return False
@@ -166,10 +167,10 @@ class ChurchToolsApi(ChurchToolsApiPersons, ChurchToolsApiEvents, ChurchToolsApi
         }
         response = self.session.post(url=url, headers=headers)
         if response.status_code == 200:
-            logging.debug("Response AJAX Connection successful")
+            logger.debug("Response AJAX Connection successful")
             return True
         else:
-            logging.debug(
+            logger.debug(
                 "Response AJAX Connection failed with {}".format(
                     json.load(
                         response.content)))
@@ -188,12 +189,12 @@ class ChurchToolsApi(ChurchToolsApiPersons, ChurchToolsApiEvents, ChurchToolsApi
         if response.status_code == 200:
             response_content = json.loads(response.content)
             response_data = response_content['data'].copy()
-            logging.debug(
+            logger.debug(
                 "First response of Global Permissions successful {}".format(response_content))
 
             return response_data
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong fetching global permissions: {}".format(
                     response.status_code))
 
@@ -226,10 +227,10 @@ class ChurchToolsApi(ChurchToolsApiPersons, ChurchToolsApiEvents, ChurchToolsApi
                         result[item['id']] = item
                     response_data = result
 
-            logging.debug("Services load successful {}".format(response_data))
+            logger.debug("Services load successful with {} entries".format(len(response_data)))
             return response_data
         else:
-            logging.info(
+            logger.info(
                 "Services requested failed: {}".format(
                     response.status_code))
             return None
@@ -257,10 +258,10 @@ class ChurchToolsApi(ChurchToolsApiPersons, ChurchToolsApiEvents, ChurchToolsApi
         if response.status_code == 200:
             response_content = json.loads(response.content)
             response_data = response_content['data'].copy()
-            logging.debug(
+            logger.debug(
                 "SongTags load successful {}".format(response_content))
 
             return response_content['data']
         else:
-            logging.warning(
+            logger.warning(
                 "Something went wrong fetching Song-tags: {}".format(response.status_code))
