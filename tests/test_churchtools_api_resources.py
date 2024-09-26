@@ -169,6 +169,8 @@ class Test_churchtools_api_resources(TestsChurchToolsApiAbstract):
             "_to": datetime(year=2024, month=9, day=30),
         }
 
+        caplog.set_level(logging.WARNING)
+
         result = self.api.get_bookings(
             _from=SAMPLE_DATES["_from"],
             _to=SAMPLE_DATES["_to"],

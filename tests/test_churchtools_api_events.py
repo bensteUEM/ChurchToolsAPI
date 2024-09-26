@@ -137,14 +137,14 @@ class TestsChurchToolsApi(unittest.TestCase):
         IMPORTANT - This test method and the parameters used depend on the target system!
 
         Test function to check the get_AllEventData_ajax function for a specific ID
-        On ELKW1610.KRZ.TOOLS event ID 3396 is an existing Test Event with schedule (1. Jan 2024)
+        On ELKW1610.KRZ.TOOLS event ID 3348 is an existing Test Event with schedule (29. Sept 2024)
         Please be aware that this function is limited to the timeframe configured for cache in CT (by default -90days)
         :return:
         """
-        eventId = 3396
-        result = self.api.get_AllEventData_ajax(eventId)
+        SAMPLE_EVENT_ID = 3348
+        result = self.api.get_AllEventData_ajax(SAMPLE_EVENT_ID)
         self.assertIn('id', result.keys())
-        self.assertEqual(result['id'], str(eventId))
+        self.assertEqual(result['id'], str(SAMPLE_EVENT_ID))
 
     def test_get_set_event_services_counts(self):
         """
@@ -185,26 +185,26 @@ class TestsChurchToolsApi(unittest.TestCase):
         IMPORTANT - This test method and the parameters used depend on the target system!
 
         Test function to get list of event admins, change it and check again (and reset to original)
-        On ELKW1610.KRZ.TOOLS event ID 3396 is an existing Test Event with schedule (1. Jan 2024)
+        On ELKW1610.KRZ.TOOLS event ID 3348 is an existing Event with schedule (29. Sept 2024)
         Please be aware that this function is limited to the timeframe configured for cache in CT (by default -90days)
         :return:
         """
-        eventId = 3396
-        admin_ids_original_test = [9]
+        SAMPLE_EVENT_ID = 3348
+        EXPECTED_ADMIN_IDS = [336]
 
-        admin_ids_original = self.api.get_event_admins_ajax(eventId)
-        self.assertEqual(admin_ids_original, admin_ids_original_test)
+        admin_ids_original = self.api.get_event_admins_ajax(SAMPLE_EVENT_ID)
+        self.assertEqual(admin_ids_original, EXPECTED_ADMIN_IDS)
 
         admin_ids_change = [0, 1, 2]
-        result = self.api.set_event_admins_ajax(eventId, admin_ids_change)
+        result = self.api.set_event_admins_ajax(SAMPLE_EVENT_ID, admin_ids_change)
         self.assertTrue(result)
 
-        admin_ids_test = self.api.get_event_admins_ajax(eventId)
+        admin_ids_test = self.api.get_event_admins_ajax(SAMPLE_EVENT_ID)
         self.assertEqual(admin_ids_change, admin_ids_test)
 
         self.assertTrue(
             self.api.set_event_admins_ajax(
-                eventId, admin_ids_original_test))
+                SAMPLE_EVENT_ID, EXPECTED_ADMIN_IDS))
 
     def test_get_event_masterdata(self):
         """

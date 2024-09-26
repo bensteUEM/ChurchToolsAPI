@@ -138,12 +138,12 @@ class TestsChurchToolsApi(unittest.TestCase):
         IMPORTANT - This test method and the parameters used depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
-        test_song_id = 2034
+        SAMPLE_SONG_ID = 2034
 
         songs = self.api.get_songs()
         self.assertGreater(len(songs), 50)
 
-        song = self.api.get_songs(song_id=test_song_id)[0]
+        song = self.api.get_songs(song_id=SAMPLE_SONG_ID)[0]
         self.assertEqual(song["id"], 2034)
         self.assertEqual(song["name"], "sample")
 
@@ -154,13 +154,13 @@ class TestsChurchToolsApi(unittest.TestCase):
         IMPORTANT - This test method and the parameters used depend on the target system!
         :return:
         """
-        test_song_id = 408
-        song = self.api.get_song_ajax(song_id=test_song_id)
+        SAMPLE_SONG_ID = 2034
+        song = self.api.get_song_ajax(song_id=SAMPLE_SONG_ID)
         self.assertIsInstance(song, dict)
         self.assertEqual(len(song), 14)
 
-        self.assertEqual(int(song['id']), test_song_id)
-        self.assertEqual(song['bezeichnung'], 'Test')
+        self.assertEqual(int(song['id']), SAMPLE_SONG_ID)
+        self.assertEqual(song['bezeichnung'], 'sample')
 
     def test_get_song_category_map(self):
         """
@@ -654,15 +654,16 @@ class TestsChurchToolsApi(unittest.TestCase):
         """
         Test method to check if fetching all songs with a specific tag works
         songId and tag_id will vary depending on the server used
-        On ELKW1610.KRZ.TOOLS song ID 408 is the first song with tag 53 "Test"
+        On ELKW1610.KRZ.TOOLS song ID 408 is tagged with 53 "Test"
         :return:
         """
-        tagId = 53
-        songId = 408
+        SAMPLE_TAG_ID = 53
+        SAMPLE_SONG_ID = 408
 
         self.api.ajax_song_last_update = None
-        result = self.api.get_songs_by_tag(tagId)
-        self.assertEqual(songId, result[0]['id'])
+        result = self.api.get_songs_by_tag(SAMPLE_TAG_ID)
+        result_ids = [song['id'] for song in result]
+        self.assertIn(SAMPLE_SONG_ID, result_ids)
 
     def test_file_download(self):
         """ Test of file_download and file_download_from_url on https://elkw1610.krz.tools on any song

@@ -21,6 +21,9 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         Keywords:
             group_id: int: optional filter by group id (only to be used on it's own)
 
+        Permissions:
+            requires "view group" for all groups which should be considered
+
         Returns:
             list of groups - either all or filtered by keyword
 
@@ -42,7 +45,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             return response_data
         else:
             logger.warning(
-                "Something went wrong fetching groups: {}".format(response.status_code)
+                "%s Something went wrong fetching groups: %s",response.status_code, response.content
             )
 
     def get_groups_hierarchies(self):
@@ -121,6 +124,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
         Required Permissions:
             administer groups
+            create group of grouptype
 
         Returns:
             dict with created group group - similar to get_group
@@ -157,9 +161,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             return response_data
         else:
             logger.warning(
-                "Something went wrong with creating group: {}".format(
-                    response.status_code
-                )
+                "%s Something went wrong with creating group: %s", response.status_code, response.content
             )
 
     def update_group(self, group_id: int, data: dict):
@@ -196,6 +198,9 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
         Arguments:
             group_id: group_id
+
+        Required Permissions
+            delete group
 
         Returns:
             True if successful
@@ -409,6 +414,8 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             group_id: int: required group id
             person_id: int: required person id
 
+        Required Permissions:
+            edit group memberships of groups
         Returns:
             True if successful
         """
@@ -419,9 +426,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             return True
         else:
             logger.warning(
-                "Something went wrong removing group member: {}".format(
-                    response.status_code
-                )
+                "%s Something went wrong removing group member: %s", response.status_code, response.content
             )
 
     def get_group_roles(self, group_id: int) -> list[dict]:
@@ -460,6 +465,9 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             group_id: required group id
             parent_group_id: required parent group id
 
+        Required Permissions:
+            administer groups
+
         Returns:
         True if successful
         """
@@ -472,10 +480,8 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             logger.debug("First response of Add Parent Group successful")
             return True
         else:
-            logger.warning(
-                "Something went wrong adding parent group: {}".format(
-                    response.status_code
-                )
+            logger.warning( 
+                "%s Something went wrong adding parent group: %s",response.status_code, response.content
             )
 
     def remove_parent_group(self, group_id: int, parent_group_id: int) -> bool:

@@ -165,6 +165,6 @@ class TestsChurchToolsApi(unittest.TestCase):
         """
         # Appointment Series by ID
         result = self.api.get_calendar_appointments(
-            calendar_ids=[52], from_="2023-12-03", to_="2023-12-04")
+            calendar_ids=[52], from_="2023-12-01", to_="2023-12-02")
 
         self.assertIsNone(result)
