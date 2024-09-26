@@ -28,12 +28,13 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         if "song_id" in kwargs.keys():
             url = url + "/{}".format(kwargs["song_id"])
         headers = {"accept": "application/json"}
-        response = self.session.get(url=url, headers=headers)
+        params = {"limit":50} #increases default pagination size
+        response = self.session.get(url=url, headers=headers, params=params)
 
         if response.status_code == 200:
             response_content = json.loads(response.content)
             response_data = self.combine_paginated_response_data(
-                response_content, url=url, headers=headers
+                response_content, url=url, headers=headers, params=params
             )
             return [response_data] if isinstance(response_data, dict) else response_data
 

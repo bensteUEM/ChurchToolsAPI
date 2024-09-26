@@ -62,7 +62,7 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
         """
         url = self.domain + "/api/bookings"
         headers = {"accept": "application/json"}
-        params = {}
+        params = {"limit":50} #increases default pagination size
 
         # at least one of the following arguments is required
         required_kwargs = ["booking_id", "resource_ids"]
@@ -103,7 +103,7 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
             response_content = json.loads(response.content)
 
             response_data = self.combine_paginated_response_data(
-                response_content, url=url, headers=headers
+                response_content, url=url, headers=headers, params=params
             )
             result_list = (
                 [response_data] if isinstance(response_data, dict) else response_data

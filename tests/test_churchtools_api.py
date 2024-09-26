@@ -100,7 +100,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         """
         Tries to get all and a single person from the server
         Be aware that only ct_users that are visible to the user associated with the login token can be viewed!
-        On any elkw.KRZ.TOOLS personId 1 'firstName' starts with 'Ben' and more than 10 ct_users exist(13. Jan 2023)
+        On any elkw.KRZ.TOOLS personId 1 'firstName' starts with 'Ben' and more than 50 ct_users exist(13. Jan 2023)
         :return:
         """
 
@@ -108,7 +108,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         result1 = self.api.get_persons()
         self.assertIsInstance(result1, list)
         self.assertIsInstance(result1[0], dict)
-        self.assertGreater(len(result1), 10)
+        self.assertGreater(len(result1), 50)
 
         result2 = self.api.get_persons(ids=[personId])
         self.assertIsInstance(result2, list)
@@ -132,7 +132,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         test_song_id = 2034
 
         songs = self.api.get_songs()
-        self.assertGreater(len(songs), 10)
+        self.assertGreater(len(songs), 50)
 
         song = self.api.get_songs(song_id=test_song_id)[0]
         self.assertEqual(song["id"], 2034)
