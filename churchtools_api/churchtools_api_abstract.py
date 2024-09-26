@@ -36,7 +36,7 @@ class ChurchToolsApiAbstract(ABC):
                     logger.debug(
                         "running paginated request for page {} of {}".format(
                             page + 1,
-                            pagination["lastPage"] + 1,
+                            pagination["lastPage"],
                         )
                     )
                     new_param = {"page": page + 1}
