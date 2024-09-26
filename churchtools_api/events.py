@@ -86,8 +86,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             return [response_data] if isinstance(response_data, dict) else response_data
         else:
             logger.warning(
-                "Something went wrong fetching events: {}".format(
-                    response.status_code))
+                "%s Something went wrong fetching events: %s", response.status_code, response.content)
 
     def get_event_by_calendar_appointment(self, appointment_id: int,
                                           start_date: str | datetime) -> dict:

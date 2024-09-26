@@ -37,7 +37,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
             return response_content['data'].copy()
         else:
             logger.warning(
-                "Something went wrong fetching events: %s", response.status_code)
+                "%s Something went wrong fetching events: %s", response.status_code, response.content)
 
     def get_calendar_appointments(
             self, calendar_ids: list, **kwargs) -> list[dict]:
@@ -128,5 +128,5 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
 
         else:
             logger.warning(
-                "Something went wrong fetching calendar appointments: %s",
-                response.status_code)
+                "%s Something went wrong fetching calendar appointments:  %s", response.status_code, response.content
+            )

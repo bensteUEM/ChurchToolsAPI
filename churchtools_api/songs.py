@@ -46,8 +46,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
                         kwargs["song_id"], response.status_code))
             else:
                 logger.warning(
-                    "Something went wrong fetching songs: CODE {}".format(
-                        response.status_code))
+                    "%s Something went wrong fetching songs: %s", response.status_code, response.content)
 
     def get_song_ajax(self, song_id=None, require_update_after_seconds=10):
         """

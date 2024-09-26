@@ -70,8 +70,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
         else:
             logger.warning(
-                "Something went wrong fetching groups hierarchies: {}".format(
-                    response.status_code))
+                "%s Something went wrong fetching groups hierarchies: %s", response.status_code, response.content)
 
     def get_group_statistics(self, group_id: int) -> dict:
         """Get statistics for the given group.
@@ -101,10 +100,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             return response_data
         else:
             logger.warning(
-                "Something went wrong fetching group statistics: {}".format(
-                    response.status_code
-                )
-            )
+                "%s Something went wrong fetching group statistics: %s", response.status_code, response.content)
 
     def create_group(
         self, name: str, group_status_id: int, grouptype_id: int, **kwargs
@@ -190,8 +186,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             return response_data
         else:
             logger.warning(
-                "Something went wrong updating group: {}".format(
-                    response.status_code))
+                "%s Something went wrong updating group: %s", response.status_code, response.content)
 
     def delete_group(self, group_id: int) -> bool:
         """Delete the given group.
@@ -213,8 +208,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             return True
         else:
             logger.warning(
-                "Something went wrong deleting group: {}".format(response.status_code)
-            )
+                "%s Something went wrong deleting group: %s", response.status_code, response.content)
 
     def get_grouptypes(self, **kwargs):
         """
@@ -243,8 +237,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             return result
         else:
             logger.warning(
-                "Something went wrong fetching grouptypes: {}".format(
-                    response.status_code))
+                "%s Something went wrong fetching grouptypes: %s", response.status_code, response.content)
 
     def get_group_permissions(self, group_id: int):
         """
@@ -268,8 +261,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             return response_data
         else:
             logger.warning(
-                "Something went wrong fetching group permissions: {}".format(
-                    response.status_code))
+                "%s Something went wrong fetching group permissions: %s", response.status_code, response.content)
 
     def get_group_members(self, group_id: int, **kwargs) -> list[dict]:
         """Get list of members for the given group.
@@ -305,10 +297,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             return result_list
         else:
             logger.warning(
-                "Something went wrong fetching group members: {}".format(
-                    response.status_code
-                )
-            )
+                "%s Something went wrong fetching group members: %s", response.status_code, response.content)
 
     def get_groups_members(
         self, group_ids: list[int] = None, with_deleted: bool = False, **kwargs
@@ -361,10 +350,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             return result_list
         else:
             logger.warning(
-                "Something went wrong fetching group members: {}".format(
-                    response.status_code
-                )
-            )
+                "%s Something went wrong fetching group members: %s", response.status_code, response.content)
 
     def add_group_member(self, group_id: int, person_id: int, **kwargs) -> dict:
         """Add a member to a group.
@@ -402,10 +388,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             return response_data
         else:
             logger.warning(
-                "Something went wrong adding group member: {}".format(
-                    response.status_code
-                )
-            )
+                "%s Something went wrong adding group member: %s", response.status_code, response.content)
 
     def remove_group_member(self, group_id: int, person_id: int) -> bool:
         """Remove the given group member.
@@ -453,10 +436,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             return result_list
         else:
             logger.warning(
-                "Something went wrong fetching group roles: {}".format(
-                    response.status_code
-                )
-            )
+                "%s Something went wrong fetching group roles: %s", response.status_code, response.content)
 
     def add_parent_group(self, group_id: int, parent_group_id: int) -> bool:
         """Add a parent group for a group.
@@ -504,7 +484,4 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             return True
         else:
             logger.warning(
-                "Something went wrong removing parent group: {}".format(
-                    response.status_code
-                )
-            )
+                "%s Something went wrong removing parent group: %s", response.status_code, response.content)

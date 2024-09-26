@@ -195,8 +195,8 @@ class ChurchToolsApi(ChurchToolsApiPersons, ChurchToolsApiEvents, ChurchToolsApi
             return response_data
         else:
             logger.warning(
-                "Something went wrong fetching global permissions: {}".format(
-                    response.status_code))
+                "%s Something went wrong fetching global permissions: %s",
+                    response.status_code, response_content)
 
     def get_services(self, **kwargs):
         """
@@ -264,4 +264,4 @@ class ChurchToolsApi(ChurchToolsApiPersons, ChurchToolsApiEvents, ChurchToolsApi
             return response_content['data']
         else:
             logger.warning(
-                "Something went wrong fetching Song-tags: {}".format(response.status_code))
+                "%s Something went wrong fetching Song-tags: %s",response.status_code, response.content)

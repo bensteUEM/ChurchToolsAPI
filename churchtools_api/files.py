@@ -174,7 +174,7 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
             return StateOK
         else:
             logger.warning(
-                "Something went wrong fetching SongArrangement-Files: {}".format(response.status_code))
+                "%s Something went wrong fetching SongArrangement-Files: %s", response.status_code, response.content)
 
     def file_download_from_url(self, file_url, target_path):
         """
@@ -189,10 +189,10 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
         :rtype: bool
         """
         # NOTE the stream=True parameter below
-        with self.session.get(url=file_url, stream=True) as r:
-            if r.status_code == 200:
+        with self.session.get(url=file_url, stream=True) as response:
+            if response.status_code == 200:
                 with open(target_path, 'wb') as f:
-                    for chunk in r.iter_content(chunk_size=8192):
+                    for chunk in response.iter_content(chunk_size=8192):
                         # If you have chunk encoded response uncomment if
                         # and set chunk_size parameter to None.
                         # if chunk:
@@ -201,6 +201,5 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
                 return True
             else:
                 logger.warning(
-                    "Something went wrong during file_download: {}".format(
-                        r.status_code))
+                    "%s Something went wrong during file_download: %s", response.status_code, response.content)
                 return False
