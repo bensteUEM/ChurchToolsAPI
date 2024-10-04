@@ -103,10 +103,10 @@ class Test_churchtools_api_resources(TestsChurchToolsApiAbstract):
         the hard coded sample exists on ELKW1610.KRZ.TOOLS"""
         caplog.set_level(logging.WARNING)
         SAMPLE_DATES = {
-            "_from": datetime(year=2024, month=12, day=24),
-            "_to": datetime(year=2024, month=12, day=24),
+            "from_": datetime(year=2024, month=12, day=24),
+            "to_": datetime(year=2024, month=12, day=24),
         }
-        self.api.get_bookings(_from=SAMPLE_DATES["_from"])
+        self.api.get_bookings(from_=SAMPLE_DATES["from_"])
 
         expected_response = "invalid argument combination in get_bookings - please check docstring for requirements"
         assert expected_response in caplog.messages
@@ -117,12 +117,12 @@ class Test_churchtools_api_resources(TestsChurchToolsApiAbstract):
         caplog.set_level(logging.INFO)
         RESOURCE_ID_SAMPLES = [8, 20]
         SAMPLE_DATES = {
-            "_from": datetime(year=2024, month=9, day=21),
-            "_to": datetime(year=2024, month=9, day=30),
+            "from_": datetime(year=2024, month=9, day=21),
+            "to_": datetime(year=2024, month=9, day=30),
         }
 
         result = self.api.get_bookings(
-            _from=SAMPLE_DATES["_from"], resource_ids=RESOURCE_ID_SAMPLES
+            from_=SAMPLE_DATES["from_"], resource_ids=RESOURCE_ID_SAMPLES
         )
         assert set(RESOURCE_ID_SAMPLES) == {i["base"]["resource"]["id"] for i in result}
 
@@ -131,11 +131,11 @@ class Test_churchtools_api_resources(TestsChurchToolsApiAbstract):
             for i in result
         }
         assert all(
-            [SAMPLE_DATES["_from"] <= compare_date for compare_date in result_dates]
+            [SAMPLE_DATES["from_"] <= compare_date for compare_date in result_dates]
         )
 
         expected_response = (
-            "missing _from or _to defaults to first or last day of current month"
+            "missing from_ or to_ defaults to first or last day of current month"
         )
         assert expected_response in caplog.messages
 
@@ -145,11 +145,11 @@ class Test_churchtools_api_resources(TestsChurchToolsApiAbstract):
         caplog.set_level(logging.INFO)
         RESOURCE_ID_SAMPLES = [8, 20]
         SAMPLE_DATES = {
-            "_to": datetime.now() + timedelta(days=30),
+            "to_": datetime.now() + timedelta(days=30),
         }
 
         result = self.api.get_bookings(
-            _to=SAMPLE_DATES["_to"], resource_ids=RESOURCE_ID_SAMPLES
+            to_=SAMPLE_DATES["to_"], resource_ids=RESOURCE_ID_SAMPLES
         )
         assert set(RESOURCE_ID_SAMPLES) == {i["base"]["resource"]["id"] for i in result}
 
@@ -158,11 +158,11 @@ class Test_churchtools_api_resources(TestsChurchToolsApiAbstract):
             for i in result
         }
         assert all(
-            [SAMPLE_DATES["_to"] >= compare_date for compare_date in result_dates]
+            [SAMPLE_DATES["to_"] >= compare_date for compare_date in result_dates]
         )
 
         expected_response = (
-            "missing _from or _to defaults to first or last day of current month"
+            "missing from_ or to_ defaults to first or last day of current month"
         )
         assert expected_response in caplog.messages
 
@@ -171,15 +171,15 @@ class Test_churchtools_api_resources(TestsChurchToolsApiAbstract):
         the hard coded sample exists on ELKW1610.KRZ.TOOLS"""
         RESOURCE_ID_SAMPLES = [8, 20]
         SAMPLE_DATES = {
-            "_from": datetime(year=2024, month=9, day=21),
-            "_to": datetime(year=2024, month=9, day=30),
+            "from_": datetime(year=2024, month=9, day=21),
+            "to_": datetime(year=2024, month=9, day=30),
         }
 
         caplog.set_level(logging.WARNING)
 
         result = self.api.get_bookings(
-            _from=SAMPLE_DATES["_from"],
-            _to=SAMPLE_DATES["_to"],
+            from_=SAMPLE_DATES["from_"],
+            to_=SAMPLE_DATES["to_"],
             resource_ids=RESOURCE_ID_SAMPLES,
         )
         assert set(RESOURCE_ID_SAMPLES) == {i["base"]["resource"]["id"] for i in result}
@@ -189,10 +189,10 @@ class Test_churchtools_api_resources(TestsChurchToolsApiAbstract):
             for i in result
         }
         assert all(
-            [SAMPLE_DATES["_from"] <= compare_date for compare_date in result_dates]
+            [SAMPLE_DATES["from_"] <= compare_date for compare_date in result_dates]
         )
         assert all(
-            [SAMPLE_DATES["_to"] >= compare_date for compare_date in result_dates]
+            [SAMPLE_DATES["to_"] >= compare_date for compare_date in result_dates]
         )
 
         assert [] == caplog.messages
@@ -204,15 +204,15 @@ class Test_churchtools_api_resources(TestsChurchToolsApiAbstract):
 
         RESOURCE_ID_SAMPLES = [16]
         SAMPLE_DATES = {
-            "_from": datetime(year=2024, month=9, day=21),
-            "_to": datetime(year=2024, month=9, day=30),
+            "from_": datetime(year=2024, month=9, day=21),
+            "to_": datetime(year=2024, month=9, day=30),
         }
         SAMPLE_APPOINTMENT_ID = 327883  # 22.9.2024 GH
         result = self.api.get_bookings(
             appointment_id=SAMPLE_APPOINTMENT_ID,
             resource_ids=RESOURCE_ID_SAMPLES,
-            _from=SAMPLE_DATES["_from"],
-            _to=SAMPLE_DATES["_to"],
+            from_=SAMPLE_DATES["from_"],
+            to_=SAMPLE_DATES["to_"],
         )
 
         assert result[0]["base"]["caption"] == "Zentral-Gottesdienst im Gemeindehaus"
@@ -232,13 +232,13 @@ class Test_churchtools_api_resources(TestsChurchToolsApiAbstract):
 
         SAMPLE_APPOINTMENT_ID = 327883
         SAMPLE_DATES = {
-            "_from": datetime(year=2024, month=9, day=22),
-            "_to": datetime(year=2024, month=9, day=22),
+            "from_": datetime(year=2024, month=9, day=22),
+            "to_": datetime(year=2024, month=9, day=22),
         }
 
         result = self.api.get_bookings(
-            _from=SAMPLE_DATES["_from"],
-            _to=SAMPLE_DATES["_to"],
+            from_=SAMPLE_DATES["from_"],
+            to_=SAMPLE_DATES["to_"],
             appointment_id=SAMPLE_APPOINTMENT_ID,
             resource_ids=RESOURCE_ID_SAMPLES,
         )
@@ -249,7 +249,7 @@ class Test_churchtools_api_resources(TestsChurchToolsApiAbstract):
 
         assert len(result) == 1
         # check dates incl. max 1 day diff because of reservations before event start
-        assert SAMPLE_DATES["_from"] - timedelta(days=1) <= result_date
-        assert SAMPLE_DATES["_to"] + timedelta(days=1) >= result_date
+        assert SAMPLE_DATES["from_"] - timedelta(days=1) <= result_date
+        assert SAMPLE_DATES["to_"] + timedelta(days=1) >= result_date
         assert result[0]["base"]["caption"] == "Zentral-Gottesdienst im Gemeindehaus"
         assert result[0]["base"]["resource"]["id"] in set(RESOURCE_ID_SAMPLES)

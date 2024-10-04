@@ -58,9 +58,9 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
             booking_id: int: only one booking by id (use standalone only)
             resources_ids:list[int]: required if not booking_id
             status_ids: list[int]: filter by list of stats ids to consider (requires resource_ids)
-            _from: datetime: date range to consider (use only with _to! - might have a bug in API - Support Ticket 130123)
-            _to: datetime: date range to consider (use only with _from! - might have a bug in API - Support Ticket 130123)
-            appointment_id: int: get resources for one specific calendar_appointment only (use together with _to and _from for performance reasons)
+            from_: datetime: date range to consider (use only with to_! - might have a bug in API - Support Ticket 130123)
+            to_: datetime: date range to consider (use only with from_! - might have a bug in API - Support Ticket 130123)
+            appointment_id: int: get resources for one specific calendar_appointment only (use together with to_ and from_ for performance reasons)
         """
         url = self.domain + "/api/bookings"
         headers = {"accept": "application/json"}
@@ -81,15 +81,15 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
 
             if status_ids := kwargs.get("status_ids"):
                 params["status_ids[]"] = status_ids
-            if "_from" in kwargs or "_to" in kwargs:
-                if "_from" not in kwargs or "_to" not in kwargs:
+            if "from_" in kwargs or "to_" in kwargs:
+                if "from_" not in kwargs or "to_" not in kwargs:
                     logger.info(
-                        "missing _from or _to defaults to first or last day of current month"
+                        "missing from_ or to_ defaults to first or last day of current month"
                     )
-                if _from := kwargs.get("_from"):
-                    params["from"] = _from.strftime("%Y-%m-%d")
-                if _to := kwargs.get("_to"):
-                    params["to"] = _to.strftime("%Y-%m-%d")
+                if from_ := kwargs.get("from_"):
+                    params["from"] = from_.strftime("%Y-%m-%d")
+                if to_ := kwargs.get("to_"):
+                    params["to"] = to_.strftime("%Y-%m-%d")
             if appointment_id := kwargs.get("appointment_id"):
                 if "from" not in params:
                     logger.warning(
