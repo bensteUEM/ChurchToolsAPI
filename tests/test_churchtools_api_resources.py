@@ -15,6 +15,7 @@ with config_file.open(encoding="utf-8") as f_in:
         log_directory.mkdir(parents=True)
     logging.config.dictConfig(config=logging_config)
 
+
 class Test_churchtools_api_resources(TestsChurchToolsApiAbstract):
     def test_get_resource_masterdata_resourceTypes(self):
         """Check resourceTypes can be retrieved.
@@ -113,6 +114,7 @@ class Test_churchtools_api_resources(TestsChurchToolsApiAbstract):
     def test_get_booking_from_date(self, caplog):
         """IMPORTANT - This test method and the parameters used depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS"""
+        caplog.set_level(logging.INFO)
         RESOURCE_ID_SAMPLES = [8, 20]
         SAMPLE_DATES = {
             "_from": datetime(year=2024, month=9, day=21),
@@ -132,16 +134,18 @@ class Test_churchtools_api_resources(TestsChurchToolsApiAbstract):
             [SAMPLE_DATES["_from"] <= compare_date for compare_date in result_dates]
         )
 
-        expected_response = "See ChurchTools support ticket 130123 - might have unexpected behaviour if to and from are used standalone"
+        expected_response = (
+            "missing _from or _to defaults to first or last day of current month"
+        )
         assert expected_response in caplog.messages
 
     def test_get_booking_to_date(self, caplog):
         """IMPORTANT - This test method and the parameters used depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS"""
+        caplog.set_level(logging.INFO)
         RESOURCE_ID_SAMPLES = [8, 20]
         SAMPLE_DATES = {
-            "_from": datetime(year=2024, month=9, day=21),
-            "_to": datetime(year=2024, month=9, day=30),
+            "_to": datetime.now() + timedelta(days=30),
         }
 
         result = self.api.get_bookings(
@@ -157,7 +161,9 @@ class Test_churchtools_api_resources(TestsChurchToolsApiAbstract):
             [SAMPLE_DATES["_to"] >= compare_date for compare_date in result_dates]
         )
 
-        expected_response = "See ChurchTools support ticket 130123 - might have unexpected behaviour if to and from are used standalone"
+        expected_response = (
+            "missing _from or _to defaults to first or last day of current month"
+        )
         assert expected_response in caplog.messages
 
     def test_get_booking_from_to_date(self, caplog):
@@ -194,18 +200,30 @@ class Test_churchtools_api_resources(TestsChurchToolsApiAbstract):
     def test_get_booking_appointment_id(self, caplog):
         """IMPORTANT - This test method and the parameters used depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS"""
-        caplog.set_level(logging.INFO)
+        caplog.set_level(logging.WARNING)
 
         RESOURCE_ID_SAMPLES = [16]
-        SAMPLE_APPOINTMENT_ID = 327883  # 22.9 GH
+        SAMPLE_DATES = {
+            "_from": datetime(year=2024, month=9, day=21),
+            "_to": datetime(year=2024, month=9, day=30),
+        }
+        SAMPLE_APPOINTMENT_ID = 327883  # 22.9.2024 GH
+        result = self.api.get_bookings(
+            appointment_id=SAMPLE_APPOINTMENT_ID,
+            resource_ids=RESOURCE_ID_SAMPLES,
+            _from=SAMPLE_DATES["_from"],
+            _to=SAMPLE_DATES["_to"],
+        )
+
+        assert result[0]["base"]["caption"] == "Zentral-Gottesdienst im Gemeindehaus"
+        assert result[0]["base"]["resource"]["id"] in set(RESOURCE_ID_SAMPLES)
+
         result = self.api.get_bookings(
             appointment_id=SAMPLE_APPOINTMENT_ID, resource_ids=RESOURCE_ID_SAMPLES
         )
-        expected_log_message = "Performance and stability issues - use appointment_id param together with to and from for faster results and definite time range"
+        expected_log_message = "using appointment ID without date range might be incomplete if current month differs"
         assert expected_log_message in caplog.messages
-        assert len(result) == 1
-        assert result[0]["base"]["caption"] == "Zentral-Gottesdienst im Gemeindehaus"
-        assert result[0]["base"]["resource"]["id"] in set(RESOURCE_ID_SAMPLES)
+        assert len(result) == 0
 
     def test_get_booking_appointment_id_daterange(self):
         """IMPORTANT - This test method and the parameters used depend on the target system!
