@@ -334,7 +334,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         """
         url = self.domain + "/api/groups/members"
         headers = {"accept": "application/json"}
-        params = {}
+        params = {"ids[]": group_ids, with_deleted: with_deleted}
 
         response = self.session.get(url=url, headers=headers, params=params)
 
@@ -342,7 +342,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             response_content = json.loads(response.content)
 
             response_data = self.combine_paginated_response_data(
-                response_content, url=url, headers=headers
+                response_content, url=url, headers=headers, params=params
             )
             result_list = (
                 [response_data] if isinstance(response_data, dict) else response_data
@@ -363,7 +363,10 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             return result_list
         else:
             logger.warning(
-                "%s Something went wrong fetching group members: %s", response.status_code, response.content)
+                "%s Something went wrong fetching group members: %s",
+                response.status_code,
+                response.content,
+            )
 
     def add_group_member(self, group_id: int, person_id: int, **kwargs) -> dict:
         """Add a member to a group.

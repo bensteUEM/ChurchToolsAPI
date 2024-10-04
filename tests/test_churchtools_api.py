@@ -405,6 +405,18 @@ class TestsChurchToolsApi(unittest.TestCase):
         compare_result = [group["groupId"] for group in group_result]
         self.assertIn(EXPECTED_GROUP_ID, compare_result)
 
+        # 3. problematic result group_ids, grouptype_role_ids and person_id
+        SAMPLE_GROUP_IDS = [99, 68, 93]
+        SAMPLE_GROUPTYPE_ROLE_IDS = [9, 16]
+        SAMPLE_PERSON_IDS = [54]
+
+        result = self.api.get_groups_members(
+            group_ids=SAMPLE_GROUP_IDS,
+            grouptype_role_ids=SAMPLE_GROUPTYPE_ROLE_IDS,
+            person_ids=SAMPLE_PERSON_IDS,
+        )
+        assert len(result) == 1
+
     def test_add_and_remove_group_members(self)->None:
         """IMPORTANT - This test method and the parameters used depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
