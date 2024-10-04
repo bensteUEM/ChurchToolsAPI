@@ -187,7 +187,10 @@ class TestsChurchToolsApi(unittest.TestCase):
         self.assertTrue(isinstance(groups[0], dict))
         self.assertGreater(len(groups), 10)
 
-        group = self.api.get_groups(group_id=103)
+        groups = self.api.get_groups(group_id=103)
+        self.assertTrue(isinstance(groups, list))
+        group = groups[0]
+        self.assertTrue(isinstance(group, dict))
         self.assertEqual(group["id"], 103)
         self.assertEqual(group["name"], "TestGruppe")
 
@@ -332,15 +335,16 @@ class TestsChurchToolsApi(unittest.TestCase):
         Also cleans the field after executing the test
         :return:
         """
-        test_group_id = 103
+        SAMPLE_GROUP_ID = 103
         data = {"note": "TestNote - if this exists an automated test case failed"}
-        group = self.api.update_group(group_id=test_group_id, data=data)
-        self.assertEqual(group['information']['note'], data['note'])
+        group_update_result = self.api.update_group(group_id=SAMPLE_GROUP_ID, data=data)
+        self.assertEqual(group_update_result["information"]["note"], data["note"])
 
-        group = self.api.update_group(
-            group_id=test_group_id, data={"note": ""})
-        group = self.api.get_groups(group_id=test_group_id)
-        self.assertEqual(group['information']['note'], '')
+        group_update_result = self.api.update_group(
+            group_id=SAMPLE_GROUP_ID, data={"note": ""}
+        )
+        groups = self.api.get_groups(group_id=SAMPLE_GROUP_ID)
+        self.assertEqual(groups[0]["information"]["note"], "")
 
     def test_get_group_members(self) -> None:
         """Checks if group members can be retrieved from the group and filtering

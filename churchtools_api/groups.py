@@ -5,8 +5,9 @@ from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
 logger = logging.getLogger(__name__)
 
+
 class ChurchToolsApiGroups(ChurchToolsApiAbstract):
-    """ Part definition of ChurchToolsApi which focuses on groups
+    """Part definition of ChurchToolsApi which focuses on groups
 
     Args:
         ChurchToolsApiAbstract: template with minimum references
@@ -41,11 +42,15 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             response_data = self.combine_paginated_response_data(
                 response_content, url=url, headers=headers
             )
-
+            response_data = (
+                [response_data] if isinstance(response_data, dict) else response_data
+            )
             return response_data
         else:
             logger.warning(
-                "%s Something went wrong fetching groups: %s",response.status_code, response.content
+                "%s Something went wrong fetching groups: %s",
+                response.status_code,
+                response.content,
             )
 
     def get_groups_hierarchies(self):
@@ -157,36 +162,44 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             return response_data
         else:
             logger.warning(
-                "%s Something went wrong with creating group: %s", response.status_code, response.content
+                "%s Something went wrong with creating group: %s",
+                response.status_code,
+                response.content,
             )
 
-    def update_group(self, group_id: int, data: dict):
+    def update_group(self, group_id: int, data: dict) -> dict:
         """
-        Update a field of the given group
+        Update a field of the given group.
         to loookup available names use get_group(group_id=xxx)
-        :param group_id: int: required group_id
-        :param data: dict: required group fields data
-        :return: dict with updated group
-        :rtype: dict
+
+        Arguments:
+            group_id: number of the group to update
+            data: all group fields
+
+        Returns:
+            dict with updated group
         """
-        url = self.domain + '/api/groups/{}'.format(group_id)
+        url = self.domain + f"/api/groups/{group_id}"
         headers = {
-            'accept': 'application/json',
-            'Content-Type': 'application/json',
+            "accept": "application/json",
+            "Content-Type": "application/json",
         }
-        response = self.session.patch(
-            url=url, headers=headers, data=json.dumps(data))
+        response = self.session.patch(url=url, headers=headers, data=json.dumps(data))
 
         if response.status_code == 200:
             response_content = json.loads(response.content)
-            response_data = response_content['data'].copy()
+            response_data = response_content["data"].copy()
             logger.debug(
-                "First response of Update Group successful {}".format(response_content))
+                "First response of Update Group successful {}".format(response_content)
+            )
 
             return response_data
         else:
             logger.warning(
-                "%s Something went wrong updating group: %s", response.status_code, response.content)
+                "%s Something went wrong updating group: %s",
+                response.status_code,
+                response.content,
+            )
 
     def delete_group(self, group_id: int) -> bool:
         """Delete the given group.
