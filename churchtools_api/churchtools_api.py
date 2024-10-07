@@ -12,8 +12,16 @@ from churchtools_api.resources import ChurchToolsApiResources
 
 logger = logging.getLogger(__name__)
 
-class ChurchToolsApi(ChurchToolsApiPersons, ChurchToolsApiEvents, ChurchToolsApiGroups,
-                     ChurchToolsApiSongs, ChurchToolsApiFiles, ChurchToolsApiCalendar, ChurchToolsApiResources):
+
+class ChurchToolsApi(
+    ChurchToolsApiPersons,
+    ChurchToolsApiEvents,
+    ChurchToolsApiGroups,
+    ChurchToolsApiSongs,
+    ChurchToolsApiFiles,
+    ChurchToolsApiCalendar,
+    ChurchToolsApiResources,
+):
     """Main class used to combine all api functions
 
     Args:
@@ -265,3 +273,32 @@ class ChurchToolsApi(ChurchToolsApiPersons, ChurchToolsApiEvents, ChurchToolsApi
         else:
             logger.warning(
                 "%s Something went wrong fetching Song-tags: %s",response.status_code, response.content)
+
+    def get_options(self) -> dict:
+        """Helper function which returns all configurable option fields from CT.
+        e.g. common use is sexId
+
+        Returns:
+            dict of options - named by "name" from original list response
+        """
+
+        url = self.domain + "/api/dbfields"
+        headers = {"accept": "application/json"}
+        params = {
+            "include[]": "options",
+        }
+        response = self.session.get(url=url, params=params, headers=headers)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_data = response_content["data"].copy()
+
+            logger.debug("SongTags load successful {}".format(response_content))
+            response_dict = {item["name"]: item for item in response_data}
+            return response_dict
+        else:
+            logger.warning(
+                "%s Something went wrong fetching Song-tags: %s",
+                response.status_code,
+                response.content,
+            )
