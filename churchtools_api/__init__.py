@@ -1,1 +1,1 @@
-__all__ = ['churchtools_api']
+__all__ = ["churchtools_api"]

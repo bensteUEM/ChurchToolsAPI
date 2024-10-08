@@ -9,8 +9,8 @@
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
     "[python]": {
-        "editor.defaultFormatter": "ms-python.autopep8",
-        "editor.formatOnSave": true
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": false
     },
     "python.formatting.provider": "none"
 }

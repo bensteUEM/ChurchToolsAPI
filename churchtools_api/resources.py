@@ -13,11 +13,11 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
         ChurchToolsApiAbstract: template with minimum references
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super()
 
     def get_resource_masterdata(self, result_type: str) -> dict:
-        """Access to resource masterdata
+        """Access to resource masterdata.
 
         Arguments:
             result_type: either "resourceTypes" or "resources" depending on expected result
@@ -28,9 +28,10 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
         known_result_types = ["resourceTypes", "resources"]
         if result_type not in known_result_types:
             logger.error(
-                "get_resource_masterdata does not know result_type=%s", result_type
+                "get_resource_masterdata does not know result_type=%s",
+                result_type,
             )
-            return
+            return None
 
         url = self.domain + "/api/resource/masterdata"
         headers = {"accept": "application/json"}
@@ -40,21 +41,22 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
             response_content = json.loads(response.content)
 
             response_data = self.combine_paginated_response_data(
-                response_content, url=url, headers=headers
+                response_content,
+                url=url,
+                headers=headers,
             )
 
             return response_data[result_type]
-        else:
-            logger.error(response)
-            return
+        logger.error(response)
+        return None
 
     def get_bookings(self, **kwargs) -> list[dict]:
         """Access to all Resource bookings in churchtools based on a combination of Keyword Arguments.
 
         Arguments:
-            kwargs - see list below - some combination limits do apply
+            kwargs: see list below - some combination limits do apply
 
-        KwArgs:
+        Keywords:
             booking_id: int: only one booking by id (use standalone only)
             resources_ids:list[int]: required if not booking_id
             status_ids: list[int]: filter by list of stats ids to consider (requires resource_ids)
@@ -68,14 +70,14 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
 
         # at least one of the following arguments is required
         required_kwargs = ["booking_id", "resource_ids"]
-        if not any([kwarg in kwargs for kwarg in required_kwargs]):
+        if not any(kwarg in kwargs for kwarg in required_kwargs):
             logger.error(
-                "invalid argument combination in get_bookings - please check docstring for requirements"
+                "invalid argument combination in get_bookings - please check docstring for requirements",
             )
-            return
+            return None
 
         if booking_id := kwargs.get("booking_id"):
-            url = url + "/{}".format(kwargs["booking_id"])
+            url = url + f"/{booking_id}"
         elif resource_ids := kwargs.get("resource_ids"):
             params["resource_ids[]"] = resource_ids
 
@@ -84,7 +86,7 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
             if "from_" in kwargs or "to_" in kwargs:
                 if "from_" not in kwargs or "to_" not in kwargs:
                     logger.info(
-                        "missing from_ or to_ defaults to first or last day of current month"
+                        "missing from_ or to_ defaults to first or last day of current month",
                     )
                 if from_ := kwargs.get("from_"):
                     params["from"] = from_.strftime("%Y-%m-%d")
@@ -93,7 +95,7 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
             if appointment_id := kwargs.get("appointment_id"):
                 if "from" not in params:
                     logger.warning(
-                        "using appointment ID without date range might be incomplete if current month differs"
+                        "using appointment ID without date range might be incomplete if current month differs",
                     )
                 params["appointment_id"] = appointment_id
 
@@ -103,7 +105,10 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
             response_content = json.loads(response.content)
 
             response_data = self.combine_paginated_response_data(
-                response_content, url=url, headers=headers, params=params
+                response_content,
+                url=url,
+                headers=headers,
+                params=params,
             )
             result_list = (
                 [response_data] if isinstance(response_data, dict) else response_data
@@ -115,8 +120,6 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
                     for i in result_list
                     if i["base"]["appointmentId"] == appointment_id
                 ]
-            else:
-                return result_list
-        else:
-            logger.error(response.content)
-            return
+            return result_list
+        logger.error(response.content)
+        return None

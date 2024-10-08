@@ -12,7 +12,7 @@ license = "CC-BY-SA"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 python-docx = "^0.8.11"
 requests = "^2.31.0"
 
@@ -23,6 +23,83 @@ wheel = "^0.41.2"
 setuptools = "^66.1.1"
 autopep8 = "^2.0.4"
 pytest = "^8.3.3"
+pre-commit = "^3.8.0"
+ruff = "^0.6.9"
+
+[tool.ruff]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+line-length = 88
+indent-width = 4
+target-version = "py39"
+output-format = "grouped"
+
+[tool.ruff.lint]
+select = [
+    "ALL",
+]
+ignore = [
+    "S101", # TODO: Github #104 - pytest asserts
+    "ANN001","ANN002","ANN003","ANN201",
+    "FIX002", #Open ToDos
+    "TD002","TD003","TD004", #TODOs
+    "C901","PLR0912", #complexity 
+    "ARG002",#TODO: Github #110
+    "FA100", #Python version specific #102
+    "D100","D101","D102","D104","D107","D205","D415", #Docstrings
+    "E501", #line too long
+    "DTZ001","DTZ005","DTZ007","DTZ002", #datetime timezone
+    
+    "PLR2004", #magic values   
+    
+    "COM812", "ISC001", #disabled for formatter compatibility
+
+    "N802", #function lowercase -> breaking change
+    "N803", #argument lowercase -> breaking change
+    "N806", #variable name lowercase -> breaking change
+    ]
+fixable = [
+    "ALL",
+]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = false
+docstring-code-line-length = "dynamic"
 
 [build-system]
 requires = [
