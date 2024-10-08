@@ -62,6 +62,13 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
                     to_ = to_.strftime("%Y-%m-%d")
                 if len(to_) == 10:
                     params["to"] = to_
+                if from_ == to_:
+                    logger.warning(
+                        "As of 29. Sept 2024 there is a known bug which will not return results for same day searches! - reported to CT team as issue 130629 - github #109",
+                    )
+                    params["to"] = (kwargs["to_"] + timedelta(days=1)).strftime(
+                        "%Y-%m-%d"
+                    )  # TODO #109 CT issue
             elif "to_" in kwargs:
                 logger.warning("Use of to_ is only allowed together with from_")
             if "canceled" in kwargs:

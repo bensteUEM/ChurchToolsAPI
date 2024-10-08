@@ -158,6 +158,27 @@ class TestsChurchToolsApi(unittest.TestCase):
 
         # TODO add test cases for uncommon parts #24 * canceled, include
 
+    def test_get_events_sameday(self) -> None:
+        """Special test case checking confirmity of event search for same day.
+
+        See https://github.com/bensteUEM/ChurchToolsAPI/issues/109.
+
+        IMPORTANT - This test method and the parameters used depend on the target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+        """
+        SAMPLE_DAY = datetime(year=2024, month=9, day=29)
+        events = self.api.get_events(from_=SAMPLE_DAY, to_=SAMPLE_DAY)
+
+        logger.warning(
+            "As of 29. Sept 2024 there is a known bug which will not return results for same day searches! - reported to CT team as issue 130629",
+        )
+        assert len(events) > 0
+
+        retrieved_dates = {
+            datetime.strptime(event["startDate"][:10], "%Y-%m-%d") for event in events
+        }
+        assert {SAMPLE_DAY} == retrieved_dates
+
     def test_get_AllEventData_ajax(self) -> None:
         """IMPORTANT - This test method and the parameters used depend on the target system!
 
