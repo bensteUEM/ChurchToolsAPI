@@ -58,7 +58,7 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
 
         Keywords:
             booking_id: int: only one booking by id (use standalone only)
-            resources_ids:list[int]: required if not booking_id
+            resource_ids:list[int]: required if not booking_id
             status_ids: list[int]: filter by list of stats ids to consider (requires resource_ids)
             from_: datetime: date range to consider (use only with to_! - might have a bug in API - Support Ticket 130123)
             to_: datetime: date range to consider (use only with from_! - might have a bug in API - Support Ticket 130123)
