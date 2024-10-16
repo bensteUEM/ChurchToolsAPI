@@ -199,7 +199,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         SAMPLE_SONG_ID = 2034
         song = self.api.get_song_ajax(song_id=SAMPLE_SONG_ID)
         assert isinstance(song, dict)
-        assert len(song) == 14
+        assert len(song) == 15
 
         assert int(song["id"]) == SAMPLE_SONG_ID
         assert song["bezeichnung"] == "sample"
