@@ -274,17 +274,18 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         song = self.get_song_ajax(song_id)
         return song["tags"]
 
-    def contains_song_tag(self, song_id, song_tag_id) -> bool:
+    def contains_song_tag(self, song_id: int, song_tag_id: int) -> bool:
         """Helper which checks if a specific song_tag_id is present on a song.
 
-        :param song_id: ChurchTools site specific song_id which should checked
-        :type song_id: int
-        :param song_tag_id: ChurchTools site specific song_tag_id which should be searched for
-        :type song_tag_id: int
-        :return: bool if present
+        Arguments:
+            song_id: ChurchTools site specific song_id which should checked
+            song_tag_id: ChurchTools site specific song_tag_id which should be searched for
+
+        Returns:
+            bool if present
         """
         tags = self.get_song_tags(song_id)
-        return str(song_tag_id) in tags
+        return song_tag_id in tags
 
     def get_songs_by_tag(self, song_tag_id) -> list[dict]:
         """Helper which returns all songs that contain have a specific tag.
