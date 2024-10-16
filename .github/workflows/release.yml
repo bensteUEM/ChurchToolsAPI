@@ -9,13 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4.2.1
 
       - name: Version from Python
         run: echo "VERSION=$(python3 -c 'import version; print(version.VERSION)')" >> $GITHUB_ENV
 
       - name: Set up Python
-        uses: actions/setup-python@v4.6.1
+        uses: actions/setup-python@v5.2.0
         with:
           python-version: 3.x
 
@@ -39,7 +39,7 @@ jobs:
           POETRY_HOME: ${{ github.workspace }}/.poetry
 
       - name: Create Release
-        uses: ncipollo/release-action@v1.12.0
+        uses: ncipollo/release-action@v1.14.0
         with:
           tag: ${{ env.VERSION}}
           name: Version ${{env.VERSION}}
@@ -49,7 +49,7 @@ jobs:
             - needs to be published from draft online
             
             Install as package using:
-            pip install git+https://github.com/bensteUEM/ChurchToolsAPI.git@${{env.VERSION}}#egg=ChurchToolsAPI
+            pip install git+https://github.com/bensteUEM/ChurchToolsAPI.git@${{env.VERSION}}#egg=churchtools-api
             
           draft: true
           prerelease: false

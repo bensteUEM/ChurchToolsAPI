@@ -26,7 +26,7 @@ to access your system
 The latest release can be found on https://github.com/bensteUEM/ChurchToolsAPI/releases
 
 It can be installed using
-```pip install git+https://github.com/bensteUEM/ChurchToolsAPI.git@vX.X.X#egg=ChurchToolsAPI'```
+```pip install git+https://github.com/bensteUEM/ChurchToolsAPI.git@vX.X.X#egg=churchtools-api'```
 replacing X.X.X by a released version number
 
 ### CT Token
