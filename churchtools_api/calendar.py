@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 import json
 import logging
 from datetime import datetime
+
+import pytz
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
@@ -135,3 +139,182 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
             response.content,
         )
         return None
+
+    def create_calender_appointment(  # noqa: PLR0913
+        self,
+        calendar_id: int,
+        startDate: datetime,
+        endDate: datetime,
+        title: str,
+        subtitle: str = "",
+        description: str = "",
+        isInternal: bool = False,  # noqa: FBT001 FBT002
+        address: dict | None = None,
+        link: str = "",
+        **kwargs,
+    ) -> dict:
+        """Basic implementation of create_calendar.
+
+        Please refer to churchtools api sample to for additional kwargs options
+
+        Args:
+            calendar_id: id of the calendar to work with
+            startDate: start of the event - taking into account timezone!
+            endDate: end of the event - taking into account timezone!
+            title: named title
+            subtitle: secondary title_. Defaults to "".
+            description: more detailed description text_. Defaults to "".
+            isInternal: visibility option. Defaults to False.
+            address: dict containing CT relevant address information
+            link: a weblink refering more details_. Defaults to "".
+            kwargs: additional params as passthrough to JSON data
+
+        Returns:
+            The dict of the calendar appointment created or None
+        """
+        if address is None:
+            address = {}
+
+        url = self.domain + f"/api/calendars/{calendar_id}/appointments"
+
+        headers = {"accept": "application/json"}
+
+        data = {
+            "startDate": startDate.astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%S")
+            + "Z",
+            "endDate": endDate.astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%S") + "Z",
+            "title": title,
+            "subtitle": subtitle,
+            "description": description,
+            "isInternal": "true" if isInternal else "false",
+            "address": address,
+            "link": link,
+            **kwargs,
+        }
+
+        response = self.session.post(url=url, json=data, headers=headers)
+
+        if response.status_code != 201:
+            logger.warning(json.loads(response.content).get("errors"))
+            return None
+
+        return json.loads(response.content)["data"]
+
+    def update_calender_appointment(
+        self,
+        calendar_id: int,
+        appointment_id: int,
+        **kwargs,
+    ) -> dict:
+        """Method used to update calendar appointments.
+
+        Similar to create_calender_appointment but with additional appointment_id param.
+        Loads params from existing calendar_appointment and overwrite all provided kwargs
+
+        See create_calendar_appointment for details about other keywords
+
+        Args:
+            calendar_id: id of the calendar to work with
+            appointment_id: id of the individual calendar appointment
+            kwargs: additional params as passthrough to JSON data
+
+        Keywords:
+            startDate: start of the event. Defaults to previous value if not set
+            endDate: end of the event. Defaults to previous value if not set
+            title: named title. Defaults to previous value if not set
+            subtitle: secondary title_. Defaults to "".
+            description: more detailed description text_. Defaults to "".
+            isInternal: visibility option. Defaults to previous value if not set
+            address: dict containing CT relevant address information
+            link: a weblink refering more details_. Defaults to "".
+
+        Returns:
+            The dict of the calendar appointment updated or None in case of issues
+        """
+        url = (
+            self.domain + f"/api/calendars/{calendar_id}/appointments/{appointment_id}"
+        )
+
+        headers = {"accept": "application/json"}
+
+        existing_calendar_appointment = self.get_calendar_appointments(
+            calendar_ids=[calendar_id], appointment_id=appointment_id
+        )[0]
+
+        # overwrite params in respective type
+        for date_param in ["startDate", "endDate"]:
+            if date_param in list(kwargs):
+                # TODO startDate and endDate
+                existing_calendar_appointment[date_param] = (
+                    kwargs.pop(date_param)
+                    .astimezone(pytz.utc)
+                    .strftime("%Y-%m-%dT%H:%M:%S")
+                    + "Z"
+                )
+        for bool_param in ["isInternal"]:
+            if bool_param in list(kwargs):
+                existing_calendar_appointment[bool_param] = (
+                    "true" if kwargs.pop(bool_param) else "false"
+                )
+        for param in list(kwargs):
+            existing_calendar_appointment[param] = kwargs.pop(param)
+
+        # remove items that should not be updated with this function
+        drop_fields = ["calendar", "@deprecated", "meta", "version"]
+
+        updated_calendar_appointment = {
+            key: value
+            for key, value in existing_calendar_appointment.items()
+            if value is not None and key not in drop_fields
+        }
+
+        # remove null values in address
+        for address_key in list(updated_calendar_appointment.get("address", {})):
+            if not updated_calendar_appointment["address"].get(address_key):
+                updated_calendar_appointment["address"].pop(address_key)
+
+        # bool cleanup
+        for key in ["allDay", "isInternal"]:
+            # pass
+            updated_calendar_appointment[key] = (
+                str(updated_calendar_appointment[key])
+                if isinstance(updated_calendar_appointment[key], bool)
+                else updated_calendar_appointment[key]
+            )
+
+        # submit request
+        response = self.session.put(
+            url=url, json=updated_calendar_appointment, headers=headers
+        )
+
+        if response.status_code != 200:
+            logger.warning(json.loads(response.content).get("errors"))
+            return None
+
+        return json.loads(response.content)["data"]
+
+    def delete_calender_appointment(
+        self, calendar_id: int, appointment_id: int
+    ) -> bool:
+        """Delete a specific calendar appointment
+
+        Args:
+            calendar_id: the calendar to modify
+            appointment_id: the id of the calendar appointment
+
+        Returns:
+            if successful
+        """
+        url = (
+            self.domain + f"/api/calendars/{calendar_id}/appointments/{appointment_id}"
+        )
+
+        headers = {"accept": "application/json"}
+
+        response = self.session.delete(url=url, headers=headers)
+
+        if response.status_code != 204:
+            logger.warning(json.loads(response.content).get("errors"))
+            return False
+
+        return True

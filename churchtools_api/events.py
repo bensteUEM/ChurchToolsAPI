@@ -401,7 +401,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             else:
                 new_file_name = f"{target_format}_agendaId_{agendaId}.zip"
 
-            target_path = target_path/new_file_name
+            target_path = target_path / new_file_name
 
         url = f"{self.domain}/api/agendas/{agendaId}/export"
         # NOTE the stream=True parameter below

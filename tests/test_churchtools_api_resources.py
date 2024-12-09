@@ -265,12 +265,17 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert result[0]["base"]["caption"] == "Zentral-Gottesdienst im Gemeindehaus"
         assert result[0]["base"]["resource"]["id"] in set(RESOURCE_ID_SAMPLES)
 
-    def test_get_booking_problematic(self)->None:
+    def test_get_booking_problematic(self) -> None:
         """ELKW1610.krz.tools specific test case after problematic results."""
         SAMPLE_RESOURCE_IDS = [8, 20, 21, 16, 17]
-        SAMPLE_DATE=datetime(2024, 11, 24, 9)
+        SAMPLE_DATE = datetime(2024, 11, 24, 9)
         SAMPLE_APPOINTMENT_ID = 327616
 
-        result = self.api.get_bookings(resource_ids = SAMPLE_RESOURCE_IDS, from_=SAMPLE_DATE, to_=SAMPLE_DATE, appointment_id=SAMPLE_APPOINTMENT_ID)
+        result = self.api.get_bookings(
+            resource_ids=SAMPLE_RESOURCE_IDS,
+            from_=SAMPLE_DATE,
+            to_=SAMPLE_DATE,
+            appointment_id=SAMPLE_APPOINTMENT_ID,
+        )
 
         assert len(result) > 0

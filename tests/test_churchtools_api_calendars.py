@@ -1,13 +1,10 @@
-import ast
 import json
 import logging
 import logging.config
-import os
-import unittest
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
-from churchtools_api.churchtools_api import ChurchToolsApi
+from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
 
 logger = logging.getLogger(__name__)
 
@@ -20,37 +17,7 @@ with config_file.open(encoding="utf-8") as f_in:
     logging.config.dictConfig(config=logging_config)
 
 
-class TestsChurchToolsApi(unittest.TestCase):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-
-        if "CT_TOKEN" in os.environ:
-            self.ct_token = os.environ["CT_TOKEN"]
-            self.ct_domain = os.environ["CT_DOMAIN"]
-            users_string = os.environ["CT_USERS"]
-            self.ct_users = ast.literal_eval(users_string)
-            logger.info("using connection details provided with ENV variables")
-        else:
-            from secure.config import ct_token
-
-            self.ct_token = ct_token
-            from secure.config import ct_domain
-
-            self.ct_domain = ct_domain
-            from secure.config import ct_users
-
-            self.ct_users = ct_users
-            logger.info("using connection details provided from secrets folder")
-
-        self.api = ChurchToolsApi(domain=self.ct_domain, ct_token=self.ct_token)
-        logger.info("Executing Tests RUN")
-
-    def tearDown(self) -> None:
-        """Destroy the session after test execution to avoid resource issues
-        :return:
-        """
-        self.api.session.close()
-
+class TestsChurchToolsApi(TestsChurchToolsApiAbstract):
     def test_get_calendar(self) -> None:
         """Tries to retrieve a list of calendars."""
         result = self.api.get_calendars()
@@ -180,3 +147,108 @@ class TestsChurchToolsApi(unittest.TestCase):
         )
 
         assert result is None
+
+    def test_create_edit_delete_calendar_appointment(self, caplog):
+        """Creates, update and deletes a calendar appointment.
+
+        IMPORTANT - This test method and the parameters used depend on the target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+        """
+        SAMPLE_CALENDAR = (
+            45  # non public sample calendar id which exists on test system
+        )
+        SAMPLE_DATA = {
+            "startDate": datetime.now(),
+            "endDate": datetime.now() + timedelta(minutes=10),
+            "title": "test_title",
+            "subtitle": "test_subtitle",
+            "description": "test_description long",
+            "isInternal": False,
+            "address": {
+                "addition": "string",
+                "city": "Baiersbronn",
+                "district": "string",
+                "latitude": "string",
+                "longitude": "string",
+                "meetingAt": "string",
+                "street": "Oberdorfstraße 59",
+                "zip": "72270",  # TODO must be without last ,
+            },
+            "link": "string",
+        }
+        # 1. create
+        calendar_appointment = self.api.create_calender_appointment(
+            calendar_id=SAMPLE_CALENDAR,
+            startDate=SAMPLE_DATA.get("startDate"),
+            endDate=SAMPLE_DATA.get("endDate"),
+            title=SAMPLE_DATA.get("title"),
+            subtitle=SAMPLE_DATA.get("subtitle"),
+            description=SAMPLE_DATA.get("description"),
+            isInternal=SAMPLE_DATA.get("isInternal"),
+            address=SAMPLE_DATA.get("address"),
+            link=SAMPLE_DATA.get("link"),
+        )
+        appointment_id = calendar_appointment["id"]
+
+        check_appointment = self.api.get_calendar_appointments(
+            calendar_ids=[SAMPLE_CALENDAR], appointment_id=appointment_id
+        )[0]
+        for expected_key, expected_value in SAMPLE_DATA.items():
+            if expected_key in ["startDate", "endDate"]:
+                assert (
+                    check_appointment[expected_key]
+                    == expected_value.strftime("%Y-%m-%dT%H:%M:%S") + "Z"
+                )
+            elif expected_key == "address":
+                for (
+                    expected_address_key,
+                    expected_address_value,
+                ) in expected_value.items():
+                    assert (
+                        check_appointment[expected_key][expected_address_key]
+                        == expected_address_value
+                    )
+            else:
+                assert check_appointment[expected_key] == expected_value
+
+        # 2a. update one kwarg field
+        new_sample_end_date = datetime.now() + timedelta(days=1)
+        check_appointment = self.api.update_calender_appointment(
+            calendar_id=SAMPLE_CALENDAR,
+            appointment_id=appointment_id,
+            endDate=new_sample_end_date,
+        )
+        assert (
+            check_appointment["endDate"]
+            == new_sample_end_date.strftime("%Y-%m-%dT%H:%M:%S") + "Z"
+        )
+
+        # 2b. update subtitle field
+        new_sample_subtitle = "updated subtitle"
+        check_appointment = self.api.update_calender_appointment(
+            calendar_id=SAMPLE_CALENDAR,
+            appointment_id=appointment_id,
+            subtitle=new_sample_subtitle,
+        )
+        assert check_appointment["subtitle"] == new_sample_subtitle
+
+        # 2c. update date field
+        new_bool = False
+        check_appointment = self.api.update_calender_appointment(
+            calendar_id=SAMPLE_CALENDAR,
+            appointment_id=appointment_id,
+            isInternal=new_bool,
+        )
+        assert check_appointment["isInternal"] == new_bool
+
+        # 2. delete
+        self.api.delete_calender_appointment(
+            calendar_id=SAMPLE_CALENDAR, appointment_id=appointment_id
+        )
+        with caplog.at_level(logging.WARNING, logger="churchtools_api.calendar"):
+            self.api.get_calendar_appointments(
+                calendar_ids=[SAMPLE_CALENDAR], appointment_id=appointment_id
+            )
+
+        expected_message = f"appointment [{appointment_id}] not found"
+        assert expected_message in caplog.messages[-1]

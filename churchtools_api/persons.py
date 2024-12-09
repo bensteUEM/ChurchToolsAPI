@@ -46,14 +46,15 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
             response_data = response_content["data"].copy()
 
             logger.debug(
-                "len of first response of GET Persons successful len(%s)" ,response_content,
+                "len of first response of GET Persons successful len(%s)",
+                response_content,
             )
 
             if len(response_data) == 0:
                 logger.warning(
                     "Requesting ct_users %s returned an empty response - "
                     "make sure the user has correct permissions",
-                    params
+                    params,
                 )
 
             response_data = self.combine_paginated_response_data(
@@ -72,9 +73,9 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
                     result[item["id"]] = item
                 response_data = result
 
-            logger.debug("Persons load successful %s",response_data)
+            logger.debug("Persons load successful %s", response_data)
             return response_data
-        logger.info("Persons requested failed: %s",response.status_code)
+        logger.info("Persons requested failed: %s", response.status_code)
         return None
 
     def get_persons_masterdata(
@@ -98,7 +99,7 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
         if response.status_code == 200:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
-            logger.debug("Person Masterdata load successful len=%s",response_data)
+            logger.debug("Person Masterdata load successful len=%s", response_data)
 
             return response_data
         logger.warning(
