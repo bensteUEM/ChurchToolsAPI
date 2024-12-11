@@ -18,49 +18,82 @@ with config_file.open(encoding="utf-8") as f_in:
 
 
 class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
-    def test_get_resource_masterdata_resourceTypes(self) -> None:
-        """Check resourceTypes can be retrieved.
-
-        IMPORTANT - This test method and the parameters used depend on the target system!
-        the hard coded sample exists on ELKW1610.KRZ.TOOLS
-        """
-        result = self.api.get_resource_masterdata(result_type="resourceTypes")
-        expected_sample = {
-            "id": 1,
-            "name": "Technik (MAKI)",
-            "nameTranslated": "Technik (MAKI)",
-            "sortKey": 11,
-            "campusId": 0,
+    def test_get_resource_masterdata(self) -> None:
+        """Check resource masterdata can be retrieved."""
+        result = self.api.get_resource_masterdata()
+        assert isinstance(result, dict)
+        EXPECTED_KEYS = {
+            "resourceTypes",
+            "resources",
         }
-        assert expected_sample in result
+        assert set(result.keys()) == EXPECTED_KEYS
+
+    def test_get_resource_masterdata_resourceTypes(self) -> None:
+        """Check resourceTypes can be retrieved."""
+        result = self.api.get_resource_masterdata(resultClass="resourceTypes")
+        assert isinstance(result, list)
+        EXPECTED_KEYS = {
+            "id",
+            "name",
+            "nameTranslated",
+            "sortKey",
+            "campusId",
+        }
+        assert set(next(iter(result))) == EXPECTED_KEYS
 
     def test_get_resource_masterdata_resources(self) -> None:
-        """Check resources can be retrieved.
-
-        IMPORTANT - This test method and the parameters used depend on the target system!
-        the hard coded sample exists on ELKW1610.KRZ.TOOLS
-        """
-        result = self.api.get_resource_masterdata(result_type="resources")
-        expected_sample = {
-            "id": 8,
-            "name": "Marienkirche",
-            "nameTranslated": "Marienkirche",
-            "sortKey": 20,
-            "resourceTypeId": 4,
-            "location": None,
-            "iCalLocation": "Oberdorfstraße 59, 72270 Baiersbronn",
-            "isAutoAccept": False,
-            "doesRequireCalEntry": True,
-            "isVirtual": False,
-            "adminIds": None,
-            "randomString": "KvPmIuWpWeOwa2FISQrQfi3yhIoEa5kG",
+        """Check resources can be retrieved."""
+        result = self.api.get_resource_masterdata(resultClass="resources")
+        assert isinstance(result, list)
+        assert isinstance(result[0], dict)
+        EXPECTED_KEYS = {
+            "id",
+            "name",
+            "nameTranslated",
+            "sortKey",
+            "resourceTypeId",
+            "location",
+            "iCalLocation",
+            "isAutoAccept",
+            "doesRequireCalEntry",
+            "isVirtual",
+            "adminIds",
+            "randomString",
         }
-        assert expected_sample in result
+
+        assert set(result[0]) == EXPECTED_KEYS
+
+    def test_get_resource_masterdata_resources_dict(self) -> None:
+        """Check resources can be retrieved as dict."""
+        result = self.api.get_resource_masterdata(
+            resultClass="resources", returnAsDict=True
+        )
+
+        assert isinstance(result, dict)
+        assert isinstance(next(iter(result.keys())), int)
+        assert isinstance(next(iter(result.values())), dict)
+
+        EXPECTED_KEYS = {
+            "id",
+            "name",
+            "nameTranslated",
+            "sortKey",
+            "resourceTypeId",
+            "location",
+            "iCalLocation",
+            "isAutoAccept",
+            "doesRequireCalEntry",
+            "isVirtual",
+            "adminIds",
+            "randomString",
+        }
+
+        assert set(next(iter(result.values())).keys()) == EXPECTED_KEYS
 
     def test_get_resource_masterdata_other(self, caplog) -> None:
         caplog.set_level(logging.ERROR)
-        self.api.get_resource_masterdata(result_type="")
-        expected_error_message = "get_resource_masterdata does not know result_type="
+        self.api.get_resource_masterdata(resultClass=" ")
+        expected_error_message = "get_resource_masterdata does not know result_type= "
         assert expected_error_message in caplog.messages
 
     def test_get_booking_by_id(self) -> None:

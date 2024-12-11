@@ -16,20 +16,23 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
     def __init__(self) -> None:
         super()
 
-    def get_resource_masterdata(self, result_type: str) -> dict:
+    def get_resource_masterdata(
+        self, *, resultClass: str | None = None, returnAsDict: bool = False
+    ) -> dict:
         """Access to resource masterdata.
 
         Arguments:
-            result_type: either "resourceTypes" or "resources" depending on expected result
+            resultClass: the key from CT resource masterdata to use. Defaults. to all,
+            returnAsDict: modified resultClass to {id:name, ...}  = False,
 
         Returns:
             dict of resource masterdata
         """
         known_result_types = ["resourceTypes", "resources"]
-        if result_type not in known_result_types:
+        if resultClass and resultClass not in known_result_types:
             logger.error(
                 "get_resource_masterdata does not know result_type=%s",
-                result_type,
+                resultClass,
             )
             return None
 
@@ -46,7 +49,11 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
                 headers=headers,
             )
 
-            return response_data[result_type]
+            if resultClass:
+                response_data = response_data[resultClass]
+                if returnAsDict:
+                    response_data = {item["id"]: item for item in response_data}
+            return response_data
         logger.error(response)
         return None
 
