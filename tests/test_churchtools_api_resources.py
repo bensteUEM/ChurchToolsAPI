@@ -91,8 +91,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert set(next(iter(result.values())).keys()) == EXPECTED_KEYS
 
     def test_get_resource_masterdata_other(self, caplog) -> None:
-        caplog.set_level(logging.ERROR)
-        self.api.get_resource_masterdata(resultClass=" ")
+        caplog.clear()
+        with caplog.at_level(level=logging.ERROR, logger="churchtools_api.resources"):
+            self.api.get_resource_masterdata(resultClass=" ")
         expected_error_message = "get_resource_masterdata does not know result_type= "
         assert expected_error_message in caplog.messages
 
@@ -117,11 +118,13 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         """IMPORTANT - This test method and the parameters used depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
-        caplog.set_level(logging.ERROR)
         STATUS_ID_SAMPLES = [2]
-        self.api.get_bookings(status_ids=STATUS_ID_SAMPLES)
-        expected_response = "invalid argument combination in get_bookings - please check docstring for requirements"
-        assert expected_response in caplog.messages
+        with caplog.at_level(level=logging.ERROR, logger="churchtools_api.resources"):
+            self.api.get_bookings(status_ids=STATUS_ID_SAMPLES)
+        EXPECTED_MESSAGES = [
+            "invalid argument combination in get_bookings - please check docstring for requirements"
+        ]
+        assert caplog.messages == EXPECTED_MESSAGES
 
     def test_get_booking_by_resource_and_status_ids(self) -> None:
         """IMPORTANT - This test method and the parameters used depend on the target system!
@@ -140,31 +143,34 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         """IMPORTANT - This test method and the parameters used depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
-        caplog.set_level(logging.WARNING)
         SAMPLE_DATES = {
             "from_": datetime(year=2024, month=12, day=24),
             "to_": datetime(year=2024, month=12, day=24),
         }
-        self.api.get_bookings(from_=SAMPLE_DATES["from_"])
+        caplog.clear()
+        with caplog.at_level(level=logging.WARNING, logger="churchtools_api.resources"):
+            self.api.get_bookings(from_=SAMPLE_DATES["from_"])
 
-        expected_response = "invalid argument combination in get_bookings - please check docstring for requirements"
-        assert expected_response in caplog.messages
+        EXPECTED_MESSAGES = [
+            "invalid argument combination in get_bookings - please check docstring for requirements"
+        ]
+        assert caplog.messages == EXPECTED_MESSAGES
 
     def test_get_booking_from_date(self, caplog) -> None:
         """IMPORTANT - This test method and the parameters used depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
-        caplog.set_level(logging.INFO)
         RESOURCE_ID_SAMPLES = [8, 20]
         SAMPLE_DATES = {
             "from_": datetime(year=2024, month=9, day=21),
             "to_": datetime(year=2024, month=9, day=30),
         }
-
-        result = self.api.get_bookings(
-            from_=SAMPLE_DATES["from_"],
-            resource_ids=RESOURCE_ID_SAMPLES,
-        )
+        caplog.clear()
+        with caplog.at_level(logging.INFO):
+            result = self.api.get_bookings(
+                from_=SAMPLE_DATES["from_"],
+                resource_ids=RESOURCE_ID_SAMPLES,
+            )
         assert set(RESOURCE_ID_SAMPLES) == {i["base"]["resource"]["id"] for i in result}
 
         result_dates = {
@@ -175,25 +181,26 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
             SAMPLE_DATES["from_"] <= compare_date for compare_date in result_dates
         )
 
-        expected_response = (
+        EXPECTED_MESSAGES = [
             "missing from_ or to_ defaults to first or last day of current month"
-        )
-        assert expected_response in caplog.messages
+        ]
+        assert caplog.messages == EXPECTED_MESSAGES
 
     def test_get_booking_to_date(self, caplog) -> None:
         """IMPORTANT - This test method and the parameters used depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
-        caplog.set_level(logging.INFO)
         RESOURCE_ID_SAMPLES = [8, 20]
         SAMPLE_DATES = {
             "to_": datetime.now() + timedelta(days=30),
         }
 
-        result = self.api.get_bookings(
-            to_=SAMPLE_DATES["to_"],
-            resource_ids=RESOURCE_ID_SAMPLES,
-        )
+        caplog.clear()
+        with caplog.at_level(level=logging.INFO, logger="churchtools_api.resources"):
+            result = self.api.get_bookings(
+                to_=SAMPLE_DATES["to_"],
+                resource_ids=RESOURCE_ID_SAMPLES,
+            )
         assert set(RESOURCE_ID_SAMPLES) == {i["base"]["resource"]["id"] for i in result}
 
         result_dates = {
@@ -217,13 +224,13 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
             "to_": datetime(year=2024, month=9, day=30),
         }
 
-        caplog.set_level(logging.WARNING)
-
-        result = self.api.get_bookings(
-            from_=SAMPLE_DATES["from_"],
-            to_=SAMPLE_DATES["to_"],
-            resource_ids=RESOURCE_ID_SAMPLES,
-        )
+        caplog.clear()
+        with caplog.at_level(level=logging.WARNING, logger="churchtools_api.resources"):
+            result = self.api.get_bookings(
+                from_=SAMPLE_DATES["from_"],
+                to_=SAMPLE_DATES["to_"],
+                resource_ids=RESOURCE_ID_SAMPLES,
+            )
         assert set(RESOURCE_ID_SAMPLES) == {i["base"]["resource"]["id"] for i in result}
 
         result_dates = {
@@ -241,8 +248,6 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         """IMPORTANT - This test method and the parameters used depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
-        caplog.set_level(logging.WARNING)
-
         RESOURCE_ID_SAMPLES = [16]
         SAMPLE_DATES = {
             "from_": datetime(year=2024, month=9, day=21),
@@ -259,10 +264,12 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert result[0]["base"]["caption"] == "Zentral-Gottesdienst im Gemeindehaus"
         assert result[0]["base"]["resource"]["id"] in set(RESOURCE_ID_SAMPLES)
 
-        result = self.api.get_bookings(
-            appointment_id=SAMPLE_APPOINTMENT_ID,
-            resource_ids=RESOURCE_ID_SAMPLES,
-        )
+        caplog.clear()
+        with caplog.at_level(level=logging.WARNING, logger="churchtools_api.resources"):
+            result = self.api.get_bookings(
+                appointment_id=SAMPLE_APPOINTMENT_ID,
+                resource_ids=RESOURCE_ID_SAMPLES,
+            )
         expected_log_message = "using appointment ID without date range might be incomplete if current month differs"
         assert expected_log_message in caplog.messages
         assert len(result) == 0

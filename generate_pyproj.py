@@ -21,9 +21,10 @@ pyproject_toml_content = {
             "license": "CC-BY-SA",
             "readme": "README.md",
             "dependencies": {
-                "python": "^3.9",
+                "python": "^3.10",
                 "python-docx": "^0.8.11",
                 "requests": "^2.31.0",
+                "pytz": "^2024.2",
             },
             "group": {
                 "dev": {
@@ -36,6 +37,7 @@ pyproject_toml_content = {
                         "pytest": "^8.3.3",
                         "pre-commit": "^3.8.0",
                         "ruff": "^0.6.9",
+                        "ipykernel": "^6.29.5",
                     },
                 },
             },
@@ -73,14 +75,15 @@ pyproject_toml_content = {
             # Same as Black.
             "line-length": 88,
             "indent-width": 4,
-            # Assume Python 3.9
-            "target-version": "py39",
+            # Assume Python 3.10
+            "target-version": "py310",
             # Group violations by containing file.
             "output-format": "grouped",
             "lint": {
                 # Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`) codes by default.
                 "select": ["ALL"],
                 "ignore": [],
+                "per-file-ignores": {"tests/*.py": ["S101"]},
                 # Allow fix for all enabled rules (when `--fix`) is provided.
                 "fixable": ["ALL"],
                 "unfixable": [],

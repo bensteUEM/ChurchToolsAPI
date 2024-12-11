@@ -4,6 +4,8 @@ import logging.config
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import pytz
+
 from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
 
 logger = logging.getLogger(__name__)
@@ -17,7 +19,7 @@ with config_file.open(encoding="utf-8") as f_in:
     logging.config.dictConfig(config=logging_config)
 
 
-class TestsChurchToolsApi(TestsChurchToolsApiAbstract):
+class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
     def test_get_calendar(self) -> None:
         """Tries to retrieve a list of calendars."""
         result = self.api.get_calendars()
@@ -157,9 +159,10 @@ class TestsChurchToolsApi(TestsChurchToolsApiAbstract):
         SAMPLE_CALENDAR = (
             45  # non public sample calendar id which exists on test system
         )
+        cest = pytz.timezone("Europe/Berlin")
         SAMPLE_DATA = {
-            "startDate": datetime.now(),
-            "endDate": datetime.now() + timedelta(minutes=10),
+            "startDate": cest.localize(datetime.now()),
+            "endDate": cest.localize(datetime.now() + timedelta(minutes=10)),
             "title": "test_title",
             "subtitle": "test_subtitle",
             "description": "test_description long",
@@ -197,7 +200,8 @@ class TestsChurchToolsApi(TestsChurchToolsApiAbstract):
             if expected_key in ["startDate", "endDate"]:
                 assert (
                     check_appointment[expected_key]
-                    == expected_value.strftime("%Y-%m-%dT%H:%M:%S") + "Z"
+                    == expected_value.astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                    + "Z"
                 )
             elif expected_key == "address":
                 for (
@@ -220,7 +224,8 @@ class TestsChurchToolsApi(TestsChurchToolsApiAbstract):
         )
         assert (
             check_appointment["endDate"]
-            == new_sample_end_date.strftime("%Y-%m-%dT%H:%M:%S") + "Z"
+            == new_sample_end_date.astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%S")
+            + "Z"
         )
 
         # 2b. update subtitle field
@@ -245,10 +250,10 @@ class TestsChurchToolsApi(TestsChurchToolsApiAbstract):
         self.api.delete_calender_appointment(
             calendar_id=SAMPLE_CALENDAR, appointment_id=appointment_id
         )
+        caplog.clear()
         with caplog.at_level(logging.WARNING, logger="churchtools_api.calendar"):
             self.api.get_calendar_appointments(
                 calendar_ids=[SAMPLE_CALENDAR], appointment_id=appointment_id
             )
-
-        expected_message = f"appointment [{appointment_id}] not found"
-        assert expected_message in caplog.messages[-1]
+        EXPECTED_MESSAGES = [f"appointment [{appointment_id}] not found"]
+        assert EXPECTED_MESSAGES[0] in caplog.messages[0]

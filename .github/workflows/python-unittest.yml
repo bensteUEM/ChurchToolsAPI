@@ -1,4 +1,4 @@
-name: Python Unittest ChurchToolsAPI
+name: Python Tests ChurchToolsAPI
 
 on: [ push, pull_request ]
 
@@ -37,9 +37,9 @@ jobs:
         env:
           POETRY_HOME: ${{ github.workspace }}/.poetry
 
-      - name: Run unittests
+      - name: Run pytest
         run: |
-          python -m unittest tests.test_churchtools_api
+          pytest tests/
         env:
             POETRY_HOME: ${{ github.workspace }}/.poetry
           

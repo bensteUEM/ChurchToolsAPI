@@ -64,26 +64,35 @@ class ChurchToolsApi(
 
         logger.debug("ChurchToolsApi init finished")
 
-    def login_ct_rest_api(self, **kwargs):
-        """Authorization: Login<token>
+    def login_ct_rest_api(
+        self,
+        *,
+        ct_token: str | None = None,
+        ct_user: str | None = None,
+        ct_password: str | None = None,
+    ) -> int | bool:
+        """Login methods for ChurchTools RESTAPI.
+
+        Authorization: Login<token>
         If you want to authorize a request, you need to provide a Login Token as
         Authorization header in the format {Authorization: Login<token>}
         Login Tokens are generated in "Berechtigungen" of User Settings
         using REST API login as opposed to AJAX login will also save a cookie.
 
-        :param kwargs: optional keyword arguments as listed
-        :keyword ct_token: str : token to be used for login into CT
-        :keyword ct_user: str: the username to be used in case of unknown login token
-        :keyword ct_password: str: the password to be used in case of unknown login token
-        :return: personId if login successful otherwise False
-        :rtype: int | bool
+        Arguments:
+            ct_token: token to be used for login into CT
+            ct_user: the username to be used in case of unknown login token
+            ct_password: the password to be used in case of unknown login token
+
+        Returns:
+            personId if login successful otherwise False
         """
         self.session = requests.Session()
 
-        if "ct_token" in kwargs:
+        if ct_token:
             logger.info("Trying Login with token")
             url = self.domain + "/api/whoami"
-            headers = {"Authorization": "Login " + kwargs["ct_token"]}
+            headers = {"Authorization": "Login " + ct_token}
             response = self.session.get(url=url, headers=headers)
 
             if response.status_code == 200:
@@ -100,10 +109,10 @@ class ChurchToolsApi(
             )
             return False
 
-        if "ct_user" in kwargs and "ct_password" in kwargs:
+        if ct_user and ct_password:
             logger.info("Trying Login with Username/Password")
             url = self.domain + "/api/login"
-            data = {"username": kwargs["ct_user"], "password": kwargs["ct_password"]}
+            data = {"username": ct_user, "password": ct_password}
             response = self.session.post(url=url, data=data)
 
             if response.status_code == 200:

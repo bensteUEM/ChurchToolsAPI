@@ -1,13 +1,11 @@
-import ast
 import json
 import logging
 import logging.config
 import os
-import unittest
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from churchtools_api.churchtools_api import ChurchToolsApi
+from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
 
 logger = logging.getLogger(__name__)
 
@@ -20,38 +18,8 @@ with config_file.open(encoding="utf-8") as f_in:
     logging.config.dictConfig(config=logging_config)
 
 
-class TestsChurchToolsApi(unittest.TestCase):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-
-        if "CT_TOKEN" in os.environ:
-            self.ct_token = os.environ["CT_TOKEN"]
-            self.ct_domain = os.environ["CT_DOMAIN"]
-            users_string = os.environ["CT_USERS"]
-            self.ct_users = ast.literal_eval(users_string)
-            logger.info("using connection details provided with ENV variables")
-        else:
-            from secure.config import ct_token
-
-            self.ct_token = ct_token
-            from secure.config import ct_domain
-
-            self.ct_domain = ct_domain
-            from secure.config import ct_users
-
-            self.ct_users = ct_users
-            logger.info("using connection details provided from secrets folder")
-
-        self.api = ChurchToolsApi(domain=self.ct_domain, ct_token=self.ct_token)
-        logger.info("Executing Tests RUN")
-
-    def tearDown(self) -> None:
-        """Destroy the session after test execution to avoid resource issues
-        :return:
-        """
-        self.api.session.close()
-
-    def test_get_events(self) -> None:
+class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
+    def test_get_events(self, caplog) -> None:
         """Tries to get a list of events and a single event from CT.
 
         Event ID may vary depending on the server used
@@ -143,12 +111,11 @@ class TestsChurchToolsApi(unittest.TestCase):
         assert result_max <= next2_week_date
 
         # missing keyword pair warning
-        with self.assertLogs(level=logging.WARNING) as captured:
+        caplog.clear()
+        with caplog.at_level(level=logging.WARNING, logger="churchtools_api.events"):
             self.api.get_events(to_=next2_week_formatted)
-        assert len(captured.records) == 1
-        assert captured.output == [
-            "WARNING:churchtools_api.events:Use of to_ is only allowed together with from_"
-        ]
+        EXPECTED_MESSAGES = ["Use of to_ is only allowed together with from_"]
+        assert caplog.messages == EXPECTED_MESSAGES
 
         # load more than 10 events (pagination #TODO #1 improve test case for
         # pagination
@@ -276,7 +243,7 @@ class TestsChurchToolsApi(unittest.TestCase):
         result = self.api.get_event_agenda(eventId)
         assert result is not None
 
-    def test_export_event_agenda(self) -> None:
+    def test_export_event_agenda(self, caplog) -> None:
         """IMPORTANT - This test method and the parameters used depend on the target system!
 
         Test function to download an Event Agenda file package for e.g. Songbeamer
@@ -286,9 +253,10 @@ class TestsChurchToolsApi(unittest.TestCase):
         eventId = 484
         agendaId = self.api.get_event_agenda(eventId)["id"]
 
-        with self.assertLogs(level=logging.WARNING) as captured:
+        caplog.clear()
+        with caplog.at_level(level=logging.WARNING, logger="churchtools_api.events"):
             download_result = self.api.export_event_agenda("SONG_BEAMER")
-        assert len(captured.records) == 1
+        assert len(caplog.records) == 1
         assert not download_result
 
         download_dir = Path("downloads")

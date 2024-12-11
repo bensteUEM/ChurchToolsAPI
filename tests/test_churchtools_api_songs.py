@@ -16,7 +16,7 @@ with config_file.open(encoding="utf-8") as f_in:
     logging.config.dictConfig(config=logging_config)
 
 
-class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
+class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
     def test_get_songs(self) -> None:
         """1. Test requests all songs and checks that result has more than 50 elements (hence default pagination works)
         2. Test requests song 2034 and checks that result matches "sample".
@@ -95,13 +95,16 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         SAMPLE_CATEGORY_NAME = "Does not exist"
         EXPECTED_ID = None
 
+        caplog.clear()
         with caplog.at_level(logging.WARNING, logger="churchtools_api.songs"):
             result = self.api.lookup_song_category_as_id(
                 category_name=SAMPLE_CATEGORY_NAME
             )
         assert result == EXPECTED_ID
-        EXPECTED_MESSAGE = "Can not find song category (Does not exist) on this system"
-        assert EXPECTED_MESSAGE in caplog.messages
+        EXPECTED_MESSAGES = [
+            "Can not find song category (Does not exist) on this system"
+        ]
+        assert caplog.messages == EXPECTED_MESSAGES
 
     def test_create_edit_delete_song(self, caplog) -> None:
         """Test method used to create a new song, edit it's metadata and remove the song.
@@ -160,12 +163,13 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         # Delete Song
         self.api.delete_song(song_id)
 
+        caplog.clear()
         with caplog.at_level(logging.INFO, logger="churchtools_api_songs"):
             ct_song = self.api.get_songs(song_id=song_id)
         EXPECTED_MESSAGES = [
             f"Did not find song ({song_id}) with CODE 404",
         ]
-        assert all(message in caplog.messages for message in EXPECTED_MESSAGES)
+        assert caplog.messages == EXPECTED_MESSAGES
         assert ct_song is None
 
     def test_add_remove_song_tag(self, caplog) -> None:
@@ -183,29 +187,25 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
 
         self.api.ajax_song_last_update = None
         assert self.api.contains_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
-        EXPECTED_MESSAGES = [
-            "Using undocumented AJAX API because function does not exist as REST endpoint",
-            'https://elkw1610.krz.tools:443 "POST /?q=churchservice/ajax&func=getAllSongs HTTP/11" 200 None',
-            "Using undocumented AJAX API because function does not exist as REST endpoint",
-        ]
+        caplog.clear()
         with caplog.at_level(logging.INFO):
             response = self.api.remove_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
         assert response.status_code == 200
+
+        EXPECTED_MESSAGES = [
+            "Using undocumented AJAX API because function does not exist as REST endpoint",
+        ]
         assert caplog.messages == EXPECTED_MESSAGES
 
         self.api.ajax_song_last_update = None
         assert not self.api.contains_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
 
         self.api.ajax_song_last_update = None
+        caplog.clear()
         with caplog.at_level(logging.INFO):
             response = self.api.add_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
         assert response.status_code == 200
         EXPECTED_MESSAGES = [
-            "Using undocumented AJAX API because function does not exist as REST endpoint",
-            'https://elkw1610.krz.tools:443 "POST /?q=churchservice/ajax&func=getAllSongs HTTP/11" 200 None',
-            "Using undocumented AJAX API because function does not exist as REST endpoint",
-            "Using undocumented AJAX API because function does not exist as REST endpoint",
-            'https://elkw1610.krz.tools:443 "POST /?q=churchservice/ajax&func=getAllSongs HTTP/11" 200 None',
             "Using undocumented AJAX API because function does not exist as REST endpoint",
         ]
         assert caplog.messages == EXPECTED_MESSAGES
@@ -255,20 +255,25 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert result == EXPECTED_ID
 
         # too many args
+        caplog.clear()
         with caplog.at_level(logging.WARNING, logger="churchtools_api.songs"):
             result = self.api.lookup_song_source_as_id(
                 longname=SAMPLE_LONGNAME, shortname=SAMPLE_SHORTNAME
             )
         assert result is None
-        EXPECTED_MESSAGE = "too many arguments - either use shortname or longname"
-        assert EXPECTED_MESSAGE in caplog.messages
+        EXPECTED_MESSAGES = ["too many arguments - either use shortname or longname"]
+        assert caplog.messages == EXPECTED_MESSAGES
 
         # no arguments
+        caplog.clear()
         with caplog.at_level(logging.WARNING, logger="churchtools_api.songs"):
             result = self.api.lookup_song_source_as_id()
         assert result is None
-        EXPECTED_MESSAGE = "missing argument longname or shortname required"
-        assert EXPECTED_MESSAGE in caplog.messages
+        EXPECTED_MESSAGES = [
+            "Using undocumented AJAX API because function does not exist as REST endpoint",
+            "missing argument longname or shortname required",
+        ]
+        assert caplog.messages == EXPECTED_MESSAGES
 
     def test_get_song_arrangement(self) -> None:
         SAMPLE_SONG_ID = 408

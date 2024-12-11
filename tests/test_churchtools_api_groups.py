@@ -139,6 +139,7 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         assert group2["information"]["campusId"] == SAMPLE_CAMPUS_ID
 
         # 3. check force param - only created if forced
+        caplog.clear()
         with caplog.at_level(level=logging.WARNING, logger="churchtools_api.groups"):
             group3 = self.api.create_group(
                 SAMPLE_GROUP_NAME,
@@ -146,8 +147,10 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
                 grouptype_id=SAMPLE_NEW_GROUP_TYPE,
             )
         assert group3 is None
-        EXPECTED_MESSAGE = 'Duplikat gefunden. Nutze das "force" Flag, um die Gruppe trotzdem anzulegen.'
-        assert EXPECTED_MESSAGE in caplog.messages
+        EXPECTED_MESSAGES = [
+            'Duplikat gefunden. Nutze das "force" Flag, um die Gruppe trotzdem anzulegen.'
+        ]
+        assert caplog.messages == EXPECTED_MESSAGES
 
         # 4. use force param to overwrite existing group
         group3 = self.api.create_group(
