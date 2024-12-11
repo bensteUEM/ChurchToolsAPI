@@ -1,6 +1,5 @@
 import json
 import logging
-from typing import Optional
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
@@ -81,15 +80,18 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
     def get_persons_masterdata(
         self,
         *,
-        resultClass: Optional[str] = None,
+        resultClass: str | None = None,
         returnAsDict: bool = False,
-        **kwargs,
-    ) -> dict[list[dict]]:
+    ) -> list | list[list] | dict | list[dict]:
         """Function to get the Masterdata of the persons module
         This information is required to map some IDs to specific items.
 
+        Arguments:
+            resultClass: the name of the masterdata to retrieve. Defaults to All
+            returnAsDict: if the list with one type should be returned as dict by ID
+
         Returns:
-            dict of lists of masterdata items each with list of dict items used as configuration
+            list of masterdata items, if multiple types list of lists (by type) if.
         """
         url = self.domain + "/api/person/masterdata"
 
@@ -99,6 +101,12 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
         if response.status_code == 200:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
+
+            if resultClass:
+                response_data = response_data[resultClass]
+                if returnAsDict:
+                    response_data = {item["id"]: item["name"] for item in response_data}
+
             logger.debug("Person Masterdata load successful len=%s", response_data)
 
             return response_data

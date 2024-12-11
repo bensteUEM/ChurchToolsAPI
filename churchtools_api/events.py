@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import json
 import logging
 from datetime import datetime, timedelta
@@ -563,11 +561,11 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             kwargs: optional keywords as listed below
 
         Keywords:
-            type: str with name of the masterdata type (not datatype) common types are 'absenceReasons', 'songCategories', 'services', 'serviceGroups'
+            resultClass: str with name of the masterdata type (not datatype) common types are 'absenceReasons', 'songCategories', 'services', 'serviceGroups'
             returnAsDict: if the list with one type should be returned as dict by ID
 
         Returns:
-            list of masterdata items, if multiple types list of lists (by type).
+            list of masterdata items, if multiple types list of lists (by type) if.
         """
         url = self.domain + "/api/event/masterdata"
 
@@ -578,8 +576,8 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
 
-            if "type" in kwargs:
-                response_data = response_data[kwargs["type"]]
+            if "resultClass" in kwargs:
+                response_data = response_data[kwargs["resultClass"]]
                 if kwargs.get("returnAsDict"):
                     response_data2 = response_data.copy()
                     response_data = {item["id"]: item for item in response_data2}

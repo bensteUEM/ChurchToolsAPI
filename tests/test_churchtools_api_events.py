@@ -239,18 +239,29 @@ class TestsChurchToolsApi(unittest.TestCase):
 
         Tries to get a list of event masterdata and a type of masterdata from CT
         The values depend on your system data! - Test case is valid against ELKW1610.KRZ.TOOLS
-        :return:
         """
         result = self.api.get_event_masterdata()
-        assert len(result) == 5
+        EXPECTED_KEYS = [
+            "absenceReasons",
+            "facts",
+            "songCategories",
+            "songSources",
+            "services",
+            "serviceGroups",
+        ]
+        assert set(result) == set(EXPECTED_KEYS)
 
-        result = self.api.get_event_masterdata(type="serviceGroups")
+        result = self.api.get_event_masterdata(resultClass="serviceGroups")
         assert len(result) > 1
         assert result[0]["name"] == "Programm"
 
-        result = self.api.get_event_masterdata(type="serviceGroups", returnAsDict=True)
+        result = self.api.get_event_masterdata(
+            resultClass="serviceGroups", returnAsDict=True
+        )
         assert isinstance(result, dict)
-        result = self.api.get_event_masterdata(type="serviceGroups", returnAsDict=False)
+        result = self.api.get_event_masterdata(
+            resultClass="serviceGroups", returnAsDict=False
+        )
         assert isinstance(result, list)
 
     def test_get_event_agenda(self) -> None:

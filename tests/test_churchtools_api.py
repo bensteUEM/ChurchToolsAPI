@@ -118,10 +118,8 @@ class TestsChurchToolsApi(unittest.TestCase):
         assert isinstance(result4, list)
 
     def test_get_persons_masterdata(self) -> None:
-        """Tries to retrieve metadata for persons module
+        """Tries to retrieve metadata for persons module.
         Expected sections equal those that were available on ELKW1610.krz.tools on 4.Oct.2024.
-
-        Some items might be hidden in options instead of masterdata e.g. sex
         """
         EXPECTED_SECTIONS = {
             "roles",
@@ -139,8 +137,10 @@ class TestsChurchToolsApi(unittest.TestCase):
             "followUpIntervals",
             "groupMeetingTemplates",
             "relationshipTypes",
+            "sexes",
         }
 
+        # all items
         result = self.api.get_persons_masterdata()
         assert isinstance(result, dict)
         assert set(result.keys()) == EXPECTED_SECTIONS
@@ -149,6 +149,19 @@ class TestsChurchToolsApi(unittest.TestCase):
             assert isinstance(section, list)
             for item in section:
                 assert isinstance(item, dict)
+
+        # only one type
+        result = self.api.get_persons_masterdata(resultClass="sexes")
+        assert isinstance(result, list)
+        assert len(result) > 1
+        assert isinstance(next(iter(result)), dict)
+
+        # only one type as dict
+        result = self.api.get_persons_masterdata(resultClass="sexes", returnAsDict=True)
+        assert isinstance(result, dict)
+        assert len(result) > 1
+        assert isinstance(next(iter(result.keys())), int)
+        assert isinstance(next(iter(result.values())), str)
 
     def test_get_options(self) -> None:
         """Checks that option fields can retrieved."""
@@ -165,11 +178,9 @@ class TestsChurchToolsApi(unittest.TestCase):
         SAMPLE_USER_ID = 513
 
         person = self.api.get_persons(ids=[SAMPLE_USER_ID])
-
-        gender_map = {
-            item["id"]: item["name"]
-            for item in self.api.get_options()["sex"]["options"]
-        }
+        gender_map = self.api.get_persons_masterdata(
+            resultClass="sexes", returnAsDict=True
+        )
         result = gender_map[person[0]["sexId"]]
 
         assert result == EXPECTED_RESULT
