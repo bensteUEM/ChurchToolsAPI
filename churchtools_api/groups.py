@@ -161,25 +161,22 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
         response = self.session.post(url=url, headers=headers, data=data)
 
-        if response.status_code == 201:
-            response_content = json.loads(response.content)
-            response_data = self.combine_paginated_response_data(
-                response_content,
-                url=url,
-                headers=headers,
-            )
-            logger.debug(
-                "First response of Create Group successful len=%s",
-                response_content,
-            )
+        if response.status_code != 201:
+            logger.warning(json.loads(response.content)["translatedMessage"])
+            return None
 
-            return response_data
-        logger.warning(
-            "%s Something went wrong with creating group: %s",
-            response.status_code,
-            response.content,
+        response_content = json.loads(response.content)
+        response_data = self.combine_paginated_response_data(
+            response_content,
+            url=url,
+            headers=headers,
         )
-        return None
+        logger.debug(
+            "First response of Create Group successful len=%s",
+            response_content,
+        )
+
+        return response_data
 
     def update_group(self, group_id: int, data: dict) -> dict:
         """Update a field of the given group.
