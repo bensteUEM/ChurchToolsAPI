@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import json
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
@@ -26,6 +27,11 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
 
         Returns: list of songs
         """
+        if "id" in kwargs:
+            logger.warning(
+                "get songs uses song_id but id was provided - are you sure you're using the correct keyword?"
+            )
+
         url = self.domain + "/api/songs"
         if "song_id" in kwargs:
             url = url + "/{}".format(kwargs["song_id"])
@@ -58,7 +64,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         return None
 
     def get_song_ajax(
-        self, song_id: Optional[int] = None, require_update_after_seconds: int = 10
+        self, song_id: int | None = None, require_update_after_seconds: int = 10
     ) -> dict:
         """Legacy AJAX function to get a specific song.
         used to e.g. check for tags requires requesting full song list
@@ -73,6 +79,9 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         Returns:
             response content interpreted as json
         """
+        logging.warning(
+            "Using undocumented AJAX API because function does not exist as REST endpoint"
+        )
         if self.ajax_song_last_update is None:
             require_update = True
         else:
@@ -104,6 +113,83 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
 
         return song_category_dict
 
+    def lookup_song_category_as_id(self, category_name: str) -> int:
+        """Converts a song_category text to the internal id used as song_source in arrangements
+
+        Args:
+            category_name: human readable long name of the song category
+
+        Returns:
+            id number of the song category matching the arg
+        """
+        song_category_mapping = self.get_song_category_map()
+        result = song_category_mapping.get(category_name, None)
+
+        if not result:
+            logger.warning(
+                "Can not find song category (%s) on this system", category_name
+            )
+            return None
+
+        return result
+
+    def get_song_source_map(self) -> dict:
+        """Helpfer function creating requesting CT metadata for mapping of song sources.
+        WARNING - uses undocumented AJAX API
+
+        Returns:
+            a dictionary of {Index:{valuedict}}.
+        """
+        # TODO: #119 implement using REST API once support case is resolved
+        logging.warning(
+            "Using undocumented AJAX API because function does not exist as REST endpoint"
+        )
+        url = self.domain + "/index.php?q=churchservice/ajax"
+        headers = {"accept": "application/json"}
+        data = {"func": "getMasterData"}
+        response = self.session.post(url=url, headers=headers, data=data)
+        response_content = json.loads(response.content)
+        return response_content["data"]["songsource"]
+
+    def lookup_song_source_as_id(
+        self, longname: str | None = None, shortname: str | None = None
+    ) -> int:
+        """Converts a song_source text to the internal id used as song_source in arrangements
+        One of the arguments must be provided
+
+        Args:
+            longname: human readable long name of the source. Defaults to ""
+            shortname: human readable long name of the source. Defaults to ""
+
+        Returns:
+            id number of the song_source matching the arg
+        """
+        if longname and shortname:
+            logger.warning("too many arguments - either use shortname or longname")
+            return None
+
+        song_source_mapping = self.get_song_source_map()
+
+        if shortname:
+            return int(
+                next(
+                    item
+                    for item in song_source_mapping.values()
+                    if item["shorty"] == shortname
+                )["id"]
+            )
+        if longname:
+            return int(
+                next(
+                    item
+                    for item in song_source_mapping.values()
+                    if item["name"] == longname
+                )["id"]
+            )
+
+        logger.warning("missing argument longname or shortname required")
+        return None
+
     def create_song(  # noqa: PLR0913
         self,
         title: str,
@@ -132,6 +218,9 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         :return: int song_id: ChurchTools song_id of the Song created or None if not successful
         :rtype: int | None
         """
+        logging.warning(
+            "Using undocumented AJAX API because function does not exist as REST endpoint"
+        )
         url = self.domain + "/?q=churchservice/ajax&func=addNewSong"
 
         data = {
@@ -218,6 +307,9 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         :return: response item
         #TODO 49
         """
+        logging.warning(
+            "Using undocumented AJAX API because function does not exist as REST endpoint"
+        )
         # system/churchservice/churchservice_db.php
         url = self.domain + "/?q=churchservice/ajax&func=deleteSong"
 
@@ -240,6 +332,9 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         :return: response item
         #TODO 49
         """
+        logging.warning(
+            "Using undocumented AJAX API because function does not exist as REST endpoint"
+        )
         url = self.domain + "/?q=churchservice/ajax&func=addSongTag"
 
         data = {"id": song_id, "tag_id": song_tag_id}
@@ -259,6 +354,9 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         :return: response item
         #TODO 49
         """
+        logging.warning(
+            "Using undocumented AJAX API because function does not exist as REST endpoint"
+        )
         url = self.domain + "/?q=churchservice/ajax&func=delSongTag"
 
         data = {"id": song_id, "tag_id": song_tag_id}
@@ -304,3 +402,157 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         ]
 
         return [songs_dict[song_id] for song_id in filtered_song_ids]
+
+    def get_song_arrangement(
+        self, song_id: int, arrangement_id: int | None = None
+    ) -> dict:
+        """Retrieve a specific song arrangement.
+
+        Args:
+            song_id: number of the song - usually shown at bottom right of song view in churchtools
+            arrangement_id: id of the arrangement nested within the song - only visible in API. Defaults to default arrangement.
+
+        Returns:
+            dict from song arrangement (from REST API)
+        """
+        song = self.get_songs(song_id=song_id)[0]
+        if arrangement_id:
+            return next(
+                arrangement
+                for arrangement in song["arrangements"]
+                if arrangement["id"] == arrangement_id
+            )
+
+        return next(
+            arrangement
+            for arrangement in song["arrangements"]
+            if song["arrangements"][0]["isDefault"]
+        )
+
+    def create_song_arrangement(self, song_id: int, arrangement_name: str) -> int:
+        """Creates a new song arrangment.
+
+        Arguments:
+            song_id: id of the song which should be modified
+            arrangement_name: human readable name of the arrangement to be created
+
+        Returns:
+            arrangement_id
+        """
+        logging.warning(
+            "Using undocumented AJAX API because function does not exist as REST endpoint"
+        )
+
+        url = self.domain + "/?q=churchservice/ajax"
+
+        data = {
+            "func": "addArrangement",
+            "song_id": song_id,
+            "bezeichnung": arrangement_name,
+        }
+        response = self.session.post(url=url, data=data)
+        if response.status_code != 200:
+            logger.error(response)
+            return None
+
+        return json.loads(response.content)["data"]
+
+    def edit_song_arrangement(
+        self,
+        song_id: int,
+        arrangement_id: int,
+        **kwargs,
+    ) -> bool:
+        """Updates a existing song arrangment.
+
+        Overwrites param with empty default value argument if not specified!
+
+        Args:
+            song_id: song id from churchtools
+            arrangement_id: arrangement id from respective song
+            kwargs: optional keyword arguments as listed below - preserves original state if not specified
+
+        Kwargs
+            name: (str) originally called "bezeichnung in CT"
+            source_id: (int|str) id of the source as defined in masterdata. Alternatively also accepts shortname.
+            source_ref: (str) source reference number.
+            tonality: (str) e.g. Ab.
+            bpm: (str) beats per minute.
+            beat: (str) e.g. 4/4.
+            length_min: (int) lenght in full minutes.
+            length_sec: (int) length addiotn - seconds.
+            note: (str) more detailed explanation text.
+
+        Returns:
+            if changes were applied
+        """
+        logger.warning(
+            "Using undocumented AJAX API because function does not exist as REST endpoint"
+        )
+        logger.warning(
+            "Due missing information in REST API tonality will be emptied if not provided - CT Support case 136128"
+        )
+
+        url = self.domain + "/?q=churchservice/ajax"
+
+        existing_arrangement = self.get_song_arrangement(
+            song_id=song_id, arrangement_id=arrangement_id
+        )
+
+        source_id = (
+            kwargs.get("source_id")
+            if isinstance(kwargs.get("source_id"), int)
+            else self.lookup_song_source_as_id(shortname=kwargs.get("source_id"))
+        )
+        data = {
+            "func": "editArrangement",
+            "song_id": song_id,
+            "id": arrangement_id,
+            "bezeichnung": kwargs.get("name", existing_arrangement["name"]),
+            "source_id": source_id,
+            "source_ref": kwargs.get(
+                "source_ref", existing_arrangement["sourceReference"]
+            ),
+            "tonality": kwargs.get(
+                "tonality", ""
+            ),  # TODO #119 see CT issue 136128 - use fallback if available
+            "bpm": kwargs.get("bpm", existing_arrangement["bpm"]),
+            "beat": kwargs.get("beat", existing_arrangement["bpm"]),
+            "length_min": kwargs.get(
+                "length_min", existing_arrangement["duration"] // 60
+            ),
+            "length_sec": kwargs.get(
+                "length_sec", existing_arrangement["duration"] % 60
+            ),
+            "note": kwargs.get("note", existing_arrangement["note"]),
+        }
+        response = self.session.post(url=url, data=data)
+        if response.status_code != 200:
+            logger.error(json.loads(response.content)["errors"])
+            return False
+
+        return True
+
+    def delete_song_arrangement(self, song_id: int, arrangement_id: int) -> bool:
+        """Deletes a specific song arrangement.
+
+        Args:
+            song_id: the number of the song to modify
+            arrangement_id: the arrangement id within the song to delete
+
+        Returns:
+            if deleted successfull
+        """
+        url = self.domain + "/?q=churchservice/ajax"
+
+        data = {
+            "func": "delArrangement",
+            "song_id": song_id,
+            "id": arrangement_id,
+        }
+        response = self.session.post(url=url, data=data)
+        if response.status_code != 200:
+            logger.error(response)
+            return False
+
+        return True
