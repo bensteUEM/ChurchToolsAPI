@@ -213,6 +213,25 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         self.api.ajax_song_last_update = None
         assert self.api.contains_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
 
+    def test_get_song_tag_original(self) -> None:
+        SAMPLE_SONG_ID = 408
+        result = self.api.get_song_tags(song_id=SAMPLE_SONG_ID)
+        EXPECTED_TAG = 53
+        assert EXPECTED_TAG in result
+
+    def test_get_song_tag_id_dict(self) -> None:
+        SAMPLE_SONG_ID = 408
+        result = self.api.get_song_tags(song_id=SAMPLE_SONG_ID, rtype="id_dict")
+        EXPECTED_MIN_RESULT = {53: "Test"}
+        assert all(item in result.items() for item in EXPECTED_MIN_RESULT.items())
+        assert all(key in result for key in EXPECTED_MIN_RESULT)
+
+    def test_get_song_tag_name_dict(self) -> None:
+        SAMPLE_SONG_ID = 408
+        result = self.api.get_song_tags(song_id=SAMPLE_SONG_ID, rtype="name_dict")
+        EXPECTED_MIN_RESULT = {"Test": 53}
+        assert all(item in result.items() for item in EXPECTED_MIN_RESULT.items())
+
     def test_get_songs_with_tag(self) -> None:
         """Test method to check if fetching all songs with a specific tag works
         songId and tag_id will vary depending on the server used

@@ -365,14 +365,31 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
 
         return self.session.post(url=url, data=data)
 
-    def get_song_tags(self, song_id) -> list:
+    def get_song_tags(self, song_id: int, *, rtype: str = "original") -> list:
         """Method to get a song tag workaround using legacy AJAX API for getSong.
-        :param song_id: ChurchTools site specific song_id which should be modified - required
-        :type song_id: int
-        :return: response item.
+
+        Arguments:
+            song_id: ChurchTools site specific song_id which should be modified - required
+            rtype: optional return type filter either original, id_dict, name_dict
+
+        Returns:
+            response item in requested format
         """
         song = self.get_song_ajax(song_id)
-        return song["tags"]
+
+        match rtype:
+            case "original":
+                return song["tags"]
+            case "id_dict":
+                return {
+                    tag_id: self.get_tags(type="songs", rtype="id_dict")[tag_id]
+                    for tag_id in song["tags"]
+                }
+            case "name_dict":
+                return {
+                    self.get_tags(type="songs", rtype="id_dict")[tag_id]: tag_id
+                    for tag_id in song["tags"]
+                }
 
     def contains_song_tag(self, song_id: int, song_tag_id: int) -> bool:
         """Helper which checks if a specific song_tag_id is present on a song.

@@ -237,14 +237,16 @@ class ChurchToolsApi(
         logger.info("Services requested failed: %s", response.status_code)
         return None
 
-    def get_tags(self, type="songs"):  # noqa: A002
+    def get_tags(self, type: str, *, rtype: str = "original") -> list[dict] | None:  # noqa: A002
         """Retrieve a list of all available tags of a specific ct_domain type from ChurchTools
         Purpose: be able to find out tag-ids of all available tags for filtering by tag.
 
-        :param type: 'songs' (default) or 'persons'
-        :type type: str
-        :return: list of dicts describing each tag. Each contains keys 'id' and 'name'
-        :rtype list[dict]
+        Arguments:
+            type: 'songs' or 'persons'
+            rtype: original, id_dict or name_dict. Defaults to original only available if combined with type
+
+        Returns:
+            list of dicts or individual dict if type is specified or None if not available
         """
         url = self.domain + "/api/tags"
         headers = {"accept": "application/json"}
@@ -253,18 +255,26 @@ class ChurchToolsApi(
         }
         response = self.session.get(url=url, params=params, headers=headers)
 
-        if response.status_code == 200:
-            response_content = json.loads(response.content)
-            response_content["data"].copy()
-            logger.debug("SongTags load successful %s", response_content)
+        response_content = json.loads(response.content)
 
-            return response_content["data"]
-        logger.warning(
-            "%s Something went wrong fetching Song-tags: %s",
-            response.status_code,
-            response.content,
-        )
-        return None
+        if response.status_code != 200:
+            logger.warning(response.content)
+            return None
+
+        response_data = response_content["data"]
+
+        if type:
+            match rtype:
+                case "id_dict":
+                    return {item["id"]: item["name"] for item in response_data}
+                case "name_dict":
+                    return {item["name"]: item["id"] for item in response_data}
+                case _:
+                    return response_data
+
+        logger.debug("SongTags load successful %s", response_content)
+
+        return response_data
 
     def get_options(self) -> dict:
         """Helper function which returns all configurable option fields from CT.
