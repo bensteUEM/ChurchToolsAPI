@@ -1,7 +1,6 @@
 import json
 import logging
 from pathlib import Path
-from typing import Optional
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
@@ -23,7 +22,7 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
         source_filepath: str,
         domain_type: str,
         domain_identifier: int,
-        custom_file_name: Optional[str] = None,
+        custom_file_name: str | None = None,
         *,
         overwrite: bool = False,
     ) -> bool:
@@ -99,7 +98,7 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
         self,
         domain_type: str,
         domain_identifier: int,
-        filename_for_selective_delete: Optional[str] = None,
+        filename_for_selective_delete: str | None = None,
     ) -> bool:
         """Helper function to delete ALL attachments of any specified module of ChurchTools#
         or identifying individual file_name_ids and deleting specifc files only.

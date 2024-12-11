@@ -12,7 +12,7 @@ license = "CC-BY-SA"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 python-docx = "^0.8.11"
 requests = "^2.31.0"
 pytz = "^2024.2"
@@ -59,7 +59,7 @@ exclude = [
 ]
 line-length = 88
 indent-width = 4
-target-version = "py39"
+target-version = "py310"
 output-format = "grouped"
 
 [tool.ruff.lint]
@@ -72,7 +72,6 @@ ignore = [
     "FIX002", #Open ToDos
     "TD002","TD003","TD004", #TODOs
     "C901","PLR0912", #complexity 
-    "ARG002",#TODO: Github #110
     "FA100", #Python version specific #102
     "D100","D101","D102","D104","D107","D205","D415", #Docstrings
     "E501", #line too long

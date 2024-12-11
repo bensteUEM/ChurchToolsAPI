@@ -1,6 +1,5 @@
 import json
 import logging
-from typing import Optional
 
 import requests
 
@@ -39,9 +38,9 @@ class ChurchToolsApi(
     def __init__(
         self,
         domain: str,
-        ct_token: Optional[str] = None,
-        ct_user: Optional[str] = None,
-        ct_password: Optional[str] = None,
+        ct_token: str | None = None,
+        ct_user: str | None = None,
+        ct_password: str | None = None,
     ) -> None:
         """Setup of a ChurchToolsApi object for the specified ct_domain using a token login.
 

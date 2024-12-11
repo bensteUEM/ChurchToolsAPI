@@ -1,6 +1,5 @@
 import json
 import logging
-from typing import Optional
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
@@ -338,7 +337,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
     def get_groups_members(
         self,
-        group_ids: Optional[list[int]] = None,
+        group_ids: list[int] | None = None,
         *,
         with_deleted: bool = False,
         **kwargs,

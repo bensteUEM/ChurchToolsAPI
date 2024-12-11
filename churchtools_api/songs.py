@@ -86,7 +86,9 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
             require_update = True
         else:
             require_update = (
-                self.ajax_song_last_update + timedelta(seconds=10) < datetime.now()
+                self.ajax_song_last_update
+                + timedelta(seconds=require_update_after_seconds)
+                < datetime.now()
             )
         if require_update:
             url = self.domain + "/?q=churchservice/ajax&func=getAllSongs"
