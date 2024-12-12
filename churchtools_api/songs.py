@@ -142,7 +142,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         Returns:
             a dictionary of {Index:{valuedict}}.
         """
-        # TODO: #119 implement using REST API once support case is resolved
+        # TODO: #124 implement using REST API once support case 135796 is resolved
         logging.warning(
             "Using undocumented AJAX API because function does not exist as REST endpoint"
         )
@@ -508,10 +508,6 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         logger.warning(
             "Using undocumented AJAX API because function does not exist as REST endpoint"
         )
-        logger.warning(
-            "Due missing information in REST API tonality will be emptied if not provided - CT Support case 136128"
-        )
-
         url = self.domain + "/?q=churchservice/ajax"
 
         existing_arrangement = self.get_song_arrangement(
@@ -521,7 +517,9 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         source_id = (
             kwargs.get("source_id")
             if isinstance(kwargs.get("source_id"), int)
-            else self.lookup_song_source_as_id(shortname=kwargs.get("source_id"))
+            else self.lookup_song_source_as_id(
+                shortname=existing_arrangement["sourceName"]
+            )
         )
         data = {
             "func": "editArrangement",
@@ -533,8 +531,8 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
                 "source_ref", existing_arrangement["sourceReference"]
             ),
             "tonality": kwargs.get(
-                "tonality", ""
-            ),  # TODO #119 see CT issue 136128 - use fallback if available
+                "tonality", existing_arrangement["keyOfArrangement"]
+            ),
             "bpm": kwargs.get("bpm", existing_arrangement["bpm"]),
             "beat": kwargs.get("beat", existing_arrangement["bpm"]),
             "length_min": kwargs.get(
