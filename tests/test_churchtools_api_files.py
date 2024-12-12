@@ -3,6 +3,8 @@ import logging
 import logging.config
 from pathlib import Path
 
+import pytest
+
 from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
 
 logger = logging.getLogger(__name__)
@@ -120,6 +122,34 @@ class TestChurchtoolsApiFiles(TestsChurchToolsApiAbstract):
         assert (
             len(song["arrangements"][0]["files"]) == 0
         ), "check that files are deleted"
+
+    @pytest.mark.skip(reason="#122 - image options not applyable")
+    def test_file_upload_delete_calendar_image(self):
+        """Test which tries to upload a calendar_image to a calendar appointment.
+
+        On ELKW1610.KRZ.TOOLS song ID 332233 exists as calendar appointment.
+        """
+        SAMPLE_CALENDAR_ID = 45
+        SAMPLE_CALENDAR_APPOINTMENT_ID = 332233
+        SAMPLE_IMAGE_PATH = Path("samples/pinguin.png")
+
+        is_successful_created = self.api.file_upload(
+            source_filepath=SAMPLE_IMAGE_PATH,
+            domain_type="appointment_image",
+            domain_identifier=SAMPLE_CALENDAR_APPOINTMENT_ID,
+        )
+        assert is_successful_created
+
+        result_appointment = self.api.get_calendar_appointments(
+            calendar_ids=[SAMPLE_CALENDAR_ID], appointment_id=SAMPLE_CALENDAR_APPOINTMENT_ID
+        )
+        assert result_appointment["image"] == SAMPLE_IMAGE_PATH.name
+
+        is_successful_delete = self.api.file_delete(
+            domain_type="appointment_image",
+            domain_identifier=SAMPLE_CALENDAR_APPOINTMENT_ID,
+        )
+        assert is_successful_delete
 
     def test_file_download(self) -> None:
         """Test of file_download and file_download_from_url on https://elkw1610.krz.tools on any song

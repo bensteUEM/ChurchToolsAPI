@@ -172,6 +172,8 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         Returns:
             The dict of the calendar appointment created or None
         """
+        #TODO #119 chain appointment image creation via file_uplaod
+
         if address is None:
             address = {}
 
@@ -212,6 +214,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         Loads params from existing calendar_appointment and overwrite all provided kwargs
 
         See create_calendar_appointment for details about other keywords
+        Calendar Images need to be updated using files/file_upload
 
         Args:
             calendar_id: id of the calendar to work with

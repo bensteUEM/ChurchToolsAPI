@@ -17,12 +17,13 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
     def __init__(self) -> None:
         super()
 
-    def file_upload(
+    def file_upload(  # noqa: PLR0913
         self,
-        source_filepath: str,
+        source_filepath: str | Path,
         domain_type: str,
         domain_identifier: int,
         custom_file_name: str | None = None,
+        image_options: dict | None = None,
         *,
         overwrite: bool = False,
     ) -> bool:
@@ -30,18 +31,31 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
 
         Params:
             source_filepath: file to be opened e.g. with open('media/pinguin.png', 'rb')
-            domain_type:  The ct_domain type, currently supported are 'avatar', 'groupimage', 'logo', 'attatchments',
-         'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
+            domain_type:  The ct_domain type, currently supported are 'avatar', 'groupimage', 'logo', 'attatchments', 'appointment_image'
+                'html_template', 'service', 'song_arrangement', 'importtable', 'person', 'familyavatar', 'wiki_.?'.
             domain_identifier: ID of the object in ChurchTools
             custom_file_name: optional file name - if not specified the one from the file is used
-        :type custom_file_name:
+            image_options: image options required for focus in CT. Defaults to centered and not cropped
             overwrite: if true delete existing file before upload of new one to replace \
             it's content instead of creating a copy
 
         Returns:
             if successful.
         """
-        source_filepath = Path(source_filepath)
+        if isinstance(source_filepath, Path) is not Path:
+            source_filepath = Path(source_filepath)
+
+        if not image_options: #TODO 122 - CT Bug
+            image_options = {
+                "crop": {
+                    "top": "0.00000",
+                    "bottom": "0.00000",
+                    "left": "0.00000",
+                    "right": "0.00000",
+                },
+                "focus": {"x": "0.50000", "y": "0.50000"},
+            }
+
         with source_filepath.open("rb") as source_file:
             url = f"{self.domain}/api/files/{domain_type}/{domain_identifier}"
 
@@ -66,7 +80,11 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
             else:
                 files = {"files[]": (custom_file_name, source_file)}
 
-            response = self.session.post(url=url, files=files)
+            data = {"image_options": image_options} #TODO: #122 image option is not applied - WARNING - if setting image option w/o delete whole calendar will fail!
+
+            response = self.session.post(
+                url=url, files=files, json=data
+            )  # TODO #122 check test case covers image options
 
         """
         # Issues with HEADERS in Request module when using non standard 'files[]' key in POST Request
