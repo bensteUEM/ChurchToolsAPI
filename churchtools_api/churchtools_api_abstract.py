@@ -23,10 +23,12 @@ class ChurchToolsApiAbstract(ABC):
         url: str,
         **kwargs,
     ) -> dict:
-        """Helper function which combines data for requests in case of paginated responses.
+        """Helper function which combines data for requests
+        in case of paginated responses.
 
         Args:
-            response_content: the original response form ChurchTools which either has meta/pagination or not
+            response_content: the original response form ChurchTools
+                which either has meta/pagination or not
             url: the url used for the original request in order to repear it
             kwargs: can contain headers and params passthrough
 

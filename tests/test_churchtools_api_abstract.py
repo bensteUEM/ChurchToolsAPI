@@ -20,7 +20,9 @@ with config_file.open(encoding="utf-8") as f_in:
 
 
 class TestsChurchToolsApiAbstract(ABC):  # noqa: B024
-    """This is supposed to be the base configuration for PyTest test classes that require API access with token."""
+    """This is supposed to be the base configuration for PyTest test classes
+    that require API access with token.
+    """
 
     def setup_class(self) -> None:
         if "CT_TOKEN" in os.environ:

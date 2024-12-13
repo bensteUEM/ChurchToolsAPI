@@ -29,12 +29,18 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         Keyword Arguments:
             eventId (int): number of event for single event lookup
 
-            from_ (str|datetime): used as >= with starting date in format YYYY-MM-DD - added _ to name as opposed to ct_api because of reserved keyword
-            to_ (str|datetime): used as < end date in format YYYY-MM-DD ONLY allowed with from_ - added _ to name as opposed to ct_api because of reserved keyword
+            from_ (str|datetime): used as >= with starting date in format YYYY-MM-DD
+                - added _ to name as opposed to ct_api because of reserved keyword
+            to_ (str|datetime): used as < end date in format YYYY-MM-DD ONLY allowed
+                with from_ - added _ to name as opposed to ct_api
+                because of reserved keyword
             canceled (bool): If true, include also canceled events
-            direction (str): direction of output 'forward' or 'backward' from the date defined by parameter 'from'
-            limit (int): limits the number of events - Default = 1, if all events shall be retrieved insert 'None', only applies if direction is specified
-            include (str): if Parameter is set to 'eventServices', the services of the event will be included
+            direction (str): direction of output 'forward' or 'backward'
+                from the date defined by parameter 'from'
+            limit (int): limits the number of events - Default = 1, if all events shall
+                be retrieved insert 'None', only applies if direction is specified
+            include (str): if Parameter is set to 'eventServices', the services of
+                the event will be included
 
         Returns:
             list of events
@@ -98,7 +104,8 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         appointment_id: int,
         start_date: str | datetime,
     ) -> dict:
-        """This method is a helper to retrieve an event for a specific calendar appointment
+        """This method is a helper to retrieve an event
+        for a specific calendar appointment
         including it's event services.
 
         Args:
@@ -135,10 +142,12 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         return None
 
     def get_AllEventData_ajax(self, eventId) -> dict:
-        """Reverse engineered function from legacy AJAX API which is used to get all event data for one event.
+        """Reverse engineered function from legacy AJAX API
+        which is used to get all event data for one event.
 
         Required to read special params not yet included in REST getEvents()
-        Legacy AJAX request might stop working with any future release ... CSRF-Token is required in session header
+        Legacy AJAX request might stop working with any future release
+            ... CSRF-Token is required in session header
         :param eventId: number of the event to be requested
         :type eventId: int
         :return: event information
@@ -166,17 +175,20 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_event_services_counts_ajax(self, eventId, **kwargs):
+    def get_event_services_counts_ajax(self, eventId: int, **kwargs) -> dict:
         """Retrieve the number of services currently set for one specific event id
         optionally get the number of services for one specific id on that event only.
 
-        :param eventId: id number of the calendar event
-        :type eventId: int
-        :param kwargs: keyword arguments either serviceId or service_group_id
-        :key serviceId: id number of the service type to be filtered for
-        :key serviceGroupId: id number of the group of services to request
-        :return: dict of service types and the number of services required for this event
-        :rtype: dict
+        Arguments:
+            eventId: id number of the calendar event
+            **kwargs: keyword arguments as listed below
+
+        Keywords:
+            serviceId: id number of the service type to be filtered for
+            serviceGroupId: id number of the group of services to request
+
+        Returns:
+            dict of service types and the number of services required for this event
         """
         event = self.get_events(eventId=eventId)[0]
 
@@ -358,17 +370,22 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         """Exports the agenda as zip file for imports in presenter-programs.
 
         Parameters:
-            target_format: fileformat or name of presentation software which should be supported.
-                Supported formats are 'SONG_BEAMER', 'PRO_PRESENTER6' and 'PRO_PRESENTER7'
-            target_path: Filepath of the file which should be exported (including filename)
+            target_format: fileformat or name of presentation software
+                which should be supported.
+                Supported formats are 'SONG_BEAMER', 'PRO_PRESENTER6'
+                    and 'PRO_PRESENTER7'
+            target_path: Filepath of the file which should
+                be exported (including filename)
             kwargs: additional keywords as listed below
 
         Keywords:
             eventId: event id to check for agenda id should be exported
             agendaId: agenda id of the agenda which should be exported
                 DO NOT combine with eventId because it will be overwritten!
-            append_arrangement: if True, the name of the arrangement will be included within the agenda caption
-            export_Songs: if True, the songfiles will be in the folder "Songs" within the zip file
+            append_arrangement: if True, the name of the arrangement
+                will be included within the agenda caption
+            export_Songs: if True, the songfiles will be in the
+                folder "Songs" within the zip file
             with_category: has no effect when exported in target format 'SONG_BEAMER'
         Returns:
             if successful.
@@ -440,14 +457,21 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
 
         return result_ok
 
-    def get_event_agenda_docx(self, agenda, **kwargs):
-        """Function to generate a custom docx document with the content of the event agenda from churchtools
-        :param agenda: event agenda with services
-        :type event: dict
-        :param kwargs: optional keywords as listed
-        :key serviceGroups: list of servicegroup IDs that should be included - defaults to all if not supplied
-        :key excludeBeforeEvent: bool: by default pre-event parts are excluded
-        :return:
+    def get_event_agenda_docx(self, agenda: dict, **kwargs) -> docx.Document:
+        """Function to generate a custom docx document
+            with the content of the event agenda from churchtools
+
+        Arguments:
+            agenda: event agenda with services
+            **kwargs: optional keywords as listed below
+
+        Keywords:
+            serviceGroups: list of servicegroup IDs that should be included
+                - defaults to all if not supplied
+            excludeBeforeEvent: bool: by default pre-event parts are excluded
+
+        Returns:
+            docx document reference
         """
         excludeBeforeEvent = kwargs.get("excludeBeforeEvent", False)
 
@@ -466,7 +490,8 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             "Download from ChurchTools including changes until.: " + modifiedDate2,
         )
 
-        agenda_item = 0  # Position Argument from Event Agenda is weird therefore counting manually
+        agenda_item = 0  # Position Argument from Event Agenda is weird
+        # therefore counting manually
         pre_event_last_item = True  # Event start is no item therefore look for change
 
         for item in agenda["items"]:
@@ -538,7 +563,8 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         return document
 
     def get_persons_with_service(self, eventId: int, serviceId: int) -> list[dict]:
-        """Helper function which should return the list of persons that are assigned a specific service on a specific event.
+        """Helper function which should return the list of persons
+        that are assigned a specific service on a specific event.
 
         Args:
             eventId: id number from Events
@@ -561,7 +587,8 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             kwargs: optional keywords as listed below
 
         Keywords:
-            resultClass: str with name of the masterdata type (not datatype) common types are 'absenceReasons', 'songCategories', 'services', 'serviceGroups'
+            resultClass: str with name of the masterdata type (not datatype) common
+             types are 'absenceReasons', 'songCategories', 'services', 'serviceGroups'
             returnAsDict: if the list with one type should be returned as dict by ID
 
         Returns:

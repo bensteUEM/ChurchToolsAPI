@@ -42,7 +42,8 @@ class ChurchToolsApi(
         ct_user: str | None = None,
         ct_password: str | None = None,
     ) -> None:
-        """Setup of a ChurchToolsApi object for the specified ct_domain using a token login.
+        """Setup of a ChurchToolsApi object for the
+        specified ct_domain using a token login.
 
         Arguments:
             domain: including https:// ending on e.g. .de
@@ -127,13 +128,14 @@ class ChurchToolsApi(
             return False
         return None
 
-    def get_ct_csrf_token(self):
+    def get_ct_csrf_token(self) -> str:
         """Requests CSRF Token https://hilfe.church.tools/wiki/0/API-CSRF
-        Storing and transmitting CSRF token in headers is required for all legacy AJAX API calls unless disabled by admin
-        Therefore it is executed with each new login.
+            Storing and transmitting CSRF token in headers is required
+            for all legacy AJAX API calls unless disabled by admin
+            Therefore it is executed with each new login.
 
-        :return: token
-        :rtype: str
+        Returns:
+            token
         """
         url = self.domain + "/api/csrftoken"
         response = self.session.get(url=url)
@@ -166,9 +168,11 @@ class ChurchToolsApi(
         return False
 
     def check_connection_ajax(self) -> bool:
-        """Checks whether a successful connection with the given token can be initiated using the legacy AJAX API
+        """Checks whether a successful connection with the given token
+            can be initiated using the legacy AJAX API
         This requires a CSRF token to be set in headers
-        :return: if successful.
+
+        Returns: if successful.
         """
         url = self.domain + "/?q=churchservice/ajax&func=getAllFacts"
         headers = {"accept": "application/json"}
@@ -183,8 +187,10 @@ class ChurchToolsApi(
         return False
 
     def get_global_permissions(self) -> dict:
-        """Get global permissions of the current user
-        :return: dict with module names which contain dicts with individual permissions items.
+        """Get global permissions of the current user.
+
+        Returns:
+            dict with module names which contains individual permissions items.
         """
         url = self.domain + "/api/permissions/global"
         headers = {"accept": "application/json"}
@@ -204,13 +210,19 @@ class ChurchToolsApi(
         )
         return None
 
-    def get_services(self, **kwargs):
+    def get_services(self, **kwargs) -> list[dict]:
         """Function to get list of all or a single services configuration item from CT
-        :param kwargs: optional keywords as listed
-        :keyword serviceId: id of a single item for filter
-        :keyword returnAsDict: true if should return a dict instead of list (not combineable if serviceId)
-        :return: list of services
-        :rtype: list[dict].
+
+        Arguments:
+            kwargs: optional keywords as listed
+
+        Keywords
+            serviceId: id of a single item for filter
+            returnAsDict: true if should return a dict instead of list
+                (not combineable if serviceId)
+
+        Returns:
+            list of services
         """
         url = self.domain + "/api/services"
         if "serviceId" in kwargs:
@@ -238,15 +250,18 @@ class ChurchToolsApi(
         return None
 
     def get_tags(self, type: str, *, rtype: str = "original") -> list[dict] | None:  # noqa: A002
-        """Retrieve a list of all available tags of a specific ct_domain type from ChurchTools
+        """Retrieve a list of all available tags
+            of a specific ct_domain type from ChurchTools
         Purpose: be able to find out tag-ids of all available tags for filtering by tag.
 
         Arguments:
             type: 'songs' or 'persons'
-            rtype: original, id_dict or name_dict. Defaults to original only available if combined with type
+            rtype: original, id_dict or name_dict.
+                Defaults to original only available if combined with type
 
         Returns:
-            list of dicts or individual dict if type is specified or None if not available
+            list of dicts or individual dict
+                if type is specified or None if not available
         """
         url = self.domain + "/api/tags"
         headers = {"accept": "application/json"}

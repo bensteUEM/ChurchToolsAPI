@@ -72,7 +72,6 @@ ignore = [
     "TD002","TD003","TD004", #TODOs
     "C901","PLR0912", #complexity 
     "D100","D101","D102","D104","D107","D205","D415", #Docstrings
-    "E501", #line too long
     "DTZ001","DTZ005","DTZ007","DTZ002", #datetime timezone
     
     "PLR2004", #magic values   

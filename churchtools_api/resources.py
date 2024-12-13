@@ -58,7 +58,8 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
         return None
 
     def get_bookings(self, **kwargs) -> list[dict]:
-        """Access to all Resource bookings in churchtools based on a combination of Keyword Arguments.
+        """Access to all Resource bookings in churchtools based
+            on a combination of Keyword Arguments.
 
         Arguments:
             kwargs: see list below - some combination limits do apply
@@ -66,10 +67,14 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
         Keywords:
             booking_id: int: only one booking by id (use standalone only)
             resource_ids:list[int]: required if not booking_id
-            status_ids: list[int]: filter by list of stats ids to consider (requires resource_ids)
-            from_: datetime: date range to consider (use only with to_! - might have a bug in API - Support Ticket 130123)
-            to_: datetime: date range to consider (use only with from_! - might have a bug in API - Support Ticket 130123)
-            appointment_id: int: get resources for one specific calendar_appointment only (use together with to_ and from_ for performance reasons)
+            status_ids: list[int]: filter by list of stats ids
+                to consider (requires resource_ids)
+            from_: datetime: date range to consider (use only with to_! -
+                might have a bug in API - Support Ticket 130123)
+            to_: datetime: date range to consider (use only with from_! -
+                might have a bug in API - Support Ticket 130123)
+            appointment_id: int: get resources for one specific calendar_appointment
+                only (use together with to_ and from_ for performance reasons)
         """
         url = self.domain + "/api/bookings"
         headers = {"accept": "application/json"}
@@ -79,7 +84,8 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
         required_kwargs = ["booking_id", "resource_ids"]
         if not any(kwarg in kwargs for kwarg in required_kwargs):
             logger.error(
-                "invalid argument combination in get_bookings - please check docstring for requirements",
+                "invalid argument combination in get_bookings"
+                " - please check docstring for requirements",
             )
             return None
 
@@ -93,7 +99,8 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
             if "from_" in kwargs or "to_" in kwargs:
                 if "from_" not in kwargs or "to_" not in kwargs:
                     logger.info(
-                        "missing from_ or to_ defaults to first or last day of current month",
+                        "missing from_ or to_ defaults"
+                        " to first or last day of current month",
                     )
                 if from_ := kwargs.get("from_"):
                     params["from"] = from_.strftime("%Y-%m-%d")
@@ -102,7 +109,8 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
             if appointment_id := kwargs.get("appointment_id"):
                 if "from" not in params:
                     logger.warning(
-                        "using appointment ID without date range might be incomplete if current month differs",
+                        "using appointment ID without date range"
+                        " might be incomplete if current month differs",
                     )
                 params["appointment_id"] = appointment_id
 

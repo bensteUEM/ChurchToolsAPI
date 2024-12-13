@@ -18,11 +18,12 @@ with config_file.open(encoding="utf-8") as f_in:
 
 class TestChurchtoolsApiFiles(TestsChurchToolsApiAbstract):
     def test_file_upload_replace_delete(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+        """IMPORTANT - This test method and the parameters used depend on target system!
         0. Clean and delete files in test
         1. Tries 3 uploads to the test song with ID 408 and arrangement 417
         Adds the same file again without overwrite - should exist twice
-        2. Reupload pinguin.png using overwrite which will remove both old files but keep one
+        2. Reupload pinguin.png using overwrite which will remove both old
+            files but keep one
         3. Overwrite without existing file
         3.b Try overwriting again and check that number of files does not increase
         4. Delete only one file
@@ -122,7 +123,8 @@ class TestChurchtoolsApiFiles(TestsChurchToolsApiAbstract):
         ), "check that files are deleted"
 
     def test_file_download(self) -> None:
-        """Test of file_download and file_download_from_url on https://elkw1610.krz.tools on any song
+        """Test of file_download and file_download_from_url
+            on https://elkw1610.krz.tools on any song
         IDs  vary depending on the server used
         On ELKW1610.KRZ.TOOLS song ID 762 has arrangement 774 does exist.
 

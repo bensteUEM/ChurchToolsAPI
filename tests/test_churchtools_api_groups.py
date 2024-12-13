@@ -18,10 +18,11 @@ with config_file.open(encoding="utf-8") as f_in:
 
 class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
     def test_get_groups(self) -> None:
-        """1. Test requests all groups and checks that result has more than 50 elements (hence default pagination works)
+        """1. Test requests all groups and checks that result has more than 50 elements
+            (hence default pagination works)
         2. Test requests group 103 and checks that result matches Test song.
 
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
         groups = self.api.get_groups()
@@ -52,7 +53,7 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         """Checks that the statistics for a group can be retrieved and certain keys
         exist in the dict.
 
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
         SAMPLE_GROUP_ID = 103
@@ -66,9 +67,10 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
     def test_get_grouptypes(self) -> None:
         """Test related to grouptypes
 
-        1. Check that the list of grouptypes can be retrieved and each element contains the keys 'id' and 'name'.
+        1. Check that the list of grouptypes can be retrieved and each element contains
+        the keys 'id' and 'name'.
         2. Check that a single grouptype can be retrieved and id and name are matching.
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        IMPORTANT - This test method and the parameters used depend on target system!
         """
         # multiple group types
         grouptypes = self.api.get_grouptypes()
@@ -88,15 +90,16 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
             assert grouptype["name"] == "Dienst"
 
     def test_get_group_permissions(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
-        Checks that the permissions for a group can be retrieved and matches the test permissions.
+        """IMPORTANT - This test method and the parameters used depend on target system!
+        Checks that the permissions for a group can be
+        retrieved and matches the test permissions.
         """
         permissions = self.api.get_group_permissions(group_id=103)
         assert permissions["churchdb"]["+see group"] == 2
         assert permissions["churchdb"]["+edit group infos"]
 
     def test_create_and_delete_group(self, caplog) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+        """IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
 
         Checks if groups can be created
@@ -148,7 +151,8 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
             )
         assert group3 is None
         EXPECTED_MESSAGES = [
-            'Duplikat gefunden. Nutze das "force" Flag, um die Gruppe trotzdem anzulegen.'
+            'Duplikat gefunden. Nutze das "force" Flag, um'
+            ' die Gruppe trotzdem anzulegen.'
         ]
         assert caplog.messages == EXPECTED_MESSAGES
 
@@ -175,10 +179,12 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         assert ret
 
     def test_update_group(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
-        The user needs to be able to change group information - usually "Leiter" permission enables this.
+        """IMPORTANT - This test method and the parameters used depend on target system!
+        The user needs to be able to change group information -
+        usually "Leiter" permission enables this.
 
-        Checks that a field in a group can be set to some value and the returned group has this field value set.
+        Checks that a field in a group can be set to some value
+        and the returned group has this field value set.
         Also cleans the field after executing the test
         """
         SAMPLE_GROUP_ID = 103
@@ -197,7 +203,7 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         """Checks if group members can be retrieved from the group and filtering
         for role ids works.
 
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
         SAMPLE_GROUP_ID = 103
@@ -220,9 +226,10 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
             assert member["groupTypeRoleId"] == SAMPLE_GROUPTYPE_ROLE_ID
 
     def test_get_groups_members(self) -> None:
-        """Check that a list of groups is received when asking by person and optional role id.
+        """Check that a list of groups is received when asking
+        by person and optional role id.
 
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
         SAMPLE_PERSON_IDS = [513]
@@ -267,7 +274,7 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         assert len(result) == 1
 
     def test_add_and_remove_group_members(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+        """IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
         SAMPLE_GROUP_ID = 103
@@ -305,7 +312,7 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
     def test_add_and_remove_parent_group(self) -> None:
         """Checks if a parent group can be added to and removed from a group.
 
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
         SAMPLE_GROUP_ID = 103

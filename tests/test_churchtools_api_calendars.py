@@ -29,8 +29,9 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
 
     def test_get_calendar_apointments(self) -> None:
         """Tries to retrieve calendar appointments
-        IMPORTANT - This test method and the parameters used depend on the target system!
-        Requires the connected test system to have a calendar mapped as ID 2 and 42 (or changed if other system)
+        IMPORTANT - This test method and the parameters used depend on target system!
+        Requires the connected test system to have a calendar mapped as ID 2 and 42
+            (or changed if other system)
         Calendar 2 should have 3 appointments on 19.11.2023
         One event should be appointment ID=327032.
         """
@@ -73,8 +74,9 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
 
     def test_get_calendar_apointments_datetime(self) -> None:
         """Tries to retrieve calendar appointments using datetime instead of str params
-        IMPORTANT - This test method and the parameters used depend on the target system!
-        Requires the connected test system to have a calendar mapped as ID 2 (or changed if other system)
+        IMPORTANT - This test method and the parameters used depend on target system!
+        Requires the connected test system to have a calendar mapped as ID 2
+            (or changed if other system)
         Calendar 2 should have 3 appointments on 19.11.2023
         One event should be appointment ID=327032.
         """
@@ -92,9 +94,10 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
 
     def test_get_calendar_appoints_on_seriess(self) -> None:
         """This test should check the behaviour of get_calendar_appointments on a series
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        IMPORTANT - This test method and the parameters used depend on target system!
         Requires the connected test system to have a calendar mapped as ID 2
-        Calendar 2 should have appointment 304973 with an instance of series on 26.11.2023.
+        Calendar 2 should have appointment 304973
+        with an instance of series on 26.11.2023.
         """
         # Appointment Series by ID
         result = self.api.get_calendar_appointments(
@@ -153,7 +156,7 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
     def test_create_edit_delete_calendar_appointment(self, caplog):
         """Creates, update and deletes a calendar appointment.
 
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
         SAMPLE_CALENDAR = (

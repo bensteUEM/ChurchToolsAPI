@@ -18,7 +18,9 @@ with config_file.open(encoding="utf-8") as f_in:
 
 class TestsChurchToolsApi(TestsChurchToolsApiAbstract):
     def test_login_ct_rest_api_password(self) -> None:
-        """Tries to create a login with churchTools using specified username and password."""
+        """Tries to create a login with churchTools
+        using specified username and password.
+        """
         if self.api.session is not None:
             self.api.session.close()
         username = next(iter(self.ct_users.keys()))
@@ -52,8 +54,8 @@ class TestsChurchToolsApi(TestsChurchToolsApiAbstract):
         ), "Token should be more than one letter but changes each time"
 
     def test_check_connection_ajax(self) -> None:
-        """Test checks that a connection can be established using the AJAX endpoints with current session / ct_api
-        :return:
+        """Test checks that a connection can be established
+        using the AJAX endpoints with current session / ct_api
         """
         result = self.api.check_connection_ajax()
         assert result
@@ -64,7 +66,7 @@ class TestsChurchToolsApi(TestsChurchToolsApiAbstract):
         assert "sex" in result
 
     def test_get_global_permissions(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+        """IMPORTANT - This test method and the parameters used depend on target system!
 
         Checks that the global permissions for the current user can be retrieved
         and one core permission and one db permission matches the expected value.

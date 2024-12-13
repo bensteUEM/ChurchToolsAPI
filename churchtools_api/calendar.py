@@ -49,18 +49,24 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
 
         Arguments:
             calendar_ids: list of calendar ids to be checked
-                If an individual appointment id is requested using kwargs only one calendar can be specified
+                If an individual appointment id is requested using kwargs
+                only one calendar can be specified
             kwargs: optional params to limit the results
 
         Keyword Arguments:
-            from_ (str|datetime): with starting date in format YYYY-MM-DD - added _ to name as opposed to ct_api because of reserved keyword
-            to_ (str|datetime): end date in format YYYY-MM-DD ONLY allowed with from_ - added _ to name as opposed to ct_api because of reserved keyword
-            appointment_id (int): limit to one appointment only - requires calendarId keyword!
+            from_ (str|datetime): with starting date in format YYYY-MM-DD
+                added _ to name as opposed to ct_api because of reserved keyword
+            to_ (str|datetime): end date in format YYYY-MM-DD ONLY allowed with from_
+                added _ to name as opposed to ct_api because of reserved keyword
+            appointment_id (int): limit to one appointment only
+                requires calendarId keyword!
 
         Returns:
             list of calendar appointment / appointments
-            simplified to appointments only if indidividual occurance is relevant (e.g. lookup by date)
-            startDate and endDate overwritten by actual date if calculated date of series is unambiguous
+            simplified to appointments only if indidividual occurance is relevant
+                (e.g. lookup by date)
+            startDate and endDate overwritten by actual date if
+                calculated date of series is unambiguous
             Nothing in case something is off or nothing exists
         """
         url = self.domain + "/api/calendars"
@@ -209,7 +215,8 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         """Method used to update calendar appointments.
 
         Similar to create_calender_appointment but with additional appointment_id param.
-        Loads params from existing calendar_appointment and overwrite all provided kwargs
+        Loads params from existing calendar_appointment
+        and overwrite all provided kwargs
 
         See create_calendar_appointment for details about other keywords
 

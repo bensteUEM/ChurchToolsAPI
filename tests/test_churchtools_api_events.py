@@ -23,7 +23,8 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         """Tries to get a list of events and a single event from CT.
 
         Event ID may vary depending on the server used
-        On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
+        On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event
+        with schedule (20th. Nov 2022)
         :return:
         """
         result = self.api.get_events()
@@ -126,11 +127,13 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         # TODO add test cases for uncommon parts #24 * canceled, include
 
     def test_get_AllEventData_ajax(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+        """IMPORTANT - This test method and the parameters used depend on target system!
 
         Test function to check the get_AllEventData_ajax function for a specific ID
-        On ELKW1610.KRZ.TOOLS event ID 3348 is an existing Test Event with schedule (29. Sept 2024)
-        Please be aware that this function is limited to the timeframe configured for cache in CT (by default -90days)
+        On ELKW1610.KRZ.TOOLS event ID 3348 is an existing Test Event
+        with schedule (29. Sept 2024)
+        Please be aware that this function is limited to the timeframe
+        configured for cache in CT (by default -90days)
         :return:
         """
         SAMPLE_EVENT_ID = 3348
@@ -139,14 +142,15 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         assert result["id"] == str(SAMPLE_EVENT_ID)
 
     def test_get_set_event_services_counts(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+        """IMPORTANT - This test method and the parameters used depend on target system!
 
         Test function for get and set methods related to event services counts
         tries to get the number of specicifc service in an id
         tries to increase that number
         tries to get the number again
         tries to set it back to original
-        On ELKW1610.KRZ.TOOLS event ID 2626 is an existing test Event with schedule (1. Jan 2023)
+        On ELKW1610.KRZ.TOOLS event ID 2626 is an existing test Event
+        with schedule (1. Jan 2023)
         On ELKW1610.KRZ.TOOLS serviceID 1 is Predigt (1. Jan 2023)
         :return:
         """
@@ -179,12 +183,14 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         assert result
 
     def test_get_set_event_admins(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+        """IMPORTANT - This test method and the parameters used depend on target system!
 
-        Test function to get list of event admins, change it and check again (and reset to original)
-        On ELKW1610.KRZ.TOOLS event ID 3348 is an existing Event with schedule (29. Sept 2024)
-        Please be aware that this function is limited to the timeframe configured for cache in CT (by default -90days)
-        :return:
+        Test function to get list of event admins, change it
+        and check again (and reset to original)
+        On ELKW1610.KRZ.TOOLS event ID 3348 is an existing
+        Event with schedule (29. Sept 2024)
+        Please be aware that this function is limited to the timeframe configured
+        for cache in CT (by default -90days)
         """
         SAMPLE_EVENT_ID = 3348
         EXPECTED_ADMIN_IDS = [336]
@@ -202,10 +208,11 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         assert self.api.set_event_admins_ajax(SAMPLE_EVENT_ID, EXPECTED_ADMIN_IDS)
 
     def test_get_event_masterdata(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+        """IMPORTANT - This test method and the parameters used depend on target system!
 
         Tries to get a list of event masterdata and a type of masterdata from CT
-        The values depend on your system data! - Test case is valid against ELKW1610.KRZ.TOOLS
+        The values depend on your system data! -
+        Test case is valid against ELKW1610.KRZ.TOOLS
         """
         result = self.api.get_event_masterdata()
         EXPECTED_KEYS = [
@@ -232,23 +239,24 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         assert isinstance(result, list)
 
     def test_get_event_agenda(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+        """IMPORTANT - This test method and the parameters used depend on target system!
 
         Tries to get an event agenda from a CT Event
         Event ID may vary depending on the server used
-        On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
-        :return:
+        On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event
+        with schedule (20th. Nov 2022)
         """
         eventId = 484
         result = self.api.get_event_agenda(eventId)
         assert result is not None
 
     def test_export_event_agenda(self, caplog) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+        """IMPORTANT - This test method and the parameters used depend on target system!
 
         Test function to download an Event Agenda file package for e.g. Songbeamer
         Event ID may vary depending on the server used
-        On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
+        On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event
+            with schedule (20th. Nov 2022)
         """
         eventId = 484
         agendaId = self.api.get_event_agenda(eventId)["id"]
@@ -276,8 +284,10 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
 
     def test_get_services(self) -> None:
         """Tries to get all and a single services configuration from the server
-        serviceId varies depending on the server used id 1 = Predigt and more than one item exsits
-        On any KRZ.TOOLS serviceId 1 is named 'Predigt' and more than one service exists by default (13. Jan 2023)
+        serviceId varies depending on the server used id 1 = Predigt
+            and more than one item exsits
+        On any KRZ.TOOLS serviceId 1 is named 'Predigt' and more than one
+            service exists by default (13. Jan 2023)
         :return:
         """
         serviceId = 1
@@ -331,9 +341,8 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
     def test_has_event_schedule(self) -> None:
         """Tries to get boolean if event agenda exists for a CT Event
         Event ID may vary depending on the server used
-        On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event with schedule (20th. Nov 2022)
-        2376 does not have one
-        :return:
+        On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event
+            with schedule (20th. Nov 2022) 2376 does not have one
         """
         eventId = 484
         result = self.api.get_event_agenda(eventId)
@@ -357,7 +366,7 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         assert event_id == result["id"]
 
     def test_get_persons_with_service(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+        """IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
         SAMPLE_EVENT_ID = 3348

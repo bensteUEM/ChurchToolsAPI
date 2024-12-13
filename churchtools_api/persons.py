@@ -27,7 +27,8 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
             returnAsDict: bool: true if should return a dict instead of list
 
         Permissions:
-            some fields e.g. sexId require "security level person" with at least level 2 (administer persons is not sufficient)
+            some fields e.g. sexId require "security level person" with at least
+            level 2 (administer persons is not sufficient)
 
         Returns:
             list of user dicts
