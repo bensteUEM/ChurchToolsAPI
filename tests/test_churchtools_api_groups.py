@@ -1,3 +1,5 @@
+"""module test groups."""
+
 import json
 import logging
 import logging.config
@@ -17,6 +19,8 @@ with config_file.open(encoding="utf-8") as f_in:
 
 
 class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
+    """Test for Groups."""
+
     def test_get_groups(self) -> None:
         """1. Test requests all groups and checks that result has more than 50 elements
             (hence default pagination works)
@@ -41,9 +45,10 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         assert group["name"] == "TestGruppe"
 
     def test_get_groups_hierarchies(self) -> None:
-        """Checks that the list of group hierarchies can be retrieved and each
-        element contains the keys 'groupId', 'parents' and 'children'.
-        The list should be accessible as dict using groupID as key
+        """Checks that the list of group hierarchies can be retrieved.
+
+        and each element contains the keys 'groupId', 'parents' and 'children'.
+        The list should be accessible as dict using groupID as key.
         """
         hierarchies = self.api.get_groups_hierarchies()
         assert isinstance(hierarchies, dict)
@@ -68,7 +73,7 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         assert "takenPlaces" in stats["unfiltered"]
 
     def test_get_grouptypes(self) -> None:
-        """Test related to grouptypes
+        """Test related to grouptypes.
 
         1. Check that the list of grouptypes can be retrieved and each element contains
         the keys 'id' and 'name'.

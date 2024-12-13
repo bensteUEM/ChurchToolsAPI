@@ -1,4 +1,4 @@
-from __future__ import annotations
+"""module containing parts used for calendar handling."""
 
 import json
 import logging
@@ -20,6 +20,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
     """
 
     def __init__(self) -> None:
+        """Inherited initialization."""
         super()
 
     def get_calendars(self) -> list[dict]:
@@ -305,7 +306,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
     def delete_calender_appointment(
         self, calendar_id: int, appointment_id: int
     ) -> bool:
-        """Delete a specific calendar appointment
+        """Delete a specific calendar appointment.
 
         Args:
             calendar_id: the calendar to modify

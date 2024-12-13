@@ -1,3 +1,5 @@
+"""module test resources."""
+
 import json
 import logging
 import logging.config
@@ -20,6 +22,8 @@ with config_file.open(encoding="utf-8") as f_in:
 
 
 class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
+    """Test for Resources."""
+
     def test_get_resource_masterdata(self) -> None:
         """Check resource masterdata can be retrieved."""
         result = self.api.get_resource_masterdata()
@@ -93,6 +97,11 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert set(next(iter(result.values())).keys()) == EXPECTED_KEYS
 
     def test_get_resource_masterdata_other(self, caplog) -> None:
+        """Checks that masterdata with invalid resultclass loggs error.
+
+        Args:
+            caplog: pytest caplog instance used to caputre logging
+        """
         caplog.clear()
         with caplog.at_level(level=logging.ERROR, logger="churchtools_api.resources"):
             self.api.get_resource_masterdata(resultClass=" ")

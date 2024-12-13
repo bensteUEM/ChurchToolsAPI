@@ -1,3 +1,5 @@
+"""module containing abstract reference used by all implementation parts."""
+
 import json
 import logging
 from abc import ABC, abstractmethod
@@ -14,6 +16,7 @@ class ChurchToolsApiAbstract(ABC):
 
     @abstractmethod
     def __init__(self) -> None:
+        """Preparing base variables."""
         self.session = None
         self.domain = None
 

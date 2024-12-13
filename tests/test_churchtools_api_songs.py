@@ -1,3 +1,5 @@
+"""module test song."""
+
 import json
 import logging
 import logging.config
@@ -19,6 +21,8 @@ with config_file.open(encoding="utf-8") as f_in:
 
 
 class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
+    """Test for Songs."""
+
     def test_get_songs(self) -> None:
         """1. Test requests all songs and checks that result has more than 50 elements
          (hence default pagination works)
@@ -75,7 +79,8 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         assert song["bezeichnung"] == "sample"
 
     def test_get_song_category_map(self) -> None:
-        """Checks that a dict with respective known values
+        """Checks that a dict with respective known values.
+
         is returned when requesting song categories
         IMPORTANT - This test method and the parameters used
             depend on the target system!
@@ -83,7 +88,7 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         mapped as ID 13 (or changed if other system)
         :return:
         """
-        EXPECTED_CATEGORY = {"Test":13}
+        EXPECTED_CATEGORY = {"Test": 13}
 
         song_catgegory_dict = self.api.get_song_category_map()
         assert all(
@@ -233,12 +238,14 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         assert self.api.contains_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
 
     def test_get_song_tag_original(self) -> None:
+        """Cchek song tag can be retrieved and returned as original."""
         SAMPLE_SONG_ID = 408
         result = self.api.get_song_tags(song_id=SAMPLE_SONG_ID)
         EXPECTED_TAG = 53
         assert EXPECTED_TAG in result
 
     def test_get_song_tag_id_dict(self) -> None:
+        """Check song tag can be retrieved and returned as id dict."""
         SAMPLE_SONG_ID = 408
         result = self.api.get_song_tags(song_id=SAMPLE_SONG_ID, rtype="id_dict")
         EXPECTED_MIN_RESULT = {53: "Test"}
@@ -246,13 +253,15 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         assert all(key in result for key in EXPECTED_MIN_RESULT)
 
     def test_get_song_tag_name_dict(self) -> None:
+        """Check song tag can be retrieved and returned as name dict."""
         SAMPLE_SONG_ID = 408
         result = self.api.get_song_tags(song_id=SAMPLE_SONG_ID, rtype="name_dict")
         EXPECTED_MIN_RESULT = {"Test": 53}
         assert all(item in result.items() for item in EXPECTED_MIN_RESULT.items())
 
     def test_get_songs_with_tag(self) -> None:
-        """Test method to check if fetching all songs with a specific tag works
+        """Test method to check if fetching all songs with a specific tag works.
+
         songId and tag_id will vary depending on the server used
         On ELKW1610.KRZ.TOOLS song ID 408 is tagged with 53 "Test"
         :return:
@@ -315,6 +324,7 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         assert caplog.messages == EXPECTED_MESSAGES
 
     def test_get_song_arrangement(self) -> None:
+        """Checking song arrangement retrieval."""
         SAMPLE_SONG_ID = 408
 
         # part 1 default arrangement

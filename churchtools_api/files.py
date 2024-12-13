@@ -1,3 +1,5 @@
+"""module containing parts used for file handling."""
+
 import json
 import logging
 from pathlib import Path
@@ -17,6 +19,7 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
     """
 
     def __init__(self) -> None:
+        """Inherited initialization."""
         super()
 
     def file_upload(

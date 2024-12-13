@@ -1,3 +1,4 @@
+"""helper to generate pyproject.toml using version.py."""
 import importlib.util
 from pathlib import Path
 

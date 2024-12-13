@@ -1,3 +1,5 @@
+"""module test event."""
+
 import json
 import logging
 import logging.config
@@ -21,6 +23,8 @@ with config_file.open(encoding="utf-8") as f_in:
 
 
 class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
+    """Test for Events."""
+
     def test_get_events(self, caplog) -> None:
         """Tries to get a list of events and a single event from CT.
 
@@ -287,7 +291,8 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         assert len(os.listdir("downloads")) == EXPECTED_NUMBER_OF_FILES
 
     def test_get_services(self) -> None:
-        """Tries to get all and a single services configuration from the server
+        """Tries to get all and a single services configuration from the server.
+
         serviceId varies depending on the server used id 1 = Predigt
             and more than one item exsits
         On any KRZ.TOOLS serviceId 1 is named 'Predigt' and more than one
@@ -311,7 +316,8 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         assert isinstance(result4, list)
 
     def test_get_tags(self) -> None:
-        """Test function for get_tags() with default type song
+        """Test function for get_tags() with default type song.
+
         On ELKW1610.KRZ.TOOLS tag ID 49 has the name To Do
         :return:
         """
@@ -322,7 +328,8 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         assert any(item["id"] in EXPECTED_MIN_RESULT.values() for item in result)
 
     def test_get_tags_id_dict(self) -> None:
-        """Test function for get_tags() with default type song
+        """Test function for get_tags() with default type song.
+
         On ELKW1610.KRZ.TOOLS tag ID 49 has the name To Do
         :return:
         """
@@ -333,7 +340,8 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         assert all(item in result.items() for item in EXPECTED_MIN_RESULT.items())
 
     def test_get_tags_name_dict(self) -> None:
-        """Test function for get_tags() with default type song
+        """Test function for get_tags() with default type song.
+
         On ELKW1610.KRZ.TOOLS tag ID 49 has the name To Do
         :return:
         """
@@ -343,10 +351,11 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         assert all(item in result.items() for item in EXPECTED_MIN_RESULT.items())
 
     def test_has_event_schedule(self) -> None:
-        """Tries to get boolean if event agenda exists for a CT Event
+        """Tries to get boolean if event agenda exists for a CT Event.
+
         Event ID may vary depending on the server used
         On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event
-            with schedule (20th. Nov 2022) 2376 does not have one
+            with schedule (20th. Nov 2022) 2376 does not have one.
         """
         eventId = 484
         result = self.api.get_event_agenda(eventId)
@@ -356,7 +365,8 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         assert result is None
 
     def test_get_event_by_calendar_appointment(self) -> None:
-        """Check that event can be retrieved based on known calendar entry
+        """Check that event can be retrieved based on known calendar entry.
+
         On ELKW1610.KRZ.TOOLS (26th. Nov 2023) sample is
         event_id:2261
         appointment:304976 starts on 2023-11-26T09:00:00Z.
@@ -372,7 +382,9 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         assert event_id == result["id"]
 
     def test_get_persons_with_service(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on target system!
+        """Tries to retrieve persons with specific service.
+
+        IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
         SAMPLE_EVENT_ID = 3348

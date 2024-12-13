@@ -71,7 +71,7 @@ ignore = [
     "FIX002", #Open ToDos
     "TD002","TD003","TD004", #TODOs
     "C901","PLR0912", #complexity 
-    "D100","D101","D102","D104","D107","D205","D415", #Docstrings
+    "D205", #Docstrings empty lines
         
     "COM812", "ISC001", #disabled for formatter compatibility
 

@@ -1,3 +1,5 @@
+"""module containing parts used for events handling."""
+
 import json
 import logging
 from datetime import datetime, timedelta
@@ -20,6 +22,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
     """
 
     def __init__(self) -> None:
+        """Inherited initialization."""
         super()
 
     def get_events(self, **kwargs) -> list[dict]:
@@ -464,8 +467,10 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         return result_ok
 
     def get_event_agenda_docx(self, agenda: dict, **kwargs) -> docx.Document:
-        """Function to generate a custom docx document
-            with the content of the event agenda from churchtools
+        """Generates custom docx document.
+
+        Function to generate a custom docx document
+        with the content of the event agenda from churchtools.
 
         Arguments:
             agenda: event agenda with services

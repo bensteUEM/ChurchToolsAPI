@@ -1,4 +1,4 @@
-from __future__ import annotations
+"""module containing parts used for song handling."""
 
 import json
 import logging
@@ -20,6 +20,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
     """
 
     def __init__(self) -> None:
+        """Inherited initialization."""
         super()
 
     def get_songs(self, **kwargs) -> list[dict]:
@@ -93,11 +94,9 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         if self.ajax_song_last_update is None:
             require_update = True
         else:
-            require_update = (
-                self.ajax_song_last_update
-                + timedelta(seconds=require_update_after_seconds)
-                < datetime.now().astimezone(pytz.utc)
-            )
+            require_update = self.ajax_song_last_update + timedelta(
+                seconds=require_update_after_seconds
+            ) < datetime.now().astimezone(pytz.utc)
         if require_update:
             url = self.domain + "/?q=churchservice/ajax&func=getAllSongs"
             response = self.session.post(url=url)
@@ -125,7 +124,8 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
 
     def lookup_song_category_as_id(self, category_name: str) -> int:
         """Converts a song_category text to the internal id.
-        used as song_source in arrangements
+
+        used as song_source in arrangements.
 
         Args:
             category_name: human readable long name of the song category
@@ -145,8 +145,9 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         return result
 
     def get_song_source_map(self) -> dict:
-        """Helpfer function creating requesting CT metadata for mapping of song sources.
-        WARNING - uses undocumented AJAX API
+        """Requesting CT metadata for mapping of song sources.
+
+        WARNING - uses undocumented AJAX API.
 
         Returns:
             a dictionary of {Index:{valuedict}}.
@@ -167,7 +168,8 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         self, longname: str | None = None, shortname: str | None = None
     ) -> int:
         """Converts a song_source text to the internal id.
-        used as song_source in arrangements One of the arguments must be provided
+
+        used as song_source in arrangements One of the arguments must be provided.
 
         Args:
             longname: human readable long name of the source. Defaults to ""

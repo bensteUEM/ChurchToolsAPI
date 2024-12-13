@@ -1,3 +1,5 @@
+"""module test calendar."""
+
 import json
 import logging
 import logging.config
@@ -20,6 +22,8 @@ with config_file.open(encoding="utf-8") as f_in:
 
 
 class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
+    """Test for Calendars."""
+
     def test_get_calendar(self) -> None:
         """Tries to retrieve a list of calendars."""
         result = self.api.get_calendars()

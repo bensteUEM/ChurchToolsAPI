@@ -1,3 +1,5 @@
+"""module containing combining all parts into a single class."""
+
 import json
 import logging
 
@@ -42,8 +44,9 @@ class ChurchToolsApi(
         ct_user: str | None = None,
         ct_password: str | None = None,
     ) -> None:
-        """Setup of a ChurchToolsApi object for the
-        specified ct_domain using a token login.
+        """Setup of a ChurchToolsApi object.
+
+        for the specified ct_domain using a token login.
 
         Arguments:
             domain: including https:// ending on e.g. .de
@@ -168,8 +171,8 @@ class ChurchToolsApi(
         return False
 
     def check_connection_ajax(self) -> bool:
-        """Checks whether a successful connection with the given token
-            can be initiated using the legacy AJAX API
+        """Cecks connection using the legacy AJAX API.
+
         This requires a CSRF token to be set in headers
 
         Returns: if successful.
@@ -211,7 +214,7 @@ class ChurchToolsApi(
         return None
 
     def get_services(self, **kwargs) -> list[dict]:
-        """Function to get list of all or a single services configuration item from CT
+        """Function to get list of all or a single services configuration item from CT.
 
         Arguments:
             kwargs: optional keywords as listed

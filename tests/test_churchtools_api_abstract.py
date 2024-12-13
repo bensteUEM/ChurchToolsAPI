@@ -1,3 +1,5 @@
+"""module abstract base for all tests."""
+
 import ast
 import json
 import logging
@@ -20,11 +22,14 @@ with config_file.open(encoding="utf-8") as f_in:
 
 
 class TestsChurchToolsApiAbstract(ABC):  # noqa: B024
-    """This is supposed to be the base configuration for PyTest test classes
+    """This is supposed to be the base configuration.
+
+     for PyTest test classes
     that require API access with token.
     """
 
     def setup_class(self) -> None:
+        """Reads config and env vars to init api for tests."""
         if "CT_TOKEN" in os.environ:
             self.ct_token = os.environ["CT_TOKEN"]
             self.ct_domain = os.environ["CT_DOMAIN"]

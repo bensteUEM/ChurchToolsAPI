@@ -1,3 +1,5 @@
+"""module containing parts used for groups handling."""
+
 import json
 import logging
 
@@ -16,6 +18,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
     """
 
     def __init__(self) -> None:
+        """Inherited initialization."""
         super()
 
     def get_groups(self, **kwargs) -> list[dict]:

@@ -1,3 +1,5 @@
+"""module containing parts used for person handling."""
+
 import json
 import logging
 
@@ -16,6 +18,7 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
     """
 
     def __init__(self) -> None:
+        """Inherited initialization."""
         super()
 
     def get_persons(self, **kwargs) -> list[dict]:
@@ -86,7 +89,8 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
         resultClass: str | None = None,
         returnAsDict: bool = False,
     ) -> list | list[list] | dict | list[dict]:
-        """Function to get the Masterdata of the persons module
+        """Function to get the Masterdata of the persons module.
+
         This information is required to map some IDs to specific items.
 
         Arguments:

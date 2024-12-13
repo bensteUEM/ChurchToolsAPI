@@ -1,3 +1,5 @@
+"""module containing parts used for resource handling."""
+
 import json
 import logging
 
@@ -16,6 +18,7 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
     """
 
     def __init__(self) -> None:
+        """Inherited initialization."""
         super()
 
     def get_resource_masterdata(
@@ -60,8 +63,9 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
         return None
 
     def get_bookings(self, **kwargs) -> list[dict]:
-        """Access to all Resource bookings in churchtools based
-            on a combination of Keyword Arguments.
+        """Access to all Resource bookings in churchtools.
+
+        based on a combination of Keyword Arguments.
 
         Arguments:
             kwargs: see list below - some combination limits do apply
