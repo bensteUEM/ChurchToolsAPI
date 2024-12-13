@@ -5,6 +5,8 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import pytz
+
 from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
 
 logger = logging.getLogger(__name__)
@@ -47,7 +49,7 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
             .astimezone()
             .date()
         )
-        today_date = datetime.today().date()
+        today_date = datetime.today().astimezone(pytz.utc).date()
         assert result_date >= today_date
 
         # load last event (direction, limit)
@@ -362,7 +364,9 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         event_id = 2261
         appointment_id = 304976
         start_date = "2023-11-26T09:00:00Z"
-        start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%SZ")
+        start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%SZ").astimezone(
+            pytz.timezone("Europe/Berlin")
+        )
 
         result = self.api.get_event_by_calendar_appointment(appointment_id, start_date)
         assert event_id == result["id"]

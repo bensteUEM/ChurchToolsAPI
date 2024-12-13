@@ -83,8 +83,12 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
         One event should be appointment ID=327032.
         """
         # One calendar with from and to date (exactly 3 appointments)
-        from_ = datetime(year=2023, month=11, day=19)
-        to_ = datetime(year=2023, month=11, day=19)
+        from_ = datetime(year=2023, month=11, day=19).astimezone(
+            pytz.timezone("Europe/Berlin")
+        )
+        to_ = datetime(year=2023, month=11, day=19).astimezone(
+            pytz.timezone("Europe/Berlin")
+        )
         result = self.api.get_calendar_appointments(
             calendar_ids=[2],
             from_=from_,
@@ -166,10 +170,10 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
         SAMPLE_CALENDAR = (
             45  # non public sample calendar id which exists on test system
         )
-        cest = pytz.timezone("Europe/Berlin")
         SAMPLE_DATA = {
-            "startDate": cest.localize(datetime.now()),
-            "endDate": cest.localize(datetime.now() + timedelta(minutes=10)),
+            "startDate": datetime.now().astimezone(pytz.timezone("Europe/Berlin")),
+            "endDate": datetime.now().astimezone(pytz.timezone("Europe/Berlin"))
+            + timedelta(minutes=10),
             "title": "test_title",
             "subtitle": "test_subtitle",
             "description": "test_description long",
@@ -223,7 +227,9 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
                 assert check_appointment[expected_key] == expected_value
 
         # 2a. update one kwarg field
-        new_sample_end_date = datetime.now() + timedelta(days=1)
+        new_sample_end_date = datetime.now().astimezone(
+            pytz.timezone("Europe/Berlin")
+        ) + timedelta(days=1)
         check_appointment = self.api.update_calender_appointment(
             calendar_id=SAMPLE_CALENDAR,
             appointment_id=appointment_id,

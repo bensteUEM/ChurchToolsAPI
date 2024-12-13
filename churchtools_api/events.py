@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import docx
+import pytz
 import requests
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
@@ -60,13 +61,13 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             if "from_" in kwargs:
                 from_ = kwargs["from_"]
                 if isinstance(from_, datetime):
-                    from_ = from_.strftime("%Y-%m-%d")
+                    from_ = from_.astimezone(pytz.utc).strftime("%Y-%m-%d")
                 if len(from_) == LENGTH_OF_DATE_WITH_HYPHEN:
                     params["from"] = from_
             if "to_" in kwargs and "from_" in kwargs:
                 to_ = kwargs["to_"]
                 if isinstance(to_, datetime):
-                    to_ = to_.strftime("%Y-%m-%d")
+                    to_ = to_.astimezone(pytz.utc).strftime("%Y-%m-%d")
                 if len(to_) == LENGTH_OF_DATE_WITH_HYPHEN:
                     params["to"] = to_
             elif "to_" in kwargs:
@@ -122,7 +123,9 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             formats = {"iso": "%Y-%m-%dT%H:%M:%SZ", "date": "%Y-%m-%d"}
             for date_formats in formats.values():
                 try:
-                    start_date = datetime.strptime(start_date, date_formats)
+                    start_date = datetime.strptime(start_date, date_formats).astimezone(
+                        pytz.utc
+                    )
                     break
                 except ValueError:
                     continue

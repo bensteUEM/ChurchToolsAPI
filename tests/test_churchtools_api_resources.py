@@ -4,6 +4,8 @@ import logging.config
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import pytz
+
 from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
 
 logger = logging.getLogger(__name__)
@@ -150,8 +152,12 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
         SAMPLE_DATES = {
-            "from_": datetime(year=2024, month=12, day=24),
-            "to_": datetime(year=2024, month=12, day=24),
+            "from_": datetime(year=2024, month=12, day=24).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
+            "to_": datetime(year=2024, month=12, day=24).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
         }
         caplog.clear()
         with caplog.at_level(level=logging.WARNING, logger="churchtools_api.resources"):
@@ -170,8 +176,12 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         """
         RESOURCE_ID_SAMPLES = [8, 20]
         SAMPLE_DATES = {
-            "from_": datetime(year=2024, month=9, day=21),
-            "to_": datetime(year=2024, month=9, day=30),
+            "from_": datetime(year=2024, month=9, day=21).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
+            "to_": datetime(year=2024, month=9, day=30).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
         }
         caplog.clear()
         with caplog.at_level(logging.INFO):
@@ -182,7 +192,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert set(RESOURCE_ID_SAMPLES) == {i["base"]["resource"]["id"] for i in result}
 
         result_dates = {
-            datetime.strptime(i["calculated"]["startDate"][:10], "%Y-%m-%d")
+            datetime.strptime(i["calculated"]["startDate"][:10], "%Y-%m-%d").astimezone(
+                pytz.timezone("Europe/Berlin")
+            )
             for i in result
         }
         assert all(
@@ -201,7 +213,8 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         """
         RESOURCE_ID_SAMPLES = [8, 20]
         SAMPLE_DATES = {
-            "to_": datetime.now() + timedelta(days=30),
+            "to_": datetime.now().astimezone(pytz.timezone("Europe/Berlin"))
+            + timedelta(days=30),
         }
 
         caplog.clear()
@@ -213,7 +226,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert set(RESOURCE_ID_SAMPLES) == {i["base"]["resource"]["id"] for i in result}
 
         result_dates = {
-            datetime.strptime(i["calculated"]["startDate"][:10], "%Y-%m-%d")
+            datetime.strptime(i["calculated"]["startDate"][:10], "%Y-%m-%d").astimezone(
+                pytz.timezone("Europe/Berlin")
+            )
             for i in result
         }
         assert all(SAMPLE_DATES["to_"] >= compare_date for compare_date in result_dates)
@@ -230,8 +245,12 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         """
         RESOURCE_ID_SAMPLES = [8, 20]
         SAMPLE_DATES = {
-            "from_": datetime(year=2024, month=9, day=21),
-            "to_": datetime(year=2024, month=9, day=30),
+            "from_": datetime(year=2024, month=9, day=21).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
+            "to_": datetime(year=2024, month=9, day=30).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
         }
 
         caplog.clear()
@@ -244,7 +263,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert set(RESOURCE_ID_SAMPLES) == {i["base"]["resource"]["id"] for i in result}
 
         result_dates = {
-            datetime.strptime(i["calculated"]["startDate"][:10], "%Y-%m-%d")
+            datetime.strptime(i["calculated"]["startDate"][:10], "%Y-%m-%d").astimezone(
+                pytz.timezone("Europe/Berlin")
+            )
             for i in result
         }
         assert all(
@@ -261,8 +282,12 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         """
         RESOURCE_ID_SAMPLES = [16]
         SAMPLE_DATES = {
-            "from_": datetime(year=2024, month=9, day=21),
-            "to_": datetime(year=2024, month=9, day=30),
+            "from_": datetime(year=2024, month=9, day=21).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
+            "to_": datetime(year=2024, month=9, day=30).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
         }
         SAMPLE_APPOINTMENT_ID = 327883  # 22.9.2024 GH
         result = self.api.get_bookings(
@@ -297,8 +322,12 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
 
         SAMPLE_APPOINTMENT_ID = 327883
         SAMPLE_DATES = {
-            "from_": datetime(year=2024, month=9, day=22),
-            "to_": datetime(year=2024, month=9, day=22),
+            "from_": datetime(year=2024, month=9, day=22).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
+            "to_": datetime(year=2024, month=9, day=22).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
         }
 
         result = self.api.get_bookings(
@@ -311,7 +340,7 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         result_date = datetime.strptime(
             result[0]["calculated"]["startDate"][:10],
             "%Y-%m-%d",
-        )
+        ).astimezone(pytz.timezone("Europe/Berlin"))
 
         assert len(result) == 1
         # check dates incl. max 1 day diff because of reservations before event start
@@ -323,7 +352,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
     def test_get_booking_problematic(self) -> None:
         """ELKW1610.krz.tools specific test case after problematic results."""
         SAMPLE_RESOURCE_IDS = [8, 20, 21, 16, 17]
-        SAMPLE_DATE = datetime(2024, 11, 24, 9)
+        SAMPLE_DATE = datetime(2024, 11, 24, 9).astimezone(
+            pytz.timezone("Europe/Berlin")
+        )
         SAMPLE_APPOINTMENT_ID = 327616
 
         result = self.api.get_bookings(

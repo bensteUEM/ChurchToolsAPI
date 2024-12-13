@@ -4,6 +4,7 @@ import json
 import logging
 from datetime import datetime, timedelta
 
+import pytz
 import requests
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
@@ -95,13 +96,13 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
             require_update = (
                 self.ajax_song_last_update
                 + timedelta(seconds=require_update_after_seconds)
-                < datetime.now()
+                < datetime.now().astimezone(pytz.utc)
             )
         if require_update:
             url = self.domain + "/?q=churchservice/ajax&func=getAllSongs"
             response = self.session.post(url=url)
             self.ajax_song_cache = json.loads(response.content)["data"]["songs"]
-            self.ajax_song_last_update = datetime.now()
+            self.ajax_song_last_update = datetime.now().astimezone(pytz.utc)
 
         return self.ajax_song_cache[str(song_id)]
 
