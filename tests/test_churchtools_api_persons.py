@@ -24,11 +24,13 @@ class TestChurchtoolsApiPersons(TestsChurchToolsApiAbstract):
         On any elkw.KRZ.TOOLS personId 1 'firstName' starts with 'Ben'
         and more than 50 ct_users exist(13. Jan 2023)
         """
+        EXPECTED_MIN_NUMBER_OF_PERSONS = 50
+
         personId = 1
         result1 = self.api.get_persons()
         assert isinstance(result1, list)
         assert isinstance(result1[0], dict)
-        assert len(result1) > 50
+        assert len(result1) > EXPECTED_MIN_NUMBER_OF_PERSONS
 
         result2 = self.api.get_persons(ids=[personId])
         assert isinstance(result2, list)

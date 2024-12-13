@@ -4,6 +4,8 @@ import json
 import logging
 from datetime import datetime, timedelta
 
+import requests
+
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
 logger = logging.getLogger(__name__)
@@ -40,7 +42,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         params = {"limit": 50}  # increases default pagination size
         response = self.session.get(url=url, headers=headers, params=params)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = self.combine_paginated_response_data(
                 response_content,
@@ -253,7 +255,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
 
         response = self.session.post(url=url, data=data)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             new_id = int(response_content["data"])
             logger.debug("Song created successful with ID=%s", new_id)
@@ -504,7 +506,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
             "bezeichnung": arrangement_name,
         }
         response = self.session.post(url=url, data=data)
-        if response.status_code != 200:
+        if response.status_code != requests.codes.ok:
             logger.error(response)
             return None
 
@@ -583,7 +585,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
             "note": kwargs.get("note", existing_arrangement["note"]),
         }
         response = self.session.post(url=url, data=data)
-        if response.status_code != 200:
+        if response.status_code != requests.codes.ok:
             logger.error(json.loads(response.content)["errors"])
             return False
 
@@ -607,7 +609,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
             "id": arrangement_id,
         }
         response = self.session.post(url=url, data=data)
-        if response.status_code != 200:
+        if response.status_code != requests.codes.ok:
             logger.error(response)
             return False
 

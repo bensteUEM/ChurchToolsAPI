@@ -120,9 +120,10 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
 
         # load more than 10 events (pagination #TODO #1 improve test case for
         # pagination
-        result = self.api.get_events(direction="forward", limit=11)
+        EXPECTED_PAGINATION = 11
+        result = self.api.get_events(direction="forward", limit=EXPECTED_PAGINATION)
         assert isinstance(result, list)
-        assert len(result) >= 11
+        assert len(result) >= EXPECTED_PAGINATION
 
         # TODO add test cases for uncommon parts #24 * canceled, include
 
@@ -280,7 +281,8 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         download_result = self.api.export_event_agenda("SONG_BEAMER", eventId=eventId)
         assert download_result
 
-        assert len(os.listdir("downloads")) == 2
+        EXPECTED_NUMBER_OF_FILES = 2
+        assert len(os.listdir("downloads")) == EXPECTED_NUMBER_OF_FILES
 
     def test_get_services(self) -> None:
         """Tries to get all and a single services configuration from the server

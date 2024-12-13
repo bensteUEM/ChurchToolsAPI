@@ -28,13 +28,16 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         groups = self.api.get_groups()
         assert isinstance(groups, list)
         assert isinstance(groups[0], dict)
-        assert len(groups) > 10
 
-        groups = self.api.get_groups(group_id=103)
+        EXPECTED_MIN_NUMBER_OF_GROUPS = 10
+        assert len(groups) > EXPECTED_MIN_NUMBER_OF_GROUPS
+
+        SAMPLE_GROUP_ID = 103
+        groups = self.api.get_groups(group_id=SAMPLE_GROUP_ID)
         assert isinstance(groups, list)
         group = groups[0]
         assert isinstance(group, dict)
-        assert group["id"] == 103
+        assert group["id"] == SAMPLE_GROUP_ID
         assert group["name"] == "TestGruppe"
 
     def test_get_groups_hierarchies(self) -> None:
@@ -75,27 +78,33 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         # multiple group types
         grouptypes = self.api.get_grouptypes()
         assert isinstance(grouptypes, dict)
-        assert len(grouptypes) > 2
+        EXPECTED_MIN_NUMBER_OF_GROUPTYPES = 2
+        assert len(grouptypes) > EXPECTED_MIN_NUMBER_OF_GROUPTYPES
         for grouptype in grouptypes.values():
             assert "id" in grouptype
             assert "name" in grouptype
 
         # one type only
+        EXPECTED_SAMPLE_GROUPTYPE = {2: "Dienst"}
+
         grouptypes = self.api.get_grouptypes(grouptype_id=2)
         assert len(grouptypes) == 1
         for grouptype in grouptypes.values():
             assert "id" in grouptype
             assert "name" in grouptype
-            assert grouptype["id"] == 2
-            assert grouptype["name"] == "Dienst"
+            assert grouptype["id"] == next(iter(EXPECTED_SAMPLE_GROUPTYPE))
+            assert grouptype["name"] == next(iter(EXPECTED_SAMPLE_GROUPTYPE.values()))
 
     def test_get_group_permissions(self) -> None:
         """IMPORTANT - This test method and the parameters used depend on target system!
         Checks that the permissions for a group can be
         retrieved and matches the test permissions.
         """
-        permissions = self.api.get_group_permissions(group_id=103)
-        assert permissions["churchdb"]["+see group"] == 2
+        SAMPLE_GROUP_ID = 103
+        EXPECTED_NUMNER_OF_PERMISSIONS = 2
+
+        permissions = self.api.get_group_permissions(group_id=SAMPLE_GROUP_ID)
+        assert permissions["churchdb"]["+see group"] == EXPECTED_NUMNER_OF_PERMISSIONS
         assert permissions["churchdb"]["+edit group infos"]
 
     def test_create_and_delete_group(self, caplog) -> None:
@@ -152,7 +161,7 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         assert group3 is None
         EXPECTED_MESSAGES = [
             'Duplikat gefunden. Nutze das "force" Flag, um'
-            ' die Gruppe trotzdem anzulegen.'
+            " die Gruppe trotzdem anzulegen."
         ]
         assert caplog.messages == EXPECTED_MESSAGES
 

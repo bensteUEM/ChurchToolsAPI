@@ -1,6 +1,8 @@
 import json
 import logging
 
+import requests
+
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
 logger = logging.getLogger(__name__)
@@ -40,7 +42,7 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
 
             response_data = self.combine_paginated_response_data(
@@ -116,7 +118,7 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
 
         response = self.session.get(url=url, headers=headers, params=params)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
 
             response_data = self.combine_paginated_response_data(

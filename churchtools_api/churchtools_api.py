@@ -96,7 +96,7 @@ class ChurchToolsApi(
             headers = {"Authorization": "Login " + ct_token}
             response = self.session.get(url=url, headers=headers)
 
-            if response.status_code == 200:
+            if response.status_code == requests.codes.ok:
                 response_content = json.loads(response.content)
                 logger.info(
                     "Token Login Successful as %s",
@@ -116,7 +116,7 @@ class ChurchToolsApi(
             data = {"username": ct_user, "password": ct_password}
             response = self.session.post(url=url, data=data)
 
-            if response.status_code == 200:
+            if response.status_code == requests.codes.ok:
                 response_content = json.loads(response.content)
                 person = self.who_am_i()
                 logger.info("User/Password Login Successful as %s", person["email"])
@@ -139,7 +139,7 @@ class ChurchToolsApi(
         """
         url = self.domain + "/api/csrftoken"
         response = self.session.get(url=url)
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             csrf_token = json.loads(response.content)["data"]
             logger.debug("CSRF Token erfolgreich abgerufen %s", csrf_token)
             return csrf_token
@@ -157,7 +157,7 @@ class ChurchToolsApi(
         url = self.domain + "/api/whoami"
         response = self.session.get(url=url)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             if "email" in response_content["data"]:
                 logger.info("Who am I as %s", response_content["data"]["email"])
@@ -177,7 +177,7 @@ class ChurchToolsApi(
         url = self.domain + "/?q=churchservice/ajax&func=getAllFacts"
         headers = {"accept": "application/json"}
         response = self.session.post(url=url, headers=headers)
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             logger.debug("Response AJAX Connection successful")
             return True
         logger.debug(
@@ -195,7 +195,7 @@ class ChurchToolsApi(
         url = self.domain + "/api/permissions/global"
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
             logger.debug(
@@ -231,7 +231,7 @@ class ChurchToolsApi(
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
 
@@ -272,7 +272,7 @@ class ChurchToolsApi(
 
         response_content = json.loads(response.content)
 
-        if response.status_code != 200:
+        if response.status_code != requests.codes.ok:
             logger.warning(response.content)
             return None
 
@@ -305,7 +305,7 @@ class ChurchToolsApi(
         }
         response = self.session.get(url=url, params=params, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
             logger.debug("SongTags load successful %s", response_content)

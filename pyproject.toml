@@ -73,9 +73,7 @@ ignore = [
     "C901","PLR0912", #complexity 
     "D100","D101","D102","D104","D107","D205","D415", #Docstrings
     "DTZ001","DTZ005","DTZ007","DTZ002", #datetime timezone
-    
-    "PLR2004", #magic values   
-    
+        
     "COM812", "ISC001", #disabled for formatter compatibility
 
     "N802", #function lowercase -> breaking change

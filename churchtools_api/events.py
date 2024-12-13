@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import docx
+import requests
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
@@ -50,6 +51,8 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         params = {"limit": 50}  # increases default pagination size
 
+        LENGTH_OF_DATE_WITH_HYPHEN = 10
+
         if "eventId" in kwargs:
             url += "/{}".format(kwargs["eventId"])
 
@@ -58,13 +61,13 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
                 from_ = kwargs["from_"]
                 if isinstance(from_, datetime):
                     from_ = from_.strftime("%Y-%m-%d")
-                if len(from_) == 10:
+                if len(from_) == LENGTH_OF_DATE_WITH_HYPHEN:
                     params["from"] = from_
             if "to_" in kwargs and "from_" in kwargs:
                 to_ = kwargs["to_"]
                 if isinstance(to_, datetime):
                     to_ = to_.strftime("%Y-%m-%d")
-                if len(to_) == 10:
+                if len(to_) == LENGTH_OF_DATE_WITH_HYPHEN:
                     params["to"] = to_
             elif "to_" in kwargs:
                 logger.warning("Use of to_ is only allowed together with from_")
@@ -83,7 +86,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
 
         response = self.session.get(url=url, headers=headers, params=params)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = self.combine_paginated_response_data(
                 response_content,
@@ -158,7 +161,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         data = {"id": eventId, "func": "getAllEventData"}
         response = self.session.post(url=url, headers=headers, params=params, data=data)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             if len(response_content["data"]) > 0:
                 response_data = response_content["data"][str(eventId)]
@@ -259,7 +262,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
 
         response = self.session.post(url=url, headers=headers, params=params, data=data)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_success = response_content["status"] == "success"
 
@@ -325,7 +328,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         }
         response = self.session.post(url=url, headers=headers, params=params, data=data)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["status"] == "success"
             logger.debug(
@@ -352,7 +355,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
             logger.debug("Agenda load successful %s items", len(response_content))
@@ -442,7 +445,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             json=json_data,
         )
         result_ok = False
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             agenda_data = response_content["data"].copy()
             logger.debug("Agenda package found %s", response_content)
@@ -599,7 +602,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
 

@@ -5,6 +5,7 @@ import logging
 from datetime import datetime
 
 import pytz
+import requests
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
@@ -34,7 +35,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
 
         response = self.session.get(url=url, params=params, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             return response_content["data"].copy()
         logger.warning(
@@ -82,24 +83,25 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
 
         headers = {"accept": "application/json"}
 
+        LENGTH_OF_DATE_WITH_HYPHEN = 10
         if "from_" in kwargs:
             from_ = kwargs["from_"]
             if isinstance(from_, datetime):
                 from_ = from_.strftime("%Y-%m-%d")
-            if len(from_) == 10:
+            if len(from_) == LENGTH_OF_DATE_WITH_HYPHEN:
                 params["from"] = from_
         if "to_" in kwargs and "from_" in kwargs:
             to_ = kwargs["to_"]
             if isinstance(to_, datetime):
                 to_ = to_.strftime("%Y-%m-%d")
-            if len(to_) == 10:
+            if len(to_) == LENGTH_OF_DATE_WITH_HYPHEN:
                 params["to"] = to_
         elif "to_" in kwargs:
             logger.warning("Use of to_ is only allowed together with from_")
 
         response = self.session.get(url=url, params=params, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = self.combine_paginated_response_data(
                 response_content,
@@ -129,7 +131,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
                     merged_appointments.append(appointment["base"])
                 return merged_appointments
             if "appointment" in result[0]:
-                if len(result[0]["calculatedDates"]) > 2:
+                if len(result[0]["calculatedDates"]) > 1:
                     logger.info("returning a series calendar appointment!")
                     return result
                 logger.debug(
@@ -200,7 +202,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
 
         response = self.session.post(url=url, json=data, headers=headers)
 
-        if response.status_code != 201:
+        if response.status_code != requests.codes.created:
             logger.warning(json.loads(response.content).get("errors"))
             return None
 
@@ -294,7 +296,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
             url=url, json=updated_calendar_appointment, headers=headers
         )
 
-        if response.status_code != 200:
+        if response.status_code != requests.codes.ok:
             logger.warning(json.loads(response.content).get("errors"))
             return None
 
@@ -320,7 +322,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
 
         response = self.session.delete(url=url, headers=headers)
 
-        if response.status_code != 204:
+        if response.status_code != requests.codes.no_content:
             logger.warning(json.loads(response.content).get("errors"))
             return False
 

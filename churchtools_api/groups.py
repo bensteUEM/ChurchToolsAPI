@@ -1,6 +1,8 @@
 import json
 import logging
 
+import requests
+
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
 logger = logging.getLogger(__name__)
@@ -40,7 +42,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
 
             response_data = self.combine_paginated_response_data(
@@ -64,7 +66,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         url = self.domain + "/api/groups/hierarchies"
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
             logger.debug(
@@ -94,7 +96,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_content = json.loads(response.content)
 
@@ -161,7 +163,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
         response = self.session.post(url=url, headers=headers, data=data)
 
-        if response.status_code != 201:
+        if response.status_code != requests.codes.created:
             logger.warning(json.loads(response.content)["translatedMessage"])
             return None
 
@@ -196,7 +198,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         }
         response = self.session.patch(url=url, headers=headers, data=json.dumps(data))
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
             logger.debug(
@@ -227,7 +229,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         url = self.domain + f"/api/groups/{group_id}"
         response = self.session.delete(url=url)
 
-        if response.status_code == 204:
+        if response.status_code == requests.codes.no_content:
             logger.debug("First response of Delete Group successful")
             return True
         logger.warning(
@@ -249,7 +251,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
             logger.debug(
@@ -278,7 +280,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
             logger.debug(
@@ -315,7 +317,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
         response = self.session.get(url=url, headers=headers, params=params)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
 
             response_data = self.combine_paginated_response_data(
@@ -363,7 +365,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
         response = self.session.get(url=url, headers=headers, params=params)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
 
             response_data = self.combine_paginated_response_data(
@@ -424,7 +426,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
         response = self.session.put(url=url, data=data, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             # For unknown reasons the endpoint returns a list of items instead
             # of a single item as specified in the API documentation.
@@ -452,7 +454,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         url = self.domain + f"/api/groups/{group_id}/members/{person_id}"
         response = self.session.delete(url=url)
 
-        if response.status_code == 204:
+        if response.status_code == requests.codes.no_content:
             return True
         logger.warning(
             "%s Something went wrong removing group member: %s",
@@ -473,7 +475,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
 
             response_data = self.combine_paginated_response_data(
@@ -505,7 +507,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         url = self.domain + f"/api/groups/{group_id}/parents/{parent_group_id}"
         response = self.session.put(url=url)
 
-        if response.status_code == 201:
+        if response.status_code == requests.codes.created:
             logger.debug("First response of Add Parent Group successful")
             return True
         logger.warning(
@@ -528,7 +530,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         url = self.domain + f"/api/groups/{group_id}/parents/{parent_group_id}"
         response = self.session.delete(url=url)
 
-        if response.status_code == 204:
+        if response.status_code == requests.codes.no_content:
             logger.debug("First response of Remove Parent Group successful")
             return True
         logger.warning(

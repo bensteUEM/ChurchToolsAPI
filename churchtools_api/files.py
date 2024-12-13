@@ -2,6 +2,8 @@ import json
 import logging
 from pathlib import Path
 
+import requests
+
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
 logger = logging.getLogger(__name__)
@@ -87,7 +89,7 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
         #> this fails !
         """
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             try:
                 response_content = json.loads(response.content)
                 logger.debug("Upload successful len=%s", response_content)
@@ -140,7 +142,8 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
         else:
             response = self.session.delete(url=url)
 
-        return response.status_code == 204  # success code for delete action upload
+        return response.status_code == requests.codes.no_content
+        # success code for delete action upload
 
     def file_download(
         self,
@@ -175,7 +178,7 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
 
         response = self.session.get(url=url)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             arrangement_files = response_content["data"].copy()
             logger.debug(
@@ -224,7 +227,7 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
 
         target_path = Path(target_path)
         with self.session.get(url=file_url, stream=True) as response:
-            if response.status_code == 200:
+            if response.status_code == requests.codes.ok:
                 with target_path.open("wb") as f:
                     for chunk in response.iter_content(chunk_size=8192):
                         # If you have chunk encoded response uncomment if

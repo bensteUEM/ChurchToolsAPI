@@ -3,6 +3,8 @@ import logging
 import logging.config
 from pathlib import Path
 
+import requests
+
 from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
 
 logger = logging.getLogger(__name__)
@@ -29,10 +31,11 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         SAMPLE_SONG_ID = 2034
 
         songs = self.api.get_songs()
-        assert len(songs) > 50
+        LENGTH_OF_DEFAULT_PAGINATION = 50
+        assert len(songs) > LENGTH_OF_DEFAULT_PAGINATION
 
         song = self.api.get_songs(song_id=SAMPLE_SONG_ID)[0]
-        assert song["id"] == 2034
+        assert song["id"] == SAMPLE_SONG_ID
         assert song["name"] == "sample"
 
     def test_get_song_ajax(self) -> None:
@@ -80,8 +83,12 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         mapped as ID 13 (or changed if other system)
         :return:
         """
+        EXPECTED_CATEGORY = {"Test":13}
+
         song_catgegory_dict = self.api.get_song_category_map()
-        assert song_catgegory_dict["Test"] == 13
+        assert all(
+            item in song_catgegory_dict.items() for item in EXPECTED_CATEGORY.items()
+        )
 
     def test_lookup_song_category_as_id(self, caplog) -> None:
         """Checks lookup of song category by text.
@@ -200,7 +207,7 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         caplog.clear()
         with caplog.at_level(logging.INFO):
             response = self.api.remove_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
-        assert response.status_code == 200
+        assert response.status_code == requests.codes.ok
 
         EXPECTED_MESSAGES = [
             "Using undocumented AJAX API"
@@ -215,7 +222,7 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         caplog.clear()
         with caplog.at_level(logging.INFO):
             response = self.api.add_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
-        assert response.status_code == 200
+        assert response.status_code == requests.codes.ok
         EXPECTED_MESSAGES = [
             "Using undocumented AJAX API"
             " because function does not exist as REST endpoint",
@@ -375,7 +382,9 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         SAMPLE_ARRANGEMENT_NAME2 = "TEST_BEZEICHNUNG"
         SAMPLE_PARAMS = {
             "name": SAMPLE_ARRANGEMENT_NAME2,
-            "source_id": next(iter(SAMPLE_SOURCE.values())), #using shortname on purpse
+            "source_id": next(
+                iter(SAMPLE_SOURCE.values())
+            ),  # using shortname on purpse
             "source_ref": "source_ref",
             "tonality": "tonality",
             "bpm": "bpm",

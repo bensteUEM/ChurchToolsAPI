@@ -47,17 +47,19 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
             calendar_ids=[2],
             from_="2023-11-19",
         )
-        assert len(result) > 4
+        EXPECTED_MIN_NUMBER_OF_APPOINTMENTS = 4
+        assert len(result) > EXPECTED_MIN_NUMBER_OF_APPOINTMENTS
         assert isinstance(result, list)
         assert "id" in result[0]
 
-        # One calendar with from and to date (exactly 4 appointments)
+        # One calendar with from and to date (exactly 3 appointments)
         result = self.api.get_calendar_appointments(
             calendar_ids=[2],
             from_="2023-11-19",
             to_="2023-11-19",
         )
-        assert len(result) == 3
+        EXPECTED_NUMBER_OF_APPOINTMENTS = 3
+        assert len(result) == EXPECTED_NUMBER_OF_APPOINTMENTS
         assert isinstance(result, list)
         assert "id" in result[0]
 
@@ -80,7 +82,7 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
         Calendar 2 should have 3 appointments on 19.11.2023
         One event should be appointment ID=327032.
         """
-        # One calendar with from and to date (exactly 4 appointments)
+        # One calendar with from and to date (exactly 3 appointments)
         from_ = datetime(year=2023, month=11, day=19)
         to_ = datetime(year=2023, month=11, day=19)
         result = self.api.get_calendar_appointments(
@@ -88,7 +90,8 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
             from_=from_,
             to_=to_,
         )
-        assert len(result) == 3
+        EXPECTED_NUMBER_OF_APPOINTMENTS = 3
+        assert len(result) == EXPECTED_NUMBER_OF_APPOINTMENTS
         assert isinstance(result, list)
         assert "id" in result[0]
 
@@ -135,7 +138,8 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
             for appointment in result
             if appointment["caption"] == "Gottesdienst Friedrichstal"
         ]
-        assert len(result) == 2
+        EXPECTED_NUMBER_OF_APPOINTMENTS = 2
+        assert len(result) == EXPECTED_NUMBER_OF_APPOINTMENTS
         assert result[-1]["caption"] == "Gottesdienst Friedrichstal"
         assert result[-1]["startDate"] == "2023-11-26T08:00:00Z"
         assert result[-1]["endDate"] == "2023-11-26T09:00:00Z"

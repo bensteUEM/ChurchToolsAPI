@@ -29,39 +29,45 @@ class TestChurchtoolsApiFiles(TestsChurchToolsApiAbstract):
         4. Delete only one file
         cleanup delete all files
         """
+        SAMPLE_SONG_ID = 408
+        SAMPLE_ARANGEMENT_ID = 417
+
         # 0. Clean and delete files in test
-        self.api.file_delete("song_arrangement", 417)
-        song = self.api.get_songs(song_id=408)[0]
+        self.api.file_delete("song_arrangement", SAMPLE_ARANGEMENT_ID)
+        song = self.api.get_songs(song_id=SAMPLE_SONG_ID)[0]
         assert (
-            song["arrangements"][0]["id"] == 417
+            song["arrangements"][0]["id"] == SAMPLE_ARANGEMENT_ID
         ), "check that default arrangement exists"
         assert len(song["arrangements"][0]["files"]) == 0, "check that ono files exist"
 
         # 1. Tries 3 uploads to the test song with ID 408 and arrangement 417
         # Adds the same file again without overwrite - should exist twice
-        self.api.file_upload("samples/pinguin.png", "song_arrangement", 417)
+        self.api.file_upload(
+            "samples/pinguin.png", "song_arrangement", SAMPLE_ARANGEMENT_ID
+        )
         self.api.file_upload(
             "samples/pinguin_shell.png",
             "song_arrangement",
-            417,
+            SAMPLE_ARANGEMENT_ID,
             "pinguin_shell_rename.png",
         )
         self.api.file_upload(
             "samples/pinguin.png",
             "song_arrangement",
-            417,
+            SAMPLE_ARANGEMENT_ID,
             "pinguin.png",
         )
 
-        song = self.api.get_songs(song_id=408)[0]
+        song = self.api.get_songs(song_id=SAMPLE_SONG_ID)[0]
         assert isinstance(
             song, dict
         ), "Should be a single song instead of list of songs"
         assert (
-            song["arrangements"][0]["id"] == 417
+            song["arrangements"][0]["id"] == SAMPLE_ARANGEMENT_ID
         ), "check that default arrangement exsits"
+        EXPECTED_NUMBER_OF_FILES = 3
         assert (
-            len(song["arrangements"][0]["files"]) == 3
+            len(song["arrangements"][0]["files"]) == EXPECTED_NUMBER_OF_FILES
         ), "check that only the 3 test attachments exist"
         filenames = [i["name"] for i in song["arrangements"][0]["files"]]
         filenames_target = ["pinguin.png", "pinguin_shell_rename.png", "pinguin.png"]
@@ -72,13 +78,14 @@ class TestChurchtoolsApiFiles(TestsChurchToolsApiAbstract):
         self.api.file_upload(
             "samples/pinguin.png",
             "song_arrangement",
-            417,
+            SAMPLE_ARANGEMENT_ID,
             "pinguin.png",
             overwrite=True,
         )
-        song = self.api.get_songs(song_id=408)[0]
+        song = self.api.get_songs(song_id=SAMPLE_SONG_ID)[0]
+        EXPECTED_NUMBER_OF_FILES = 2
         assert (
-            len(song["arrangements"][0]["files"]) == 2
+            len(song["arrangements"][0]["files"]) == EXPECTED_NUMBER_OF_FILES
         ), "check that overwrite is applied on upload"
 
         # 3. Overwrite without existing file
@@ -89,9 +96,10 @@ class TestChurchtoolsApiFiles(TestsChurchToolsApiAbstract):
             "pinguin2.png",
             overwrite=True,
         )
-        song = self.api.get_songs(song_id=408)[0]
+        song = self.api.get_songs(song_id=SAMPLE_SONG_ID)[0]
+        EXPECTED_NUMBER_OF_FILES = 3
         assert (
-            len(song["arrangements"][0]["files"]) == 3
+            len(song["arrangements"][0]["files"]) == EXPECTED_NUMBER_OF_FILES
         ), "check that both file with overwrite of new file"
 
         # 3.b Try overwriting again and check that number of files does not
@@ -103,21 +111,23 @@ class TestChurchtoolsApiFiles(TestsChurchToolsApiAbstract):
             "pinguin.png",
             overwrite=True,
         )
-        song = self.api.get_songs(song_id=408)[0]
+        song = self.api.get_songs(song_id=SAMPLE_SONG_ID)[0]
+        EXPECTED_NUMBER_OF_FILES = 3
         assert (
-            len(song["arrangements"][0]["files"]) == 3
+            len(song["arrangements"][0]["files"]) == EXPECTED_NUMBER_OF_FILES
         ), "check that still only 3 file exists"
 
         # 4. Delete only one file
-        self.api.file_delete("song_arrangement", 417, "pinguin.png")
-        song = self.api.get_songs(song_id=408)[0]
+        self.api.file_delete("song_arrangement", SAMPLE_ARANGEMENT_ID, "pinguin.png")
+        song = self.api.get_songs(song_id=SAMPLE_SONG_ID)[0]
+        EXPECTED_NUMBER_OF_FILES = 2
         assert (
-            len(song["arrangements"][0]["files"]) == 2
+            len(song["arrangements"][0]["files"]) == EXPECTED_NUMBER_OF_FILES
         ), "check that still only 2 file exists"
 
         # cleanup delete all files
-        self.api.file_delete("song_arrangement", 417)
-        song = self.api.get_songs(song_id=408)[0]
+        self.api.file_delete("song_arrangement", SAMPLE_ARANGEMENT_ID)
+        song = self.api.get_songs(song_id=SAMPLE_SONG_ID)[0]
         assert (
             len(song["arrangements"][0]["files"]) == 0
         ), "check that files are deleted"
