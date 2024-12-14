@@ -24,7 +24,7 @@ class ChurchToolsApiAbstract(ABC):
         self,
         response_content: dict,
         url: str,
-        **kwargs:dict,
+        **kwargs: dict,
     ) -> dict:
         """Helper function which combines data for requests for pagination.
 

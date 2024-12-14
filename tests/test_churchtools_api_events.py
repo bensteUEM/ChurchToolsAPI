@@ -318,41 +318,6 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         result4 = self.api.get_services(returnAsDict=False)
         assert isinstance(result4, list)
 
-    def test_get_tags(self) -> None:
-        """Test function for get_tags() with default type song.
-
-        On ELKW1610.KRZ.TOOLS tag ID 49 has the name To Do
-        :return:
-        """
-        result = self.api.get_tags(type="songs")
-
-        EXPECTED_MIN_RESULT = {"Test": 53}
-        assert any(item["name"] in EXPECTED_MIN_RESULT for item in result)
-        assert any(item["id"] in EXPECTED_MIN_RESULT.values() for item in result)
-
-    def test_get_tags_id_dict(self) -> None:
-        """Test function for get_tags() with default type song.
-
-        On ELKW1610.KRZ.TOOLS tag ID 49 has the name To Do
-        :return:
-        """
-        result = self.api.get_tags(type="songs", rtype="id_dict")
-        assert len(result) > 0
-
-        EXPECTED_MIN_RESULT = {53: "Test"}
-        assert all(item in result.items() for item in EXPECTED_MIN_RESULT.items())
-
-    def test_get_tags_name_dict(self) -> None:
-        """Test function for get_tags() with default type song.
-
-        On ELKW1610.KRZ.TOOLS tag ID 49 has the name To Do
-        :return:
-        """
-        result = self.api.get_tags(type="songs", rtype="name_dict")
-
-        EXPECTED_MIN_RESULT = {"Test": 53}
-        assert all(item in result.items() for item in EXPECTED_MIN_RESULT.items())
-
     def test_has_event_schedule(self) -> None:
         """Tries to get boolean if event agenda exists for a CT Event.
 

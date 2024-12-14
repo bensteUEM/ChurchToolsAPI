@@ -21,7 +21,7 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
         """Inherited initialization."""
         super()
 
-    def get_persons(self, **kwargs:dict) -> list[dict]:
+    def get_persons(self, **kwargs: dict) -> list[dict]:
         """Function to get list of all or a person from CT.
 
         Arguments:

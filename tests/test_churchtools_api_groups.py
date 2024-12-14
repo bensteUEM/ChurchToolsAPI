@@ -119,7 +119,7 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         assert permissions["churchdb"]["+see group"] == EXPECTED_NUMNER_OF_PERMISSIONS
         assert permissions["churchdb"]["+edit group infos"]
 
-    def test_create_and_delete_group(self, caplog:pytest.LogCaptureFixture) -> None:
+    def test_create_and_delete_group(self, caplog: pytest.LogCaptureFixture) -> None:
         """Checks if groups can be created.
 
         IMPORTANT - This test method and the parameters used depend on target system!

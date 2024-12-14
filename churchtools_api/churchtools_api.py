@@ -12,6 +12,7 @@ from churchtools_api.groups import ChurchToolsApiGroups
 from churchtools_api.persons import ChurchToolsApiPersons
 from churchtools_api.resources import ChurchToolsApiResources
 from churchtools_api.songs import ChurchToolsApiSongs
+from churchtools_api.tags import ChurchToolsApiTags
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,7 @@ class ChurchToolsApi(
     ChurchToolsApiFiles,
     ChurchToolsApiCalendar,
     ChurchToolsApiResources,
+    ChurchToolsApiTags,
 ):
     """Main class used to combine all api functions.
 
@@ -35,6 +37,7 @@ class ChurchToolsApi(
         ChurchToolsApiFiles: all functions used for files
         ChurchToolsApiCalendars: all functions used for calendars
         ChurchToolsApiResources: all functions used for resources
+        ChurchToolsApiTags: all functions used for tags
     """
 
     def __init__(
@@ -153,7 +156,7 @@ class ChurchToolsApi(
         )
         return None
 
-    def who_am_i(self)->dict|bool:
+    def who_am_i(self) -> dict | bool:
         """Simple function which returns the user information for the authorized user.
 
         Returns:
@@ -215,7 +218,7 @@ class ChurchToolsApi(
         )
         return None
 
-    def get_services(self, **kwargs:dict) -> list[dict]:
+    def get_services(self, **kwargs: dict) -> list[dict]:
         """Function to get list of all or a single services configuration item from CT.
 
         Arguments:
@@ -253,49 +256,6 @@ class ChurchToolsApi(
             return response_data
         logger.info("Services requested failed: %s", response.status_code)
         return None
-
-    def get_tags(self, type: str, *, rtype: str = "original") -> list[dict] | None:  # noqa: A002
-        """Retrieve a list of all available tags.
-
-        of a specific ct_domain type from ChurchTools
-        Purpose: be able to find out tag-ids of all available tags for filtering by tag.
-
-        Arguments:
-            type: 'songs' or 'persons'
-            rtype: original, id_dict or name_dict.
-                Defaults to original only available if combined with type
-
-        Returns:
-            list of dicts or individual dict
-                if type is specified or None if not available
-        """
-        url = self.domain + "/api/tags"
-        headers = {"accept": "application/json"}
-        params = {
-            "type": type,
-        }
-        response = self.session.get(url=url, params=params, headers=headers)
-
-        response_content = json.loads(response.content)
-
-        if response.status_code != requests.codes.ok:
-            logger.warning(response.content)
-            return None
-
-        response_data = response_content["data"]
-
-        if type:
-            match rtype:
-                case "id_dict":
-                    return {item["id"]: item["name"] for item in response_data}
-                case "name_dict":
-                    return {item["name"]: item["id"] for item in response_data}
-                case _:
-                    return response_data
-
-        logger.debug("SongTags load successful %s", response_content)
-
-        return response_data
 
     def get_options(self) -> dict:
         """Helper function which returns all configurable option fields from CT.
