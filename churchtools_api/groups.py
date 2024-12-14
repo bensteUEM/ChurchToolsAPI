@@ -21,7 +21,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         """Inherited initialization."""
         super()
 
-    def get_groups(self, **kwargs) -> list[dict]:
+    def get_groups(self, **kwargs:dict) -> list[dict]:
         """Gets list of all groups.
 
         Keywords:
@@ -126,7 +126,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         name: str,
         group_status_id: int,
         grouptype_id: int,
-        **kwargs,
+        **kwargs:dict,
     ) -> dict:
         """Create a new group.
 
@@ -244,7 +244,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_grouptypes(self, **kwargs)->dict:
+    def get_grouptypes(self, **kwargs:dict)->dict:
         """Get list of all grouptypes.
 
         Arguments:
@@ -306,7 +306,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_group_members(self, group_id: int, **kwargs) -> list[dict]:
+    def get_group_members(self, group_id: int, **kwargs:dict) -> list[dict]:
         """Get list of members for the given group.
 
         Arguments:
@@ -350,7 +350,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         group_ids: list[int] | None = None,
         *,
         with_deleted: bool = False,
-        **kwargs,
+        **kwargs:dict,
     ) -> list[dict]:
         """Access to /groups/members to lookup group memberships.
 
@@ -410,7 +410,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         )
         return None
 
-    def add_group_member(self, group_id: int, person_id: int, **kwargs) -> dict:
+    def add_group_member(self, group_id: int, person_id: int, **kwargs:dict) -> dict:
         """Add a member to a group.
 
         Arguments:

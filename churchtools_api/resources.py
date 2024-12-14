@@ -62,7 +62,7 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
         logger.error(response)
         return None
 
-    def get_bookings(self, **kwargs) -> list[dict]:
+    def get_bookings(self, **kwargs:dict) -> list[dict]:
         """Access to all Resource bookings in churchtools.
 
         based on a combination of Keyword Arguments.

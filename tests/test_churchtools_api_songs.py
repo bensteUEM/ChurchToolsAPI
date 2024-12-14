@@ -5,6 +5,7 @@ import logging
 import logging.config
 from pathlib import Path
 
+import pytest
 import requests
 
 from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
@@ -97,7 +98,7 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
             item in song_catgegory_dict.items() for item in EXPECTED_CATEGORY.items()
         )
 
-    def test_lookup_song_category_as_id(self, caplog) -> None:
+    def test_lookup_song_category_as_id(self, caplog: pytest.LogCaptureFixture) -> None:
         """Checks lookup of song category by text.
 
         On ELKW1610.KRZ.TOOLS "Feiert Jesus 5" = id8
@@ -126,7 +127,7 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         ]
         assert caplog.messages == EXPECTED_MESSAGES
 
-    def test_create_edit_delete_song(self, caplog) -> None:
+    def test_create_edit_delete_song(self, caplog: pytest.LogCaptureFixture) -> None:
         """Test method used to create a new song.
 
         edit it's metadata and remove the song.
@@ -195,7 +196,7 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         assert caplog.messages == EXPECTED_MESSAGES
         assert ct_song is None
 
-    def test_add_remove_song_tag(self, caplog) -> None:
+    def test_add_remove_song_tag(self, caplog:pytest.LogCaptureFixture) -> None:
         """Test method used to add and remove the test tag to some song.
 
         Tag ID and Song ID may vary depending on the server used
@@ -286,7 +287,7 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         assert len(result) > 1
         assert all(isinstance(item, dict) for item in result.values())
 
-    def test_lookup_song_source_as_id(self, caplog) -> None:
+    def test_lookup_song_source_as_id(self, caplog:pytest.LogCaptureFixture) -> None:
         """Checks respective method returns some data.
 
         On ELKW1610.KRZ.TOOLS "T" = "Test" = id12

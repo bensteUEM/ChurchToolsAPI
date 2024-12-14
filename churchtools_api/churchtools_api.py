@@ -215,7 +215,7 @@ class ChurchToolsApi(
         )
         return None
 
-    def get_services(self, **kwargs) -> list[dict]:
+    def get_services(self, **kwargs:dict) -> list[dict]:
         """Function to get list of all or a single services configuration item from CT.
 
         Arguments:

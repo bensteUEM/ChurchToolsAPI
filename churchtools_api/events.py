@@ -25,7 +25,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         """Inherited initialization."""
         super()
 
-    def get_events(self, **kwargs) -> list[dict]:
+    def get_events(self, **kwargs: dict) -> list[dict]:
         """Method to get all the events from given timespan or only the next event.
 
         Arguments:
@@ -150,17 +150,19 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_AllEventData_ajax(self, eventId) -> dict:
+    def get_AllEventData_ajax(self, eventId: int) -> dict:
         """Reverse engineered function from legacy AJAX API.
 
         which is used to get all event data for one event.
-
         Required to read special params not yet included in REST getEvents()
         Legacy AJAX request might stop working with any future release
             ... CSRF-Token is required in session header
-        :param eventId: number of the event to be requested
-        :type eventId: int
-        :return: event information
+
+        Arguments:
+            eventId: number of the event to be requested
+
+        Returns:
+            event information
         """
         url = self.domain + "/index.php"
         headers = {"accept": "application/json"}
@@ -185,7 +187,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_event_services_counts_ajax(self, eventId: int, **kwargs) -> dict:
+    def get_event_services_counts_ajax(self, eventId: int, **kwargs: dict) -> dict:
         """Retrieve the number of services currently set for one specific event id.
 
         optionally get the number of services for one specific id on that event only.
@@ -230,17 +232,17 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         logger.warning("Illegal combination of kwargs - check documentation either")
         return None
 
-    def set_event_services_counts_ajax(self, eventId, serviceId, servicesCount) -> bool:
+    def set_event_services_counts_ajax(
+        self, eventId: int, serviceId: int, servicesCount: int
+    ) -> bool:
         """Update the number of services currently set for one event specific id.
 
-        :param eventId: id number of the calendar event
-        :type eventId: int
-        :param serviceId: id number of the service type to be filtered for
-        :type serviceId: int
-        :param servicesCount: number of services of the specified type to be planned
-        :type servicesCount: int
-        :return: successful execution
-        :rtype: bool
+        Arguments:
+            eventId: id number of the calendar event
+            serviceId: id number of the service type to be filtered for
+            servicesCount: number of services of the specified type to be planned
+        Returns:
+            successful execution
         """
         url = self.domain + "/index.php"
         headers = {"accept": "application/json"}
@@ -377,7 +379,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         return None
 
     def export_event_agenda(
-        self, target_format, target_path="./downloads", **kwargs
+        self, target_format: str, target_path: str = "./downloads", **kwargs: dict
     ) -> bool:
         """Exports the agenda as zip file for imports in presenter-programs.
 
@@ -469,7 +471,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
 
         return result_ok
 
-    def get_event_agenda_docx(self, agenda: dict, **kwargs) -> docx.Document:
+    def get_event_agenda_docx(self, agenda: dict, **kwargs: dict) -> docx.Document:
         """Generates custom docx document.
 
         Function to generate a custom docx document
@@ -594,7 +596,9 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             service for service in eventServices if service["serviceId"] == serviceId
         ]
 
-    def get_event_masterdata(self, **kwargs) -> list | list[list] | dict | list[dict]:
+    def get_event_masterdata(
+        self, **kwargs: dict
+    ) -> list | list[list] | dict | list[dict]:
         """Function to get the Masterdata of the event module.
 
         This information is required to map some IDs to specific items.

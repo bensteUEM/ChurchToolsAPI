@@ -7,6 +7,7 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import pytest
 import pytz
 
 from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
@@ -25,7 +26,7 @@ with config_file.open(encoding="utf-8") as f_in:
 class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
     """Test for Events."""
 
-    def test_get_events(self, caplog) -> None:
+    def test_get_events(self, caplog: pytest.LogCaptureFixture) -> None:
         """Tries to get a list of events and a single event from CT.
 
         Event ID may vary depending on the server used
@@ -257,7 +258,7 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         result = self.api.get_event_agenda(eventId)
         assert result is not None
 
-    def test_export_event_agenda(self, caplog) -> None:
+    def test_export_event_agenda(self, caplog: pytest.LogCaptureFixture) -> None:
         """IMPORTANT - This test method and the parameters used depend on target system!
 
         Test function to download an Event Agenda file package for e.g. Songbeamer

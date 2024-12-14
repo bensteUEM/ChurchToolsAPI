@@ -23,7 +23,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         """Inherited initialization."""
         super()
 
-    def get_songs(self, **kwargs) -> list[dict]:
+    def get_songs(self, **kwargs:dict) -> list[dict]:
         """Gets list of all songs from the server.
 
         Kwargs:
@@ -209,12 +209,12 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         self,
         title: str,
         songcategory_id: int,
-        author="",
-        copyright="",  # noqa: A002
-        ccli="",
-        tonality="",
-        bpm="",
-        beat="",
+        author:str="",
+        copyright:str="",  # noqa: A002
+        ccli:str="",
+        tonality:str="",
+        bpm:str="",
+        beat:str="",
     ) -> int | None:
         """Method to create a new song using legacy AJAX API.
 
@@ -447,12 +447,14 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         tags = self.get_song_tags(song_id)
         return song_tag_id in tags
 
-    def get_songs_by_tag(self, song_tag_id) -> list[dict]:
+    def get_songs_by_tag(self, song_tag_id:int) -> list[dict]:
         """Helper which returns all songs that contain have a specific tag.
 
-        :param song_tag_id: ChurchTools site specific song_tag_id which should be used
-        :type song_tag_id: int
-        :return: list of songs
+        Arguments:
+            song_tag_id: ChurchTools site specific song_tag_id which should be used
+
+        Returns:
+            list of songs
         """
         songs = self.get_songs()
         songs_dict = {song["id"]: song for song in songs}
@@ -525,7 +527,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         self,
         song_id: int,
         arrangement_id: int,
-        **kwargs,
+        **kwargs:dict,
     ) -> bool:
         """Updates a existing song arrangment.
 

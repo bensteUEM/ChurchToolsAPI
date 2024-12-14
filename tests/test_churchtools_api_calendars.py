@@ -6,6 +6,7 @@ import logging.config
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import pytest
 import pytz
 
 from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
@@ -169,7 +170,9 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
 
         assert result is None
 
-    def test_create_edit_delete_calendar_appointment(self, caplog):
+    def test_create_edit_delete_calendar_appointment(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """Creates, update and deletes a calendar appointment.
 
         IMPORTANT - This test method and the parameters used depend on target system!

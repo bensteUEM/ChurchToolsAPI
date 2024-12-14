@@ -47,7 +47,9 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_calendar_appointments(self, calendar_ids: list, **kwargs) -> list[dict]:
+    def get_calendar_appointments(
+        self, calendar_ids: list, **kwargs: dict
+    ) -> list[dict]:
         """Retrieve a list of appointments.
 
         Arguments:
@@ -161,7 +163,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         isInternal: bool = False,  # noqa: FBT001 FBT002
         address: dict | None = None,
         link: str = "",
-        **kwargs,
+        **kwargs: dict,
     ) -> dict:
         """Basic implementation of create_calendar.
 
@@ -214,7 +216,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         self,
         calendar_id: int,
         appointment_id: int,
-        **kwargs,
+        **kwargs: dict,
     ) -> dict:
         """Method used to update calendar appointments.
 

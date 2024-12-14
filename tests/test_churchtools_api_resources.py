@@ -6,6 +6,7 @@ import logging.config
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import pytest
 import pytz
 
 from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
@@ -96,7 +97,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
 
         assert set(next(iter(result.values())).keys()) == EXPECTED_KEYS
 
-    def test_get_resource_masterdata_other(self, caplog) -> None:
+    def test_get_resource_masterdata_other(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """Checks that masterdata with invalid resultclass loggs error.
 
         Args:
@@ -131,7 +134,7 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         result_resource_ids = {i["base"]["resource"]["id"] for i in result}
         assert set(RESOURCE_ID_SAMPLES) == result_resource_ids
 
-    def test_get_booking_by_status_ids(self, caplog) -> None:
+    def test_get_booking_by_status_ids(self, caplog: pytest.LogCaptureFixture) -> None:
         """Checks get_booking_by_status_ids.
 
         IMPORTANT - This test method and the parameters used
@@ -163,7 +166,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert set(RESOURCE_ID_SAMPLES) == {i["base"]["resource"]["id"] for i in result}
         assert set(STATUS_ID_SAMPLES) == {i["base"]["statusId"] for i in result}
 
-    def test_get_booking_from_to_date_without_resource_id(self, caplog) -> None:
+    def test_get_booking_from_to_date_without_resource_id(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """Checks get_booking_from_to_date_without_resource_id.
 
         IMPORTANT - This test method and the parameters used
@@ -188,7 +193,7 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         ]
         assert caplog.messages == EXPECTED_MESSAGES
 
-    def test_get_booking_from_date(self, caplog) -> None:
+    def test_get_booking_from_date(self, caplog: pytest.LogCaptureFixture) -> None:
         """Checks get_booking_from_date.
 
         IMPORTANT - This test method and the parameters used
@@ -227,7 +232,7 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         ]
         assert caplog.messages == EXPECTED_MESSAGES
 
-    def test_get_booking_to_date(self, caplog) -> None:
+    def test_get_booking_to_date(self, caplog: pytest.LogCaptureFixture) -> None:
         """Checks get_booking_to_date.
 
         IMPORTANT - This test method and the parameters used
@@ -261,7 +266,7 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         )
         assert expected_response in caplog.messages
 
-    def test_get_booking_from_to_date(self, caplog) -> None:
+    def test_get_booking_from_to_date(self, caplog: pytest.LogCaptureFixture) -> None:
         """Checks get_booking_from_to_date.
 
         IMPORTANT - This test method and the parameters used
@@ -300,7 +305,7 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
 
         assert caplog.messages == []
 
-    def test_get_booking_appointment_id(self, caplog) -> None:
+    def test_get_booking_appointment_id(self, caplog: pytest.LogCaptureFixture) -> None:
         """Checks get_booking_appointment_id.
 
         IMPORTANT - This test method and the parameters used
