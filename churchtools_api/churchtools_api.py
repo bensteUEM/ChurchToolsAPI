@@ -1,3 +1,5 @@
+"""module containing combining all parts into a single class."""
+
 import json
 import logging
 
@@ -42,7 +44,9 @@ class ChurchToolsApi(
         ct_user: str | None = None,
         ct_password: str | None = None,
     ) -> None:
-        """Setup of a ChurchToolsApi object for the specified ct_domain using a token login.
+        """Setup of a ChurchToolsApi object.
+
+        for the specified ct_domain using a token login.
 
         Arguments:
             domain: including https:// ending on e.g. .de
@@ -95,7 +99,7 @@ class ChurchToolsApi(
             headers = {"Authorization": "Login " + ct_token}
             response = self.session.get(url=url, headers=headers)
 
-            if response.status_code == 200:
+            if response.status_code == requests.codes.ok:
                 response_content = json.loads(response.content)
                 logger.info(
                     "Token Login Successful as %s",
@@ -115,7 +119,7 @@ class ChurchToolsApi(
             data = {"username": ct_user, "password": ct_password}
             response = self.session.post(url=url, data=data)
 
-            if response.status_code == 200:
+            if response.status_code == requests.codes.ok:
                 response_content = json.loads(response.content)
                 person = self.who_am_i()
                 logger.info("User/Password Login Successful as %s", person["email"])
@@ -127,17 +131,19 @@ class ChurchToolsApi(
             return False
         return None
 
-    def get_ct_csrf_token(self):
-        """Requests CSRF Token https://hilfe.church.tools/wiki/0/API-CSRF
-        Storing and transmitting CSRF token in headers is required for all legacy AJAX API calls unless disabled by admin
-        Therefore it is executed with each new login.
+    def get_ct_csrf_token(self) -> str:
+        """Requests CSRF Token https://hilfe.church.tools/wiki/0/API-CSRF.
 
-        :return: token
-        :rtype: str
+            Storing and transmitting CSRF token in headers is required
+            for all legacy AJAX API calls unless disabled by admin
+            Therefore it is executed with each new login.
+
+        Returns:
+            token
         """
         url = self.domain + "/api/csrftoken"
         response = self.session.get(url=url)
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             csrf_token = json.loads(response.content)["data"]
             logger.debug("CSRF Token erfolgreich abgerufen %s", csrf_token)
             return csrf_token
@@ -147,15 +153,16 @@ class ChurchToolsApi(
         )
         return None
 
-    def who_am_i(self):
-        """Simple function which returns the user information for the authorized user
-        :return: CT user dict if found or bool
-        :rtype: dict | bool.
+    def who_am_i(self)->dict|bool:
+        """Simple function which returns the user information for the authorized user.
+
+        Returns:
+            CT user dict if found or bool
         """
         url = self.domain + "/api/whoami"
         response = self.session.get(url=url)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             if "email" in response_content["data"]:
                 logger.info("Who am I as %s", response_content["data"]["email"])
@@ -166,14 +173,16 @@ class ChurchToolsApi(
         return False
 
     def check_connection_ajax(self) -> bool:
-        """Checks whether a successful connection with the given token can be initiated using the legacy AJAX API
+        """Cecks connection using the legacy AJAX API.
+
         This requires a CSRF token to be set in headers
-        :return: if successful.
+
+        Returns: if successful.
         """
         url = self.domain + "/?q=churchservice/ajax&func=getAllFacts"
         headers = {"accept": "application/json"}
         response = self.session.post(url=url, headers=headers)
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             logger.debug("Response AJAX Connection successful")
             return True
         logger.debug(
@@ -183,13 +192,15 @@ class ChurchToolsApi(
         return False
 
     def get_global_permissions(self) -> dict:
-        """Get global permissions of the current user
-        :return: dict with module names which contain dicts with individual permissions items.
+        """Get global permissions of the current user.
+
+        Returns:
+            dict with module names which contains individual permissions items.
         """
         url = self.domain + "/api/permissions/global"
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
             logger.debug(
@@ -204,13 +215,19 @@ class ChurchToolsApi(
         )
         return None
 
-    def get_services(self, **kwargs):
-        """Function to get list of all or a single services configuration item from CT
-        :param kwargs: optional keywords as listed
-        :keyword serviceId: id of a single item for filter
-        :keyword returnAsDict: true if should return a dict instead of list (not combineable if serviceId)
-        :return: list of services
-        :rtype: list[dict].
+    def get_services(self, **kwargs:dict) -> list[dict]:
+        """Function to get list of all or a single services configuration item from CT.
+
+        Arguments:
+            kwargs: optional keywords as listed
+
+        Keywords
+            serviceId: id of a single item for filter
+            returnAsDict: true if should return a dict instead of list
+                (not combineable if serviceId)
+
+        Returns:
+            list of services
         """
         url = self.domain + "/api/services"
         if "serviceId" in kwargs:
@@ -219,7 +236,7 @@ class ChurchToolsApi(
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
 
@@ -238,15 +255,19 @@ class ChurchToolsApi(
         return None
 
     def get_tags(self, type: str, *, rtype: str = "original") -> list[dict] | None:  # noqa: A002
-        """Retrieve a list of all available tags of a specific ct_domain type from ChurchTools
+        """Retrieve a list of all available tags.
+
+        of a specific ct_domain type from ChurchTools
         Purpose: be able to find out tag-ids of all available tags for filtering by tag.
 
         Arguments:
             type: 'songs' or 'persons'
-            rtype: original, id_dict or name_dict. Defaults to original only available if combined with type
+            rtype: original, id_dict or name_dict.
+                Defaults to original only available if combined with type
 
         Returns:
-            list of dicts or individual dict if type is specified or None if not available
+            list of dicts or individual dict
+                if type is specified or None if not available
         """
         url = self.domain + "/api/tags"
         headers = {"accept": "application/json"}
@@ -257,7 +278,7 @@ class ChurchToolsApi(
 
         response_content = json.loads(response.content)
 
-        if response.status_code != 200:
+        if response.status_code != requests.codes.ok:
             logger.warning(response.content)
             return None
 
@@ -278,6 +299,7 @@ class ChurchToolsApi(
 
     def get_options(self) -> dict:
         """Helper function which returns all configurable option fields from CT.
+
         e.g. common use is sexId.
 
         Returns:
@@ -290,7 +312,7 @@ class ChurchToolsApi(
         }
         response = self.session.get(url=url, params=params, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
             logger.debug("SongTags load successful %s", response_content)

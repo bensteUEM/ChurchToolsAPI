@@ -1,3 +1,4 @@
+"""helper to generate pyproject.toml using version.py."""
 import importlib.util
 from pathlib import Path
 
@@ -80,9 +81,10 @@ pyproject_toml_content = {
             # Group violations by containing file.
             "output-format": "grouped",
             "lint": {
-                # Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`) codes by default.
+                # Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)
+                # codes by default.
                 "select": ["ALL"],
-                "ignore": [],
+                "ignore": ["FIX002","COM812", "ISC001"],
                 "per-file-ignores": {"tests/*.py": ["S101"]},
                 # Allow fix for all enabled rules (when `--fix`) is provided.
                 "fixable": ["ALL"],
@@ -104,7 +106,8 @@ pyproject_toml_content = {
                 "line-ending": "auto",
                 # Enable auto-formatting of code examples in docstrings.
                 "docstring-code-format": False,
-                # Set the line length limit used when formatting code snippets in docstrings.
+                # Set the line length limit used when formatting
+                # code snippets in docstrings.
                 "docstring-code-line-length": "dynamic",
             },
         },

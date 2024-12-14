@@ -1,9 +1,12 @@
+"""module test calendar."""
+
 import json
 import logging
 import logging.config
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import pytest
 import pytz
 
 from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
@@ -20,6 +23,8 @@ with config_file.open(encoding="utf-8") as f_in:
 
 
 class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
+    """Test for Calendars."""
+
     def test_get_calendar(self) -> None:
         """Tries to retrieve a list of calendars."""
         result = self.api.get_calendars()
@@ -28,9 +33,11 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
         assert "id" in result[0]
 
     def test_get_calendar_apointments(self) -> None:
-        """Tries to retrieve calendar appointments
-        IMPORTANT - This test method and the parameters used depend on the target system!
-        Requires the connected test system to have a calendar mapped as ID 2 and 42 (or changed if other system)
+        """Tries to retrieve calendar appointments.
+
+        IMPORTANT - This test method and the parameters used depend on target system!
+        Requires the connected test system to have a calendar mapped as ID 2 and 42
+            (or changed if other system)
         Calendar 2 should have 3 appointments on 19.11.2023
         One event should be appointment ID=327032.
         """
@@ -46,17 +53,19 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
             calendar_ids=[2],
             from_="2023-11-19",
         )
-        assert len(result) > 4
+        EXPECTED_MIN_NUMBER_OF_APPOINTMENTS = 4
+        assert len(result) > EXPECTED_MIN_NUMBER_OF_APPOINTMENTS
         assert isinstance(result, list)
         assert "id" in result[0]
 
-        # One calendar with from and to date (exactly 4 appointments)
+        # One calendar with from and to date (exactly 3 appointments)
         result = self.api.get_calendar_appointments(
             calendar_ids=[2],
             from_="2023-11-19",
             to_="2023-11-19",
         )
-        assert len(result) == 3
+        EXPECTED_NUMBER_OF_APPOINTMENTS = 3
+        assert len(result) == EXPECTED_NUMBER_OF_APPOINTMENTS
         assert isinstance(result, list)
         assert "id" in result[0]
 
@@ -72,29 +81,38 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
         assert test_appointment_id == result[0]["id"]
 
     def test_get_calendar_apointments_datetime(self) -> None:
-        """Tries to retrieve calendar appointments using datetime instead of str params
-        IMPORTANT - This test method and the parameters used depend on the target system!
-        Requires the connected test system to have a calendar mapped as ID 2 (or changed if other system)
+        """Tries to retrieve calendar appointments using datetime instead of str params.
+
+        IMPORTANT - This test method and the parameters used depend on target system!
+        Requires the connected test system to have a calendar mapped as ID 2
+            (or changed if other system)
         Calendar 2 should have 3 appointments on 19.11.2023
         One event should be appointment ID=327032.
         """
-        # One calendar with from and to date (exactly 4 appointments)
-        from_ = datetime(year=2023, month=11, day=19)
-        to_ = datetime(year=2023, month=11, day=19)
+        # One calendar with from and to date (exactly 3 appointments)
+        from_ = datetime(year=2023, month=11, day=19).astimezone(
+            pytz.timezone("Europe/Berlin")
+        )
+        to_ = datetime(year=2023, month=11, day=19).astimezone(
+            pytz.timezone("Europe/Berlin")
+        )
         result = self.api.get_calendar_appointments(
             calendar_ids=[2],
             from_=from_,
             to_=to_,
         )
-        assert len(result) == 3
+        EXPECTED_NUMBER_OF_APPOINTMENTS = 3
+        assert len(result) == EXPECTED_NUMBER_OF_APPOINTMENTS
         assert isinstance(result, list)
         assert "id" in result[0]
 
     def test_get_calendar_appoints_on_seriess(self) -> None:
-        """This test should check the behaviour of get_calendar_appointments on a series
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        """This test should check behaviour of get_calendar_appointments on a series.
+
+        IMPORTANT - This test method and the parameters used depend on target system!
         Requires the connected test system to have a calendar mapped as ID 2
-        Calendar 2 should have appointment 304973 with an instance of series on 26.11.2023.
+        Calendar 2 should have appointment 304973
+        with an instance of series on 26.11.2023.
         """
         # Appointment Series by ID
         result = self.api.get_calendar_appointments(
@@ -132,13 +150,15 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
             for appointment in result
             if appointment["caption"] == "Gottesdienst Friedrichstal"
         ]
-        assert len(result) == 2
+        EXPECTED_NUMBER_OF_APPOINTMENTS = 2
+        assert len(result) == EXPECTED_NUMBER_OF_APPOINTMENTS
         assert result[-1]["caption"] == "Gottesdienst Friedrichstal"
         assert result[-1]["startDate"] == "2023-11-26T08:00:00Z"
         assert result[-1]["endDate"] == "2023-11-26T09:00:00Z"
 
     def test_get_calendar_appointments_none(self) -> None:
-        """Check that there is no error if no item can be found
+        """Check that there is no error if no item can be found.
+
         There should be no calendar appointments on the specified day.
         """
         # Appointment Series by ID
@@ -150,19 +170,21 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
 
         assert result is None
 
-    def test_create_edit_delete_calendar_appointment(self, caplog):
+    def test_create_edit_delete_calendar_appointment(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """Creates, update and deletes a calendar appointment.
 
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
         SAMPLE_CALENDAR = (
             45  # non public sample calendar id which exists on test system
         )
-        cest = pytz.timezone("Europe/Berlin")
         SAMPLE_DATA = {
-            "startDate": cest.localize(datetime.now()),
-            "endDate": cest.localize(datetime.now() + timedelta(minutes=10)),
+            "startDate": datetime.now().astimezone(pytz.timezone("Europe/Berlin")),
+            "endDate": datetime.now().astimezone(pytz.timezone("Europe/Berlin"))
+            + timedelta(minutes=10),
             "title": "test_title",
             "subtitle": "test_subtitle",
             "description": "test_description long",
@@ -175,7 +197,7 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
                 "longitude": "string",
                 "meetingAt": "string",
                 "street": "Oberdorfstraße 59",
-                "zip": "72270",  # TODO must be without last ,
+                "zip": "72270",
             },
             "link": "string",
         }
@@ -216,7 +238,9 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
                 assert check_appointment[expected_key] == expected_value
 
         # 2a. update one kwarg field
-        new_sample_end_date = datetime.now() + timedelta(days=1)
+        new_sample_end_date = datetime.now().astimezone(
+            pytz.timezone("Europe/Berlin")
+        ) + timedelta(days=1)
         check_appointment = self.api.update_calender_appointment(
             calendar_id=SAMPLE_CALENDAR,
             appointment_id=appointment_id,

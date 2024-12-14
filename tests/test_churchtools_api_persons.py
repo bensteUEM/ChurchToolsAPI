@@ -1,3 +1,5 @@
+"""module test persons."""
+
 import json
 import logging
 import logging.config
@@ -17,17 +19,23 @@ with config_file.open(encoding="utf-8") as f_in:
 
 
 class TestChurchtoolsApiPersons(TestsChurchToolsApiAbstract):
+    """Test for Persons."""
+
     def test_get_persons(self) -> None:
-        """Tries to get all and a single person from the server
-        Be aware that only ct_users that are visible to the user associated with the login token can be viewed!
-        On any elkw.KRZ.TOOLS personId 1 'firstName' starts with 'Ben' and more than 50 ct_users exist(13. Jan 2023)
-        :return:
+        """Tries to get all and a single person from the server.
+
+        Be aware that only ct_users that are visible to the user associated
+        with the login token can be viewed!
+        On any elkw.KRZ.TOOLS personId 1 'firstName' starts with 'Ben'
+        and more than 50 ct_users exist(13. Jan 2023)
         """
+        EXPECTED_MIN_NUMBER_OF_PERSONS = 50
+
         personId = 1
         result1 = self.api.get_persons()
         assert isinstance(result1, list)
         assert isinstance(result1[0], dict)
-        assert len(result1) > 50
+        assert len(result1) > EXPECTED_MIN_NUMBER_OF_PERSONS
 
         result2 = self.api.get_persons(ids=[personId])
         assert isinstance(result2, list)
@@ -42,7 +50,9 @@ class TestChurchtoolsApiPersons(TestsChurchToolsApiAbstract):
 
     def test_get_persons_masterdata(self) -> None:
         """Tries to retrieve metadata for persons module.
-        Expected sections equal those that were available on ELKW1610.krz.tools on 4.Oct.2024.
+
+        Expected sections equal those that were available
+            on ELKW1610.krz.tools on 4.Oct.2024.
         """
         EXPECTED_SECTIONS = {
             "roles",
@@ -87,9 +97,11 @@ class TestChurchtoolsApiPersons(TestsChurchToolsApiAbstract):
         assert isinstance(next(iter(result.values())), str)
 
     def test_get_persons_sex_id(self) -> None:
-        """Tests that persons sexId can be retrieved and converted to a human readable gender.
+        """Tests that persons sexId can be retrieved.
 
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        and converted to a human readable gender.
+
+        IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
         EXPECTED_RESULT = "sex.unknown"

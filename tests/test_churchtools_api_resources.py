@@ -1,8 +1,13 @@
+"""module test resources."""
+
 import json
 import logging
 import logging.config
 from datetime import datetime, timedelta
 from pathlib import Path
+
+import pytest
+import pytz
 
 from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
 
@@ -18,6 +23,8 @@ with config_file.open(encoding="utf-8") as f_in:
 
 
 class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
+    """Test for Resources."""
+
     def test_get_resource_masterdata(self) -> None:
         """Check resource masterdata can be retrieved."""
         result = self.api.get_resource_masterdata()
@@ -90,7 +97,14 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
 
         assert set(next(iter(result.values())).keys()) == EXPECTED_KEYS
 
-    def test_get_resource_masterdata_other(self, caplog) -> None:
+    def test_get_resource_masterdata_other(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """Checks that masterdata with invalid resultclass loggs error.
+
+        Args:
+            caplog: pytest caplog instance used to caputre logging
+        """
         caplog.clear()
         with caplog.at_level(level=logging.ERROR, logger="churchtools_api.resources"):
             self.api.get_resource_masterdata(resultClass=" ")
@@ -98,7 +112,10 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert expected_error_message in caplog.messages
 
     def test_get_booking_by_id(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+        """Checks get_booking_by_id.
+
+        IMPORTANT - This test method and the parameters used
+            depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
         SAMPLE_BOOKING_ID = 5108
@@ -106,7 +123,10 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert result[0]["id"] == SAMPLE_BOOKING_ID
 
     def test_get_booking_by_resource_ids(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+        """Checks get_booking_by_resource_ids.
+
+        IMPORTANT - This test method and the parameters used
+            depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
         RESOURCE_ID_SAMPLES = [8, 20]
@@ -114,20 +134,27 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         result_resource_ids = {i["base"]["resource"]["id"] for i in result}
         assert set(RESOURCE_ID_SAMPLES) == result_resource_ids
 
-    def test_get_booking_by_status_ids(self, caplog) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+    def test_get_booking_by_status_ids(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Checks get_booking_by_status_ids.
+
+        IMPORTANT - This test method and the parameters used
+            depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
         STATUS_ID_SAMPLES = [2]
         with caplog.at_level(level=logging.ERROR, logger="churchtools_api.resources"):
             self.api.get_bookings(status_ids=STATUS_ID_SAMPLES)
         EXPECTED_MESSAGES = [
-            "invalid argument combination in get_bookings - please check docstring for requirements"
+            "invalid argument combination in get_bookings"
+            " - please check docstring for requirements"
         ]
         assert caplog.messages == EXPECTED_MESSAGES
 
     def test_get_booking_by_resource_and_status_ids(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+        """Checks get_booking_by_resource_and_status_ids.
+
+        IMPORTANT - This test method and the parameters used
+            depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
         STATUS_ID_SAMPLES = [2]
@@ -139,31 +166,48 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert set(RESOURCE_ID_SAMPLES) == {i["base"]["resource"]["id"] for i in result}
         assert set(STATUS_ID_SAMPLES) == {i["base"]["statusId"] for i in result}
 
-    def test_get_booking_from_to_date_without_resource_id(self, caplog) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+    def test_get_booking_from_to_date_without_resource_id(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """Checks get_booking_from_to_date_without_resource_id.
+
+        IMPORTANT - This test method and the parameters used
+            depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
         SAMPLE_DATES = {
-            "from_": datetime(year=2024, month=12, day=24),
-            "to_": datetime(year=2024, month=12, day=24),
+            "from_": datetime(year=2024, month=12, day=24).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
+            "to_": datetime(year=2024, month=12, day=24).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
         }
         caplog.clear()
         with caplog.at_level(level=logging.WARNING, logger="churchtools_api.resources"):
             self.api.get_bookings(from_=SAMPLE_DATES["from_"])
 
         EXPECTED_MESSAGES = [
-            "invalid argument combination in get_bookings - please check docstring for requirements"
+            "invalid argument combination in get_bookings"
+            " - please check docstring for requirements"
         ]
         assert caplog.messages == EXPECTED_MESSAGES
 
-    def test_get_booking_from_date(self, caplog) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+    def test_get_booking_from_date(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Checks get_booking_from_date.
+
+        IMPORTANT - This test method and the parameters used
+            depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
         RESOURCE_ID_SAMPLES = [8, 20]
         SAMPLE_DATES = {
-            "from_": datetime(year=2024, month=9, day=21),
-            "to_": datetime(year=2024, month=9, day=30),
+            "from_": datetime(year=2024, month=9, day=21).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
+            "to_": datetime(year=2024, month=9, day=30).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
         }
         caplog.clear()
         with caplog.at_level(logging.INFO):
@@ -174,7 +218,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert set(RESOURCE_ID_SAMPLES) == {i["base"]["resource"]["id"] for i in result}
 
         result_dates = {
-            datetime.strptime(i["calculated"]["startDate"][:10], "%Y-%m-%d")
+            datetime.strptime(i["calculated"]["startDate"][:10], "%Y-%m-%d").astimezone(
+                pytz.timezone("Europe/Berlin")
+            )
             for i in result
         }
         assert all(
@@ -186,13 +232,17 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         ]
         assert caplog.messages == EXPECTED_MESSAGES
 
-    def test_get_booking_to_date(self, caplog) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+    def test_get_booking_to_date(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Checks get_booking_to_date.
+
+        IMPORTANT - This test method and the parameters used
+            depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
         RESOURCE_ID_SAMPLES = [8, 20]
         SAMPLE_DATES = {
-            "to_": datetime.now() + timedelta(days=30),
+            "to_": datetime.now().astimezone(pytz.timezone("Europe/Berlin"))
+            + timedelta(days=30),
         }
 
         caplog.clear()
@@ -204,7 +254,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert set(RESOURCE_ID_SAMPLES) == {i["base"]["resource"]["id"] for i in result}
 
         result_dates = {
-            datetime.strptime(i["calculated"]["startDate"][:10], "%Y-%m-%d")
+            datetime.strptime(i["calculated"]["startDate"][:10], "%Y-%m-%d").astimezone(
+                pytz.timezone("Europe/Berlin")
+            )
             for i in result
         }
         assert all(SAMPLE_DATES["to_"] >= compare_date for compare_date in result_dates)
@@ -214,14 +266,21 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         )
         assert expected_response in caplog.messages
 
-    def test_get_booking_from_to_date(self, caplog) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+    def test_get_booking_from_to_date(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Checks get_booking_from_to_date.
+
+        IMPORTANT - This test method and the parameters used
+            depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
         RESOURCE_ID_SAMPLES = [8, 20]
         SAMPLE_DATES = {
-            "from_": datetime(year=2024, month=9, day=21),
-            "to_": datetime(year=2024, month=9, day=30),
+            "from_": datetime(year=2024, month=9, day=21).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
+            "to_": datetime(year=2024, month=9, day=30).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
         }
 
         caplog.clear()
@@ -234,7 +293,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert set(RESOURCE_ID_SAMPLES) == {i["base"]["resource"]["id"] for i in result}
 
         result_dates = {
-            datetime.strptime(i["calculated"]["startDate"][:10], "%Y-%m-%d")
+            datetime.strptime(i["calculated"]["startDate"][:10], "%Y-%m-%d").astimezone(
+                pytz.timezone("Europe/Berlin")
+            )
             for i in result
         }
         assert all(
@@ -244,14 +305,21 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
 
         assert caplog.messages == []
 
-    def test_get_booking_appointment_id(self, caplog) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+    def test_get_booking_appointment_id(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Checks get_booking_appointment_id.
+
+        IMPORTANT - This test method and the parameters used
+            depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
         RESOURCE_ID_SAMPLES = [16]
         SAMPLE_DATES = {
-            "from_": datetime(year=2024, month=9, day=21),
-            "to_": datetime(year=2024, month=9, day=30),
+            "from_": datetime(year=2024, month=9, day=21).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
+            "to_": datetime(year=2024, month=9, day=30).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
         }
         SAMPLE_APPOINTMENT_ID = 327883  # 22.9.2024 GH
         result = self.api.get_bookings(
@@ -270,20 +338,30 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
                 appointment_id=SAMPLE_APPOINTMENT_ID,
                 resource_ids=RESOURCE_ID_SAMPLES,
             )
-        expected_log_message = "using appointment ID without date range might be incomplete if current month differs"
+        expected_log_message = (
+            "using appointment ID without date range"
+            " might be incomplete if current month differs"
+        )
         assert expected_log_message in caplog.messages
         assert len(result) == 0
 
     def test_get_booking_appointment_id_daterange(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+        """Checks get_booking_appointment_id_daterange.
+
+        IMPORTANT - This test method and the parameters used
+            depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
         RESOURCE_ID_SAMPLES = [16]
 
         SAMPLE_APPOINTMENT_ID = 327883
         SAMPLE_DATES = {
-            "from_": datetime(year=2024, month=9, day=22),
-            "to_": datetime(year=2024, month=9, day=22),
+            "from_": datetime(year=2024, month=9, day=22).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
+            "to_": datetime(year=2024, month=9, day=22).astimezone(
+                pytz.timezone("Europe/Berlin")
+            ),
         }
 
         result = self.api.get_bookings(
@@ -296,7 +374,7 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         result_date = datetime.strptime(
             result[0]["calculated"]["startDate"][:10],
             "%Y-%m-%d",
-        )
+        ).astimezone(pytz.timezone("Europe/Berlin"))
 
         assert len(result) == 1
         # check dates incl. max 1 day diff because of reservations before event start
@@ -308,7 +386,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
     def test_get_booking_problematic(self) -> None:
         """ELKW1610.krz.tools specific test case after problematic results."""
         SAMPLE_RESOURCE_IDS = [8, 20, 21, 16, 17]
-        SAMPLE_DATE = datetime(2024, 11, 24, 9)
+        SAMPLE_DATE = datetime(2024, 11, 24, 9).astimezone(
+            pytz.timezone("Europe/Berlin")
+        )
         SAMPLE_APPOINTMENT_ID = 327616
 
         result = self.api.get_bookings(

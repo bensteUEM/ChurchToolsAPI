@@ -1,3 +1,5 @@
+"""module test generic parts."""
+
 import json
 import logging
 import logging.config
@@ -17,8 +19,13 @@ with config_file.open(encoding="utf-8") as f_in:
 
 
 class TestsChurchToolsApi(TestsChurchToolsApiAbstract):
+    """Test for Generics."""
+
     def test_login_ct_rest_api_password(self) -> None:
-        """Tries to create a login with churchTools using specified username and password."""
+        """Tries to create a login with churchTools.
+
+        using specified username and password.
+        """
         if self.api.session is not None:
             self.api.session.close()
         username = next(iter(self.ct_users.keys()))
@@ -27,9 +34,7 @@ class TestsChurchToolsApi(TestsChurchToolsApiAbstract):
         assert self.api is not None
 
     def test_login_ct_rest_api_token(self) -> None:
-        """Checks that Userlogin using REST is working with provided TOKEN
-        :return:
-        """
+        """Checks that Userlogin using REST is working with provided TOKEN."""
         if self.api.session is not None:
             self.api.session.close()
         result = self.api.login_ct_rest_api(ct_token=self.ct_token)
@@ -43,18 +48,14 @@ class TestsChurchToolsApi(TestsChurchToolsApiAbstract):
         assert result
 
     def test_get_ct_csrf_token(self) -> None:
-        """Test checks that a CSRF token can be requested using the current API status
-        :return:
-        """
+        """Test checks CSRF token can be requested using the current API status."""
         token = self.api.get_ct_csrf_token()
         assert (
             len(token) > 0
         ), "Token should be more than one letter but changes each time"
 
     def test_check_connection_ajax(self) -> None:
-        """Test checks that a connection can be established using the AJAX endpoints with current session / ct_api
-        :return:
-        """
+        """Checks connection using AJAX endpoints with current session / ct_api."""
         result = self.api.check_connection_ajax()
         assert result
 
@@ -64,7 +65,7 @@ class TestsChurchToolsApi(TestsChurchToolsApiAbstract):
         assert "sex" in result
 
     def test_get_global_permissions(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+        """IMPORTANT - This test method and the parameters used depend on target system!
 
         Checks that the global permissions for the current user can be retrieved
         and one core permission and one db permission matches the expected value.

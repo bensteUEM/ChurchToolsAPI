@@ -1,5 +1,9 @@
+"""module containing parts used for person handling."""
+
 import json
 import logging
+
+import requests
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
@@ -14,9 +18,10 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
     """
 
     def __init__(self) -> None:
+        """Inherited initialization."""
         super()
 
-    def get_persons(self, **kwargs) -> list[dict]:
+    def get_persons(self, **kwargs:dict) -> list[dict]:
         """Function to get list of all or a person from CT.
 
         Arguments:
@@ -27,7 +32,8 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
             returnAsDict: bool: true if should return a dict instead of list
 
         Permissions:
-            some fields e.g. sexId require "security level person" with at least level 2 (administer persons is not sufficient)
+            some fields e.g. sexId require "security level person" with at least
+            level 2 (administer persons is not sufficient)
 
         Returns:
             list of user dicts
@@ -40,7 +46,7 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers, params=params)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
 
@@ -83,7 +89,8 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
         resultClass: str | None = None,
         returnAsDict: bool = False,
     ) -> list | list[list] | dict | list[dict]:
-        """Function to get the Masterdata of the persons module
+        """Function to get the Masterdata of the persons module.
+
         This information is required to map some IDs to specific items.
 
         Arguments:
@@ -98,7 +105,7 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
 

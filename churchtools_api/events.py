@@ -1,9 +1,13 @@
+"""module containing parts used for events handling."""
+
 import json
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
 
 import docx
+import pytz
+import requests
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
@@ -18,9 +22,10 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
     """
 
     def __init__(self) -> None:
+        """Inherited initialization."""
         super()
 
-    def get_events(self, **kwargs) -> list[dict]:
+    def get_events(self, **kwargs: dict) -> list[dict]:
         """Method to get all the events from given timespan or only the next event.
 
         Arguments:
@@ -29,12 +34,18 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         Keyword Arguments:
             eventId (int): number of event for single event lookup
 
-            from_ (str|datetime): used as >= with starting date in format YYYY-MM-DD - added _ to name as opposed to ct_api because of reserved keyword
-            to_ (str|datetime): used as < end date in format YYYY-MM-DD ONLY allowed with from_ - added _ to name as opposed to ct_api because of reserved keyword
+            from_ (str|datetime): used as >= with starting date in format YYYY-MM-DD
+                - added _ to name as opposed to ct_api because of reserved keyword
+            to_ (str|datetime): used as < end date in format YYYY-MM-DD ONLY allowed
+                with from_ - added _ to name as opposed to ct_api
+                because of reserved keyword
             canceled (bool): If true, include also canceled events
-            direction (str): direction of output 'forward' or 'backward' from the date defined by parameter 'from'
-            limit (int): limits the number of events - Default = 1, if all events shall be retrieved insert 'None', only applies if direction is specified
-            include (str): if Parameter is set to 'eventServices', the services of the event will be included
+            direction (str): direction of output 'forward' or 'backward'
+                from the date defined by parameter 'from'
+            limit (int): limits the number of events - Default = 1, if all events shall
+                be retrieved insert 'None', only applies if direction is specified
+            include (str): if Parameter is set to 'eventServices', the services of
+                the event will be included
 
         Returns:
             list of events
@@ -48,36 +59,12 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             url += "/{}".format(kwargs["eventId"])
 
         else:
-            if "from_" in kwargs:
-                from_ = kwargs["from_"]
-                if isinstance(from_, datetime):
-                    from_ = from_.strftime("%Y-%m-%d")
-                if len(from_) == 10:
-                    params["from"] = from_
-            if "to_" in kwargs and "from_" in kwargs:
-                to_ = kwargs["to_"]
-                if isinstance(to_, datetime):
-                    to_ = to_.strftime("%Y-%m-%d")
-                if len(to_) == 10:
-                    params["to"] = to_
-            elif "to_" in kwargs:
-                logger.warning("Use of to_ is only allowed together with from_")
-            if "canceled" in kwargs:
-                params["canceled"] = kwargs["canceled"]
-            if "direction" in kwargs:
-                params["direction"] = kwargs["direction"]
-            if "limit" in kwargs and "direction" in kwargs:
-                params["limit"] = kwargs["limit"]
-            elif "direction" in kwargs:
-                logger.warning(
-                    "Use of limit is only allowed together with direction keyword",
-                )
-            if "include" in kwargs:
-                params["include"] = kwargs["include"]
+            params = self._get_events_params_other(params=params, **kwargs)
+            params = self._get_events_params_to_from(params=params, **kwargs)
 
         response = self.session.get(url=url, headers=headers, params=params)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = self.combine_paginated_response_data(
                 response_content,
@@ -93,13 +80,71 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         )
         return None
 
+    def _get_events_params_other(self, params: dict, **kwargs: dict) -> dict:
+        """Helper function converting kwargs into params for request.
+
+        Split in order to reduce function complexity
+        converting everything except to and from
+
+        Args:
+            params: existing pre-set params
+            kwargs: any additional options
+
+        Returns:
+            prepared params dict which can be used in request
+        """
+        if "canceled" in kwargs:
+            params["canceled"] = kwargs["canceled"]
+        if "direction" in kwargs:
+            params["direction"] = kwargs["direction"]
+        if "limit" in kwargs and "direction" in kwargs:
+            params["limit"] = kwargs["limit"]
+        elif "direction" in kwargs:
+            logger.warning(
+                "Use of limit is only allowed together with direction keyword",
+            )
+        if "include" in kwargs:
+            params["include"] = kwargs["include"]
+        return params
+
+    def _get_events_params_to_from(self, params: dict, **kwargs: dict) -> dict:
+        """Helper function converting kwargs into params for request.
+
+        Split in order to reduce function complexity
+        taking into account to and from only
+
+        Args:
+            params: existing pre-set params
+            kwargs: any additional options
+
+        Returns:
+            prepared params dict which can be used in request
+        """
+        LENGTH_OF_DATE_WITH_HYPHEN = 10
+        if "from_" in kwargs:
+            from_ = kwargs["from_"]
+            if isinstance(from_, datetime):
+                from_ = from_.astimezone(pytz.utc).strftime("%Y-%m-%d")
+            if len(from_) == LENGTH_OF_DATE_WITH_HYPHEN:
+                params["from"] = from_
+        if "to_" in kwargs and "from_" in kwargs:
+            to_ = kwargs["to_"]
+            if isinstance(to_, datetime):
+                to_ = to_.astimezone(pytz.utc).strftime("%Y-%m-%d")
+            if len(to_) == LENGTH_OF_DATE_WITH_HYPHEN:
+                params["to"] = to_
+        elif "to_" in kwargs:
+            logger.warning("Use of to_ is only allowed together with from_")
+        return params
+
     def get_event_by_calendar_appointment(
         self,
         appointment_id: int,
         start_date: str | datetime,
     ) -> dict:
-        """This method is a helper to retrieve an event for a specific calendar appointment
-        including it's event services.
+        """This method is a helper to retrieve an event.
+
+        for a specific calendar appointment including it's event services.
 
         Args:
             appointment_id: _description_
@@ -112,7 +157,9 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             formats = {"iso": "%Y-%m-%dT%H:%M:%SZ", "date": "%Y-%m-%d"}
             for date_formats in formats.values():
                 try:
-                    start_date = datetime.strptime(start_date, date_formats)
+                    start_date = datetime.strptime(start_date, date_formats).astimezone(
+                        pytz.utc
+                    )
                     break
                 except ValueError:
                     continue
@@ -134,14 +181,19 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_AllEventData_ajax(self, eventId) -> dict:
-        """Reverse engineered function from legacy AJAX API which is used to get all event data for one event.
+    def get_AllEventData_ajax(self, eventId: int) -> dict:
+        """Reverse engineered function from legacy AJAX API.
 
+        which is used to get all event data for one event.
         Required to read special params not yet included in REST getEvents()
-        Legacy AJAX request might stop working with any future release ... CSRF-Token is required in session header
-        :param eventId: number of the event to be requested
-        :type eventId: int
-        :return: event information
+        Legacy AJAX request might stop working with any future release
+            ... CSRF-Token is required in session header
+
+        Arguments:
+            eventId: number of the event to be requested
+
+        Returns:
+            event information
         """
         url = self.domain + "/index.php"
         headers = {"accept": "application/json"}
@@ -149,7 +201,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         data = {"id": eventId, "func": "getAllEventData"}
         response = self.session.post(url=url, headers=headers, params=params, data=data)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             if len(response_content["data"]) > 0:
                 response_data = response_content["data"][str(eventId)]
@@ -166,17 +218,21 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_event_services_counts_ajax(self, eventId, **kwargs):
-        """Retrieve the number of services currently set for one specific event id
+    def get_event_services_counts_ajax(self, eventId: int, **kwargs: dict) -> dict:
+        """Retrieve the number of services currently set for one specific event id.
+
         optionally get the number of services for one specific id on that event only.
 
-        :param eventId: id number of the calendar event
-        :type eventId: int
-        :param kwargs: keyword arguments either serviceId or service_group_id
-        :key serviceId: id number of the service type to be filtered for
-        :key serviceGroupId: id number of the group of services to request
-        :return: dict of service types and the number of services required for this event
-        :rtype: dict
+        Arguments:
+            eventId: id number of the calendar event
+            **kwargs: keyword arguments as listed below
+
+        Keywords:
+            serviceId: id number of the service type to be filtered for
+            serviceGroupId: id number of the group of services to request
+
+        Returns:
+            dict of service types and the number of services required for this event
         """
         event = self.get_events(eventId=eventId)[0]
 
@@ -207,17 +263,17 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         logger.warning("Illegal combination of kwargs - check documentation either")
         return None
 
-    def set_event_services_counts_ajax(self, eventId, serviceId, servicesCount) -> bool:
+    def set_event_services_counts_ajax(
+        self, eventId: int, serviceId: int, servicesCount: int
+    ) -> bool:
         """Update the number of services currently set for one event specific id.
 
-        :param eventId: id number of the calendar event
-        :type eventId: int
-        :param serviceId: id number of the service type to be filtered for
-        :type serviceId: int
-        :param servicesCount: number of services of the specified type to be planned
-        :type servicesCount: int
-        :return: successful execution
-        :rtype: bool
+        Arguments:
+            eventId: id number of the calendar event
+            serviceId: id number of the service type to be filtered for
+            servicesCount: number of services of the specified type to be planned
+        Returns:
+            successful execution
         """
         url = self.domain + "/index.php"
         headers = {"accept": "application/json"}
@@ -247,7 +303,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
 
         response = self.session.post(url=url, headers=headers, params=params, data=data)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_success = response_content["status"] == "success"
 
@@ -313,7 +369,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         }
         response = self.session.post(url=url, headers=headers, params=params, data=data)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["status"] == "success"
             logger.debug(
@@ -330,8 +386,9 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         return False
 
     def get_event_agenda(self, eventId: int) -> list:
-        """Retrieve agenda for event by ID from ChurchTools
-        Params:
+        """Retrieve agenda for event by ID from ChurchTools.
+
+        Arguments:
             eventId: number of the event
         Returns:
             list of event agenda items.
@@ -340,7 +397,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
             logger.debug("Agenda load successful %s items", len(response_content))
@@ -353,22 +410,27 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         return None
 
     def export_event_agenda(
-        self, target_format, target_path="./downloads", **kwargs
+        self, target_format: str, target_path: str = "./downloads", **kwargs: dict
     ) -> bool:
         """Exports the agenda as zip file for imports in presenter-programs.
 
         Parameters:
-            target_format: fileformat or name of presentation software which should be supported.
-                Supported formats are 'SONG_BEAMER', 'PRO_PRESENTER6' and 'PRO_PRESENTER7'
-            target_path: Filepath of the file which should be exported (including filename)
+            target_format: fileformat or name of presentation software
+                which should be supported.
+                Supported formats are 'SONG_BEAMER', 'PRO_PRESENTER6'
+                    and 'PRO_PRESENTER7'
+            target_path: Filepath of the file which should
+                be exported (including filename)
             kwargs: additional keywords as listed below
 
         Keywords:
             eventId: event id to check for agenda id should be exported
             agendaId: agenda id of the agenda which should be exported
                 DO NOT combine with eventId because it will be overwritten!
-            append_arrangement: if True, the name of the arrangement will be included within the agenda caption
-            export_Songs: if True, the songfiles will be in the folder "Songs" within the zip file
+            append_arrangement: if True, the name of the arrangement
+                will be included within the agenda caption
+            export_Songs: if True, the songfiles will be in the
+                folder "Songs" within the zip file
             with_category: has no effect when exported in target format 'SONG_BEAMER'
         Returns:
             if successful.
@@ -425,7 +487,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             json=json_data,
         )
         result_ok = False
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             agenda_data = response_content["data"].copy()
             logger.debug("Agenda package found %s", response_content)
@@ -440,14 +502,23 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
 
         return result_ok
 
-    def get_event_agenda_docx(self, agenda, **kwargs):
-        """Function to generate a custom docx document with the content of the event agenda from churchtools
-        :param agenda: event agenda with services
-        :type event: dict
-        :param kwargs: optional keywords as listed
-        :key serviceGroups: list of servicegroup IDs that should be included - defaults to all if not supplied
-        :key excludeBeforeEvent: bool: by default pre-event parts are excluded
-        :return:
+    def get_event_agenda_docx(self, agenda: dict, **kwargs: dict) -> docx.Document:
+        """Generates custom docx document.
+
+        Function to generate a custom docx document
+        with the content of the event agenda from churchtools.
+
+        Arguments:
+            agenda: event agenda with services
+            **kwargs: optional keywords as listed below
+
+        Keywords:
+            serviceGroups: list of servicegroup IDs that should be included
+                - defaults to all if not supplied
+            excludeBeforeEvent: bool: by default pre-event parts are excluded
+
+        Returns:
+            docx document reference
         """
         excludeBeforeEvent = kwargs.get("excludeBeforeEvent", False)
 
@@ -466,7 +537,8 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             "Download from ChurchTools including changes until.: " + modifiedDate2,
         )
 
-        agenda_item = 0  # Position Argument from Event Agenda is weird therefore counting manually
+        agenda_item = 0  # Position Argument from Event Agenda is weird
+        # therefore counting manually
         pre_event_last_item = True  # Event start is no item therefore look for change
 
         for item in agenda["items"]:
@@ -489,56 +561,85 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
 
             if item["type"] == "song":
                 title += ": " + item["song"]["title"]
-                # TODO #5 Word... check if fails on empty song items
                 title += " (" + item["song"]["category"] + ")"
 
             document.add_heading(title, level=2)
 
-            responsible_list = []
-            for responsible_item in item["responsible"]["persons"]:
-                if responsible_item["person"] is not None:
-                    responsible_text = responsible_item["person"]["title"]
-                    if not responsible_item["accepted"]:
-                        responsible_text += " (Angefragt)"
-                else:
-                    responsible_text = "?"
-                responsible_text += " " + responsible_item["service"] + ""
-                responsible_list.append(responsible_text)
-
-            if (
-                len(item["responsible"]) > 0
-                and len(item["responsible"]["persons"]) == 0
-                and len(item["responsible"]["text"]) > 0
-            ):
-                responsible_list.append(
-                    item["responsible"]["text"]
-                    + " (Person statt Rolle in ChurchTools hinterlegt!)",
-                )
-
+            responsible_list = self._generate_responsible_list(item=item)
             responsible_text = ", ".join(responsible_list)
             document.add_paragraph(responsible_text)
 
             if item["note"] is not None and item["note"] != "":
                 document.add_paragraph(item["note"])
 
+            self._add_service_group_notes(
+                document=document,
+                service_group_notes=item["serviceGroupNotes"],
+                service_groups=kwargs["serviceGroups"],
+            )
+
+        return document
+
+    def _generate_responsible_list(self, item: dict) -> list:
+        """Extracts information about the responsibility by agenda item.
+
+        Args:
+            item: the agenda item with all it's values
+
+        Returns:
+            prepared list of responsible persons used for further processing
+        """
+        responsible_list = []
+        for responsible_item in item["responsible"]["persons"]:
+            if responsible_item["person"] is not None:
+                responsible_text = responsible_item["person"]["title"]
+                if not responsible_item["accepted"]:
+                    responsible_text += " (Angefragt)"
+            else:
+                responsible_text = "?"
+            responsible_text += " " + responsible_item["service"] + ""
+            responsible_list.append(responsible_text)
+
+        if (
+            len(item["responsible"]) > 0
+            and len(item["responsible"]["persons"]) == 0
+            and len(item["responsible"]["text"]) > 0
+        ):
+            responsible_list.append(
+                item["responsible"]["text"]
+                + " (Person statt Rolle in ChurchTools hinterlegt!)",
+            )
+        return responsible_list
+
+    def _add_service_group_notes(
+        self, document: docx.Document, service_group_notes: list, service_groups: dict
+    ) -> None:
+        """Subfunction which genereates service group note paragaphs.
+
+        Args:
+            document: the document item to work on
+            service_group_notes: the list of items to consider
+            service_groups: the service groups that are known
+        """
+        for item in service_group_notes:
             if len(item["serviceGroupNotes"]) > 0:
                 for note in item["serviceGroupNotes"]:
                     if (
-                        note["serviceGroupId"] in kwargs["serviceGroups"]
+                        note["serviceGroupId"] in service_groups
                         and len(note["note"]) > 0
                     ):
                         document.add_heading(
                             "Bemerkung für {}:".format(
-                                kwargs["serviceGroups"][note["serviceGroupId"]]["name"],
+                                service_groups[note["serviceGroupId"]]["name"],
                             ),
                             level=4,
                         )
                         document.add_paragraph(note["note"])
 
-        return document
-
     def get_persons_with_service(self, eventId: int, serviceId: int) -> list[dict]:
-        """Helper function which should return the list of persons that are assigned a specific service on a specific event.
+        """Helper function which should return the list of persons.
+
+        that are assigned a specific service on a specific event.
 
         Args:
             eventId: id number from Events
@@ -553,15 +654,19 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             service for service in eventServices if service["serviceId"] == serviceId
         ]
 
-    def get_event_masterdata(self, **kwargs) -> list | list[list] | dict | list[dict]:
+    def get_event_masterdata(
+        self, **kwargs: dict
+    ) -> list | list[list] | dict | list[dict]:
         """Function to get the Masterdata of the event module.
+
         This information is required to map some IDs to specific items.
 
         Params
             kwargs: optional keywords as listed below
 
         Keywords:
-            resultClass: str with name of the masterdata type (not datatype) common types are 'absenceReasons', 'songCategories', 'services', 'serviceGroups'
+            resultClass: str with name of the masterdata type (not datatype) common
+             types are 'absenceReasons', 'songCategories', 'services', 'serviceGroups'
             returnAsDict: if the list with one type should be returned as dict by ID
 
         Returns:
@@ -572,7 +677,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
 

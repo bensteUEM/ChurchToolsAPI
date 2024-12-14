@@ -1,3 +1,5 @@
+"""module containing abstract reference used by all implementation parts."""
+
 import json
 import logging
 from abc import ABC, abstractmethod
@@ -14,6 +16,7 @@ class ChurchToolsApiAbstract(ABC):
 
     @abstractmethod
     def __init__(self) -> None:
+        """Preparing base variables."""
         self.session = None
         self.domain = None
 
@@ -21,12 +24,13 @@ class ChurchToolsApiAbstract(ABC):
         self,
         response_content: dict,
         url: str,
-        **kwargs,
+        **kwargs:dict,
     ) -> dict:
-        """Helper function which combines data for requests in case of paginated responses.
+        """Helper function which combines data for requests for pagination.
 
         Args:
-            response_content: the original response form ChurchTools which either has meta/pagination or not
+            response_content: the original response form ChurchTools
+                which either has meta/pagination or not
             url: the url used for the original request in order to repear it
             kwargs: can contain headers and params passthrough
 

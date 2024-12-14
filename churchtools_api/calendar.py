@@ -1,10 +1,11 @@
-from __future__ import annotations
+"""module containing parts used for calendar handling."""
 
 import json
 import logging
 from datetime import datetime
 
 import pytz
+import requests
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
@@ -19,10 +20,12 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
     """
 
     def __init__(self) -> None:
+        """Inherited initialization."""
         super()
 
     def get_calendars(self) -> list[dict]:
-        """Function to retrieve all calendar objects
+        """Function to retrieve all calendar objects.
+
         This does not include pagination yet.
 
         Returns:
@@ -34,7 +37,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
 
         response = self.session.get(url=url, params=params, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             return response_content["data"].copy()
         logger.warning(
@@ -44,23 +47,31 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_calendar_appointments(self, calendar_ids: list, **kwargs) -> list[dict]:
+    def get_calendar_appointments(
+        self, calendar_ids: list, **kwargs: dict
+    ) -> list[dict]:
         """Retrieve a list of appointments.
 
         Arguments:
             calendar_ids: list of calendar ids to be checked
-                If an individual appointment id is requested using kwargs only one calendar can be specified
+                If an individual appointment id is requested using kwargs
+                only one calendar can be specified
             kwargs: optional params to limit the results
 
         Keyword Arguments:
-            from_ (str|datetime): with starting date in format YYYY-MM-DD - added _ to name as opposed to ct_api because of reserved keyword
-            to_ (str|datetime): end date in format YYYY-MM-DD ONLY allowed with from_ - added _ to name as opposed to ct_api because of reserved keyword
-            appointment_id (int): limit to one appointment only - requires calendarId keyword!
+            from_ (str|datetime): with starting date in format YYYY-MM-DD
+                added _ to name as opposed to ct_api because of reserved keyword
+            to_ (str|datetime): end date in format YYYY-MM-DD ONLY allowed with from_
+                added _ to name as opposed to ct_api because of reserved keyword
+            appointment_id (int): limit to one appointment only
+                requires calendarId keyword!
 
         Returns:
             list of calendar appointment / appointments
-            simplified to appointments only if indidividual occurance is relevant (e.g. lookup by date)
-            startDate and endDate overwritten by actual date if calculated date of series is unambiguous
+            simplified to appointments only if indidividual occurance is relevant
+                (e.g. lookup by date)
+            startDate and endDate overwritten by actual date if
+                calculated date of series is unambiguous
             Nothing in case something is off or nothing exists
         """
         url = self.domain + "/api/calendars"
@@ -69,31 +80,18 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         if len(calendar_ids) > 1:
             url += "/appointments"
             params["calendar_ids[]"] = calendar_ids
-        elif "appointment_id" in kwargs:
+        elif kwargs.get("appointment_id"):
             url += f"/{calendar_ids[0]}/appointments/{kwargs['appointment_id']}"
         else:
             url += f"/{calendar_ids[0]}/appointments"
 
         headers = {"accept": "application/json"}
 
-        if "from_" in kwargs:
-            from_ = kwargs["from_"]
-            if isinstance(from_, datetime):
-                from_ = from_.strftime("%Y-%m-%d")
-            if len(from_) == 10:
-                params["from"] = from_
-        if "to_" in kwargs and "from_" in kwargs:
-            to_ = kwargs["to_"]
-            if isinstance(to_, datetime):
-                to_ = to_.strftime("%Y-%m-%d")
-            if len(to_) == 10:
-                params["to"] = to_
-        elif "to_" in kwargs:
-            logger.warning("Use of to_ is only allowed together with from_")
+        params = self._get_calendar_appointments_params(params=params, **kwargs)
 
         response = self.session.get(url=url, params=params, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = self.combine_paginated_response_data(
                 response_content,
@@ -123,7 +121,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
                     merged_appointments.append(appointment["base"])
                 return merged_appointments
             if "appointment" in result[0]:
-                if len(result[0]["calculatedDates"]) > 2:
+                if len(result[0]["calculatedDates"]) > 1:
                     logger.info("returning a series calendar appointment!")
                     return result
                 logger.debug(
@@ -140,6 +138,36 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         )
         return None
 
+    def _get_calendar_appointments_params(self, params: dict, **kwargs: dict) -> dict:
+        """Helper function which generates params from kwargs.
+
+        Split in order to reduce complexity of function
+
+        Args:
+            params: existing pre-set params
+            kwargs: which should be added
+
+        Returns:
+            params dict which should be used for request
+        """
+        LENGTH_OF_DATE_WITH_HYPHEN = 10
+        if "from_" in kwargs:
+            from_ = kwargs["from_"]
+            if isinstance(from_, datetime):
+                from_ = from_.strftime("%Y-%m-%d")
+            if len(from_) == LENGTH_OF_DATE_WITH_HYPHEN:
+                params["from"] = from_
+        if "to_" in kwargs and "from_" in kwargs:
+            to_ = kwargs["to_"]
+            if isinstance(to_, datetime):
+                to_ = to_.strftime("%Y-%m-%d")
+            if len(to_) == LENGTH_OF_DATE_WITH_HYPHEN:
+                params["to"] = to_
+        elif "to_" in kwargs:
+            logger.warning("Use of to_ is only allowed together with from_")
+
+        return params
+
     def create_calender_appointment(  # noqa: PLR0913
         self,
         calendar_id: int,
@@ -151,7 +179,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         isInternal: bool = False,  # noqa: FBT001 FBT002
         address: dict | None = None,
         link: str = "",
-        **kwargs,
+        **kwargs: dict,
     ) -> dict:
         """Basic implementation of create_calendar.
 
@@ -194,7 +222,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
 
         response = self.session.post(url=url, json=data, headers=headers)
 
-        if response.status_code != 201:
+        if response.status_code != requests.codes.created:
             logger.warning(json.loads(response.content).get("errors"))
             return None
 
@@ -204,12 +232,13 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         self,
         calendar_id: int,
         appointment_id: int,
-        **kwargs,
+        **kwargs: dict,
     ) -> dict:
         """Method used to update calendar appointments.
 
         Similar to create_calender_appointment but with additional appointment_id param.
-        Loads params from existing calendar_appointment and overwrite all provided kwargs
+        Loads params from existing calendar_appointment
+        and overwrite all provided kwargs
 
         See create_calendar_appointment for details about other keywords
 
@@ -244,7 +273,6 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         # overwrite params in respective type
         for date_param in ["startDate", "endDate"]:
             if date_param in list(kwargs):
-                # TODO startDate and endDate
                 existing_calendar_appointment[date_param] = (
                     kwargs.pop(date_param)
                     .astimezone(pytz.utc)
@@ -287,7 +315,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
             url=url, json=updated_calendar_appointment, headers=headers
         )
 
-        if response.status_code != 200:
+        if response.status_code != requests.codes.ok:
             logger.warning(json.loads(response.content).get("errors"))
             return None
 
@@ -296,7 +324,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
     def delete_calender_appointment(
         self, calendar_id: int, appointment_id: int
     ) -> bool:
-        """Delete a specific calendar appointment
+        """Delete a specific calendar appointment.
 
         Args:
             calendar_id: the calendar to modify
@@ -313,7 +341,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
 
         response = self.session.delete(url=url, headers=headers)
 
-        if response.status_code != 204:
+        if response.status_code != requests.codes.no_content:
             logger.warning(json.loads(response.content).get("errors"))
             return False
 

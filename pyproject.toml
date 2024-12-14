@@ -67,23 +67,12 @@ select = [
     "ALL",
 ]
 ignore = [
-    #"S101", # TODO: Github #104 - pytest asserts
-    "ANN001","ANN002","ANN003","ANN201",
-    "FIX002", #Open ToDos
-    "TD002","TD003","TD004", #TODOs
-    "C901","PLR0912", #complexity 
-    "FA100", #Python version specific #102
-    "D100","D101","D102","D104","D107","D205","D415", #Docstrings
-    "E501", #line too long
-    "DTZ001","DTZ005","DTZ007","DTZ002", #datetime timezone
-    
-    "PLR2004", #magic values   
-    
-    "COM812", "ISC001", #disabled for formatter compatibility
+    "FIX002", # correctly formatted TODO items that have open Github issues        
+    "COM812", "ISC001", #disabled for formatter compatibility #TODO 102 - move to pyproject.py
 
-    "N802", #function lowercase -> breaking change
-    "N803", #argument lowercase -> breaking change
-    "N806", #variable name lowercase -> breaking change
+    "N802", #function lowercase -> breaking change #TODO 125 with release 2.0
+    "N803", #argument lowercase -> breaking change #TODO 125 with release 2.0
+    "N806", #variable name lowercase -> breaking change #TODO 125 with release 2.0
     ]
 
 fixable = [

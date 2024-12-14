@@ -1,5 +1,9 @@
+"""module containing parts used for resource handling."""
+
 import json
 import logging
+
+import requests
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
@@ -14,6 +18,7 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
     """
 
     def __init__(self) -> None:
+        """Inherited initialization."""
         super()
 
     def get_resource_masterdata(
@@ -40,7 +45,7 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
 
             response_data = self.combine_paginated_response_data(
@@ -57,8 +62,10 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
         logger.error(response)
         return None
 
-    def get_bookings(self, **kwargs) -> list[dict]:
-        """Access to all Resource bookings in churchtools based on a combination of Keyword Arguments.
+    def get_bookings(self, **kwargs: dict) -> list[dict]:
+        """Access to all Resource bookings in churchtools.
+
+        based on a combination of Keyword Arguments.
 
         Arguments:
             kwargs: see list below - some combination limits do apply
@@ -66,10 +73,14 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
         Keywords:
             booking_id: int: only one booking by id (use standalone only)
             resource_ids:list[int]: required if not booking_id
-            status_ids: list[int]: filter by list of stats ids to consider (requires resource_ids)
-            from_: datetime: date range to consider (use only with to_! - might have a bug in API - Support Ticket 130123)
-            to_: datetime: date range to consider (use only with from_! - might have a bug in API - Support Ticket 130123)
-            appointment_id: int: get resources for one specific calendar_appointment only (use together with to_ and from_ for performance reasons)
+            status_ids: list[int]: filter by list of stats ids
+                to consider (requires resource_ids)
+            from_: datetime: date range to consider (use only with to_! -
+                might have a bug in API - Support Ticket 130123)
+            to_: datetime: date range to consider (use only with from_! -
+                might have a bug in API - Support Ticket 130123)
+            appointment_id: int: get resources for one specific calendar_appointment
+                only (use together with to_ and from_ for performance reasons)
         """
         url = self.domain + "/api/bookings"
         headers = {"accept": "application/json"}
@@ -79,54 +90,69 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
         required_kwargs = ["booking_id", "resource_ids"]
         if not any(kwarg in kwargs for kwarg in required_kwargs):
             logger.error(
-                "invalid argument combination in get_bookings - please check docstring for requirements",
+                "invalid argument combination in get_bookings"
+                " - please check docstring for requirements",
             )
             return None
 
         if booking_id := kwargs.get("booking_id"):
             url = url + f"/{booking_id}"
-        elif resource_ids := kwargs.get("resource_ids"):
-            params["resource_ids[]"] = resource_ids
-
-            if status_ids := kwargs.get("status_ids"):
-                params["status_ids[]"] = status_ids
-            if "from_" in kwargs or "to_" in kwargs:
-                if "from_" not in kwargs or "to_" not in kwargs:
-                    logger.info(
-                        "missing from_ or to_ defaults to first or last day of current month",
-                    )
-                if from_ := kwargs.get("from_"):
-                    params["from"] = from_.strftime("%Y-%m-%d")
-                if to_ := kwargs.get("to_"):
-                    params["to"] = to_.strftime("%Y-%m-%d")
-            if appointment_id := kwargs.get("appointment_id"):
-                if "from" not in params:
-                    logger.warning(
-                        "using appointment ID without date range might be incomplete if current month differs",
-                    )
-                params["appointment_id"] = appointment_id
+        elif kwargs.get("resource_ids"):
+            params = self._get_bookings_params(params=params, **kwargs)
 
         response = self.session.get(url=url, headers=headers, params=params)
 
-        if response.status_code == 200:
-            response_content = json.loads(response.content)
+        if response.status_code != requests.codes.ok:
+            logger.error(response.content)
+            return None
+        response_content = json.loads(response.content)
 
-            response_data = self.combine_paginated_response_data(
-                response_content,
-                url=url,
-                headers=headers,
-                params=params,
-            )
-            result_list = (
-                [response_data] if isinstance(response_data, dict) else response_data
-            )
+        response_data = self.combine_paginated_response_data(
+            response_content,
+            url=url,
+            headers=headers,
+            params=params,
+        )
+        result_list = (
+            [response_data] if isinstance(response_data, dict) else response_data
+        )
 
-            if appointment_id := kwargs.get("appointment_id"):
-                return [
-                    i
-                    for i in result_list
-                    if i["base"]["appointmentId"] == appointment_id
-                ]
-            return result_list
-        logger.error(response.content)
-        return None
+        if appointment_id := kwargs.get("appointment_id"):
+            return [
+                i for i in result_list if i["base"]["appointmentId"] == appointment_id
+            ]
+        return result_list
+
+    def _get_bookings_params(self, params: dict, **kwargs: dict) -> dict:
+        """Helper function for get bookings that prepares params.
+
+        Arguments:
+            params: existing params which were set before
+            kwargs: additional kwargs which should be transformed into params
+
+        Returns:
+            params dict which can be used for request
+        """
+        params["resource_ids[]"] = kwargs.get("resource_ids")
+
+        if status_ids := kwargs.get("status_ids"):
+            params["status_ids[]"] = status_ids
+        if "from_" in kwargs or "to_" in kwargs:
+            if "from_" not in kwargs or "to_" not in kwargs:
+                logger.info(
+                    "missing from_ or to_ defaults"
+                    " to first or last day of current month",
+                )
+            if from_ := kwargs.get("from_"):
+                params["from"] = from_.strftime("%Y-%m-%d")
+            if to_ := kwargs.get("to_"):
+                params["to"] = to_.strftime("%Y-%m-%d")
+        if appointment_id := kwargs.get("appointment_id"):
+            if "from" not in params:
+                logger.warning(
+                    "using appointment ID without date range"
+                    " might be incomplete if current month differs",
+                )
+            params["appointment_id"] = appointment_id
+
+        return params

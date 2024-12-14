@@ -1,8 +1,11 @@
-from __future__ import annotations
+"""module containing parts used for song handling."""
 
 import json
 import logging
 from datetime import datetime, timedelta
+
+import pytz
+import requests
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
@@ -17,9 +20,10 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
     """
 
     def __init__(self) -> None:
+        """Inherited initialization."""
         super()
 
-    def get_songs(self, **kwargs) -> list[dict]:
+    def get_songs(self, **kwargs: dict) -> list[dict]:
         """Gets list of all songs from the server.
 
         Kwargs:
@@ -29,7 +33,8 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         """
         if "id" in kwargs:
             logger.warning(
-                "get songs uses song_id but id was provided - are you sure you're using the correct keyword?"
+                "get songs uses song_id but id was provided"
+                " - are you sure you're using the correct keyword?"
             )
 
         url = self.domain + "/api/songs"
@@ -39,7 +44,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         params = {"limit": 50}  # increases default pagination size
         response = self.session.get(url=url, headers=headers, params=params)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = self.combine_paginated_response_data(
                 response_content,
@@ -67,34 +72,37 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         self, song_id: int | None = None, require_update_after_seconds: int = 10
     ) -> dict:
         """Legacy AJAX function to get a specific song.
+
         used to e.g. check for tags requires requesting full song list
-        for efficiency reasons songs are cached and not updated unless older than 15sec or update_required
-        Be aware that params of the returned object might differ from REST API responsens (e.g. Bezeichnung instead of name).
+        for efficiency reasons songs are cached and not updated
+        unless older than 15sec or update_required
+        Be aware that params of the returned object might differ
+        from REST API responsens (e.g. Bezeichnung instead of name).
 
         Params:
             song_id: the id of the song to be searched for
-            require_update_after_seconds: number of seconds after which an update of ajax song cache is required
+            require_update_after_seconds: number of seconds after which
+                an update of ajax song cache is required
             defaults to 10 sedonds
 
         Returns:
             response content interpreted as json
         """
         logging.warning(
-            "Using undocumented AJAX API because function does not exist as REST endpoint"
+            "Using undocumented AJAX API because "
+            "function does not exist as REST endpoint"
         )
         if self.ajax_song_last_update is None:
             require_update = True
         else:
-            require_update = (
-                self.ajax_song_last_update
-                + timedelta(seconds=require_update_after_seconds)
-                < datetime.now()
-            )
+            require_update = self.ajax_song_last_update + timedelta(
+                seconds=require_update_after_seconds
+            ) < datetime.now().astimezone(pytz.utc)
         if require_update:
             url = self.domain + "/?q=churchservice/ajax&func=getAllSongs"
             response = self.session.post(url=url)
             self.ajax_song_cache = json.loads(response.content)["data"]["songs"]
-            self.ajax_song_last_update = datetime.now()
+            self.ajax_song_last_update = datetime.now().astimezone(pytz.utc)
 
         return self.ajax_song_cache[str(song_id)]
 
@@ -116,7 +124,9 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         return song_category_dict
 
     def lookup_song_category_as_id(self, category_name: str) -> int:
-        """Converts a song_category text to the internal id used as song_source in arrangements
+        """Converts a song_category text to the internal id.
+
+        used as song_source in arrangements.
 
         Args:
             category_name: human readable long name of the song category
@@ -136,15 +146,18 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         return result
 
     def get_song_source_map(self) -> dict:
-        """Helpfer function creating requesting CT metadata for mapping of song sources.
-        WARNING - uses undocumented AJAX API
+        """Requesting CT metadata for mapping of song sources.
+
+        WARNING - uses undocumented AJAX API.
 
         Returns:
             a dictionary of {Index:{valuedict}}.
         """
-        # TODO: #124 implement using REST API once support case 135796 is resolved
+        # TODO @bensteUEM: implement using REST API once support case 135796 is resolved
+        # https://github.com/bensteUEM/ChurchToolsAPI/issues/124
         logging.warning(
-            "Using undocumented AJAX API because function does not exist as REST endpoint"
+            "Using undocumented AJAX API"
+            " because function does not exist as REST endpoint"
         )
         url = self.domain + "/index.php?q=churchservice/ajax"
         headers = {"accept": "application/json"}
@@ -156,8 +169,9 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
     def lookup_song_source_as_id(
         self, longname: str | None = None, shortname: str | None = None
     ) -> int:
-        """Converts a song_source text to the internal id used as song_source in arrangements
-        One of the arguments must be provided
+        """Converts a song_source text to the internal id.
+
+        used as song_source in arrangements One of the arguments must be provided.
 
         Args:
             longname: human readable long name of the source. Defaults to ""
@@ -196,32 +210,41 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         self,
         title: str,
         songcategory_id: int,
-        author="",
-        copyright="",  # noqa: A002
-        ccli="",
-        tonality="",
-        bpm="",
-        beat="",
-    ):
-        """Method to create a new song using legacy AJAX API
+        author: str = "",
+        copyright: str = "",  # noqa: A002
+        ccli: str = "",
+        tonality: str = "",
+        bpm: str = "",
+        beat: str = "",
+    ) -> int | None:
+        """Method to create a new song using legacy AJAX API.
+
         Does not check for existing duplicates !
         function endpoint see https://api.church.tools/function-churchservice_addNewSong.html
-        name for params reverse engineered based on web developer tools in Firefox and live churchTools instance.
+        name for params reverse engineered based on web developer tools
+        in Firefox and live churchTools instance.
 
-        :param title: Title of the Song
-        :param songcategory_id: int id of site specific songcategories (created in CT Metadata) - required
-        :param author: name of author or authors, ideally comma separated if multiple - optional
-        :param copyright: name of organization responsible for rights distribution - optional
-        :param ccli: CCLI ID see songselect.ccli.com/ - using "-" if empty on purpose - optional
-        :param tonality: empty or specific string used for tonaly - see ChurchTools for details e.g. Ab,A,C,C# ... - optional
-        :param bpm: Beats per Minute - optional
-        :param beat: Beat - optional
+        Arguments:
+            title: Title of the Song
+            songcategory_id: int id of site specific songcategories
+                (created in CT Metadata) - required
+            author: name of author or authors, ideally
+                comma separated if multiple - optional
+            copyright: name of organization responsible
+                for rights distribution - optional
+            ccli: CCLI ID see songselect.ccli.com/ - using "-"
+                if empty on purpose - optional
+            tonality: empty or specific string used for tonaly
+                see ChurchTools for details e.g. Ab,A,C,C# ... - optional
+            bpm: Beats per Minute - optional
+            beat: Beat - optional
 
-        :return: int song_id: ChurchTools song_id of the Song created or None if not successful
-        :rtype: int | None
+        Returns:
+            song_id: ChurchTools song_id of the Song created or None if not successful
         """
         logging.warning(
-            "Using undocumented AJAX API because function does not exist as REST endpoint"
+            "Using undocumented AJAX API"
+            " because function does not exist as REST endpoint"
         )
         url = self.domain + "/?q=churchservice/ajax&func=addNewSong"
 
@@ -238,7 +261,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
 
         response = self.session.post(url=url, data=data)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             new_id = int(response_content["data"])
             logger.debug("Song created successful with ID=%s", new_id)
@@ -250,32 +273,38 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
     def edit_song(  # noqa: PLR0913
         self,
         song_id: int,
-        songcategory_id=None,
-        title=None,
-        author=None,
-        copyright=None,  # noqa: A002
-        ccli=None,
-        practice_yn=None,
-    ):
-        """Method to EDIT an existing song using legacy AJAX API
+        *,
+        songcategory_id: int | None = None,
+        title: str | None = None,
+        author: str | None = None,
+        copyright: str | None = None,  # noqa: A002
+        ccli: str | None = None,
+        practice_yn: str | None = None,
+    ) -> dict:
+        """Method to EDIT an existing song using legacy AJAX API.
+
         Changes are only applied to fields that have values in respective param
         None is considered empty while '' is an empty text which clears existing values.
 
         function endpoint see https://api.church.tools/function-churchservice_editSong.html
-        name for params reverse engineered based on web developer tools in Firefox and live churchTools instance
-        NOTE - BPM and BEAT used in create are part of arrangement and not song therefore not editable in this method
+        name for params reverse engineered based on web developer tools
+        in Firefox and live churchTools instance
+        NOTE - BPM and BEAT used in create are part of arrangement
+        and not song therefore not editable in this method
 
-        :param song_id: ChurchTools site specific song_id which should be modified - required
+        Arguments:
+            song_id: ChurchTools site specific song_id which should be modified
+                required
+            title: Title of the Song
+            songcategory_id: int id of site specific songcategories
+                (created in CT Metadata)
+            author: name of author or authors, ideally comma separated if multiple
+            copyright: name of organization responsible for rights distribution
+            ccli: CCLI ID see songselect.ccli.com/ - using "-" if empty on purpose
+            practice_yn: bool as 0 and 1 -
+                additional param which does not exist in create method!
 
-        :param title: Title of the Song
-        :param songcategory_id: int id of site specific songcategories (created in CT Metadata)
-        :param author: name of author or authors, ideally comma separated if multiple
-        :param copyright: name of organization responsible for rights distribution
-        :param ccli: CCLI ID see songselect.ccli.com/ - using "-" if empty on purpose
-        :param practice_yn: bool as 0 and 1 - additional param which does not exist in create method!
-
-        :return: response item
-        :rtype: dict #TODO 49
+        Returns: response item #TODO 49
         """
         # system/churchservice/churchservice_db.php
         url = self.domain + "/?q=churchservice/ajax&func=editSong"
@@ -301,16 +330,21 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         return self.session.post(url=url, data=data)
 
     def delete_song(self, song_id: int) -> dict:
-        """Method to DELETE a song using legacy AJAX API
-        name for params reverse engineered based on web developer tools in Firefox and live churchTools instance.
+        """Method to DELETE a song using legacy AJAX API.
 
-        :param song_id: ChurchTools site specific song_id which should be modified - required
+        name for params reverse engineered based on web developer tools
+        in Firefox and live churchTools instance.
 
-        :return: response item
-        #TODO 49
+        Arguments:
+            song_id: ChurchTools site specific song_id which should be modified
+                required
+
+        Returns:
+            response item #TODO 49
         """
         logging.warning(
-            "Using undocumented AJAX API because function does not exist as REST endpoint"
+            "Using undocumented AJAX API"
+            " because function does not exist as REST endpoint"
         )
         # system/churchservice/churchservice_db.php
         url = self.domain + "/?q=churchservice/ajax&func=deleteSong"
@@ -322,20 +356,25 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         return self.session.post(url=url, data=data)
 
     def add_song_tag(self, song_id: int, song_tag_id: int) -> dict:
-        """Method to add a song tag using legacy AJAX API on a specific song
-        reverse engineered based on web developer tools in Firefox and live churchTools instance.
+        """Method to add a song tag using legacy AJAX API on a specific song.
+
+        reverse engineered based on web developer tools in Firefox
+        and live churchTools instance.
 
         re-adding existing tag does not cause any issues
-        :param song_id: ChurchTools site specific song_id which should be modified - required
-        :type song_id: int
-        :param song_tag_id: ChurchTools site specific song_tag_id which should be added - required
-        :type song_tag_id: int
 
-        :return: response item
-        #TODO 49
+        Arguments:
+            song_id: ChurchTools site specific song_id which should be modified
+                required
+            song_tag_id: ChurchTools site specific song_tag_id which should be added
+                required
+
+        Returns:
+            response item #TODO 49
         """
         logging.warning(
-            "Using undocumented AJAX API because function does not exist as REST endpoint"
+            "Using undocumented AJAX API"
+            " because function does not exist as REST endpoint"
         )
         url = self.domain + "/?q=churchservice/ajax&func=addSongTag"
 
@@ -343,21 +382,25 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
 
         return self.session.post(url=url, data=data)
 
-    def remove_song_tag(self, song_id, song_tag_id) -> dict:
-        """Method to remove a song tag using legacy AJAX API on a specifc song
-        reverse engineered based on web developer tools in Firefox and live churchTools instance
+    def remove_song_tag(self, song_id: int, song_tag_id: int) -> dict:
+        """Method to remove a song tag using legacy AJAX API on a specifc song.
+
+        reverse engineered based on web developer tools in Firefox
+        and live churchTools instance
         re-removing existing tag does not cause any issues.
 
-        :param song_id: ChurchTools site specific song_id which should be modified - required
-        :type song_id: int
-        :param song_tag_id: ChurchTools site specific song_tag_id which should be added - required
-        :type song_tag_id: int
+        Arguments:
+            song_id: ChurchTools site specific song_id which should be modified
+                required
+            song_tag_id: ChurchTools site specific song_tag_id which should be added
+                required
 
-        :return: response item
-        #TODO 49
+        Returns:
+            response item #TODO 49
         """
         logging.warning(
-            "Using undocumented AJAX API because function does not exist as REST endpoint"
+            "Using undocumented AJAX API"
+            " because function does not exist as REST endpoint"
         )
         url = self.domain + "/?q=churchservice/ajax&func=delSongTag"
 
@@ -369,7 +412,8 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         """Method to get a song tag workaround using legacy AJAX API for getSong.
 
         Arguments:
-            song_id: ChurchTools site specific song_id which should be modified - required
+            song_id: ChurchTools site specific song_id which should be modified
+                required
             rtype: optional return type filter either original, id_dict, name_dict
 
         Returns:
@@ -396,7 +440,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
 
         Arguments:
             song_id: ChurchTools site specific song_id which should checked
-            song_tag_id: ChurchTools site specific song_tag_id which should be searched for
+            song_tag_id: ChurchTools site specific song_tag_id which should used
 
         Returns:
             bool if present
@@ -404,12 +448,14 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         tags = self.get_song_tags(song_id)
         return song_tag_id in tags
 
-    def get_songs_by_tag(self, song_tag_id) -> list[dict]:
+    def get_songs_by_tag(self, song_tag_id: int) -> list[dict]:
         """Helper which returns all songs that contain have a specific tag.
 
-        :param song_tag_id: ChurchTools site specific song_tag_id which should be searched for
-        :type song_tag_id: int
-        :return: list of songs
+        Arguments:
+            song_tag_id: ChurchTools site specific song_tag_id which should be used
+
+        Returns:
+            list of songs
         """
         songs = self.get_songs()
         songs_dict = {song["id"]: song for song in songs}
@@ -427,9 +473,10 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
     ) -> dict:
         """Retrieve a specific song arrangement.
 
-        Args:
-            song_id: number of the song - usually shown at bottom right of song view in churchtools
-            arrangement_id: id of the arrangement nested within the song - only visible in API. Defaults to default arrangement.
+        Arguments:
+            song_id: number of the song - usually shown at bottom right songView in CT
+            arrangement_id: id of the arrangement nested within the song
+                only visible in API. Defaults to default arrangement.
 
         Returns:
             dict from song arrangement (from REST API)
@@ -459,7 +506,8 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
             arrangement_id
         """
         logging.warning(
-            "Using undocumented AJAX API because function does not exist as REST endpoint"
+            "Using undocumented AJAX API"
+            " because function does not exist as REST endpoint"
         )
 
         url = self.domain + "/?q=churchservice/ajax"
@@ -470,7 +518,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
             "bezeichnung": arrangement_name,
         }
         response = self.session.post(url=url, data=data)
-        if response.status_code != 200:
+        if response.status_code != requests.codes.ok:
             logger.error(response)
             return None
 
@@ -480,7 +528,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         self,
         song_id: int,
         arrangement_id: int,
-        **kwargs,
+        **kwargs: dict,
     ) -> bool:
         """Updates a existing song arrangment.
 
@@ -489,11 +537,13 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         Args:
             song_id: song id from churchtools
             arrangement_id: arrangement id from respective song
-            kwargs: optional keyword arguments as listed below - preserves original state if not specified
+            kwargs: optional keyword arguments as listed below
+                preserves original state if not specified
 
         Kwargs
             name: (str) originally called "bezeichnung in CT"
-            source_id: (int|str) id of the source as defined in masterdata. Alternatively also accepts shortname.
+            source_id: (int|str) id of the source as defined in masterdata.
+                Alternatively also accepts shortname.
             source_ref: (str) source reference number.
             tonality: (str) e.g. Ab.
             bpm: (str) beats per minute.
@@ -506,7 +556,8 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
             if changes were applied
         """
         logger.warning(
-            "Using undocumented AJAX API because function does not exist as REST endpoint"
+            "Using undocumented AJAX API"
+            " because function does not exist as REST endpoint"
         )
         url = self.domain + "/?q=churchservice/ajax"
 
@@ -514,13 +565,15 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
             song_id=song_id, arrangement_id=arrangement_id
         )
 
-        source_id = (
-            kwargs.get("source_id")
-            if isinstance(kwargs.get("source_id"), int)
-            else self.lookup_song_source_as_id(
+        if isinstance(kwargs.get("source_id"), int):
+            source_id = kwargs.get("source_id")
+        elif isinstance(kwargs.get("source_id"), str):
+            source_id = self.lookup_song_source_as_id(shortname=kwargs.get("source_id"))
+        else:
+            source_id = self.lookup_song_source_as_id(
                 shortname=existing_arrangement["sourceName"]
             )
-        )
+
         data = {
             "func": "editArrangement",
             "song_id": song_id,
@@ -544,7 +597,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
             "note": kwargs.get("note", existing_arrangement["note"]),
         }
         response = self.session.post(url=url, data=data)
-        if response.status_code != 200:
+        if response.status_code != requests.codes.ok:
             logger.error(json.loads(response.content)["errors"])
             return False
 
@@ -568,7 +621,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
             "id": arrangement_id,
         }
         response = self.session.post(url=url, data=data)
-        if response.status_code != 200:
+        if response.status_code != requests.codes.ok:
             logger.error(response)
             return False
 

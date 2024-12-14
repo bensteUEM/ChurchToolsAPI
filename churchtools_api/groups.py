@@ -1,5 +1,9 @@
+"""module containing parts used for groups handling."""
+
 import json
 import logging
+
+import requests
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
@@ -14,9 +18,10 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
     """
 
     def __init__(self) -> None:
+        """Inherited initialization."""
         super()
 
-    def get_groups(self, **kwargs) -> list[dict]:
+    def get_groups(self, **kwargs:dict) -> list[dict]:
         """Gets list of all groups.
 
         Keywords:
@@ -40,7 +45,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
 
             response_data = self.combine_paginated_response_data(
@@ -56,15 +61,16 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_groups_hierarchies(self):
-        """Get list of all group hierarchies and convert them to a dict
-        :return: list of all group hierarchies using groupId as key
-        :rtype: dict.
+    def get_groups_hierarchies(self)->dict:
+        """Get list of all group hierarchies and convert them to a dict.
+
+        Returns:
+            list of all group hierarchies using groupId as key
         """
         url = self.domain + "/api/groups/hierarchies"
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
             logger.debug(
@@ -94,7 +100,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_content = json.loads(response.content)
 
@@ -120,7 +126,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         name: str,
         group_status_id: int,
         grouptype_id: int,
-        **kwargs,
+        **kwargs:dict,
     ) -> dict:
         """Create a new group.
 
@@ -161,7 +167,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
         response = self.session.post(url=url, headers=headers, data=data)
 
-        if response.status_code != 201:
+        if response.status_code != requests.codes.created:
             logger.warning(json.loads(response.content)["translatedMessage"])
             return None
 
@@ -180,6 +186,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
     def update_group(self, group_id: int, data: dict) -> dict:
         """Update a field of the given group.
+
         to loookup available names use get_group(group_id=xxx).
 
         Arguments:
@@ -196,7 +203,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         }
         response = self.session.patch(url=url, headers=headers, data=json.dumps(data))
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
             logger.debug(
@@ -227,7 +234,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         url = self.domain + f"/api/groups/{group_id}"
         response = self.session.delete(url=url)
 
-        if response.status_code == 204:
+        if response.status_code == requests.codes.no_content:
             logger.debug("First response of Delete Group successful")
             return True
         logger.warning(
@@ -237,11 +244,15 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_grouptypes(self, **kwargs):
-        """Get list of all grouptypes
-        :keyword grouptype_id: int: optional filter by grouptype id
-        :return: dict with all grouptypes with id as key (even if only one)
-        :rtype: dict.
+    def get_grouptypes(self, **kwargs:dict)->dict:
+        """Get list of all grouptypes.
+
+        Arguments:
+            kwargs: keyword arguments as listed below
+
+        Keywords:
+            grouptype_id: int: optional filter by grouptype id
+            dict with all grouptypes with id as key (even if only one)
         """
         url = self.domain + "/api/group/grouptypes"
         if "grouptype_id" in kwargs:
@@ -249,7 +260,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
             logger.debug(
@@ -268,17 +279,19 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_group_permissions(self, group_id: int):
-        """Get permissions of the current user for the given group
-        :param group_id: required group_id
-        :return: dict with permissions
-        :rtype: dict.
+    def get_group_permissions(self, group_id: int)->dict:
+        """Get permissions of the current user for the given group.
+
+        Arguments:
+            group_id: required group_id
+        Returns:
+            dict with permissions
         """
         url = self.domain + f"/api/permissions/internal/groups/{group_id}"
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
             logger.debug(
@@ -293,7 +306,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_group_members(self, group_id: int, **kwargs) -> list[dict]:
+    def get_group_members(self, group_id: int, **kwargs:dict) -> list[dict]:
         """Get list of members for the given group.
 
         Arguments:
@@ -315,7 +328,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
         response = self.session.get(url=url, headers=headers, params=params)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
 
             response_data = self.combine_paginated_response_data(
@@ -337,9 +350,10 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         group_ids: list[int] | None = None,
         *,
         with_deleted: bool = False,
-        **kwargs,
+        **kwargs:dict,
     ) -> list[dict]:
-        """Access to /groups/members to lookup group memberships
+        """Access to /groups/members to lookup group memberships.
+
         Similar to get_group_members but not specific to a single group.
 
         Args:
@@ -363,7 +377,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
         response = self.session.get(url=url, headers=headers, params=params)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
 
             response_data = self.combine_paginated_response_data(
@@ -396,7 +410,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         )
         return None
 
-    def add_group_member(self, group_id: int, person_id: int, **kwargs) -> dict:
+    def add_group_member(self, group_id: int, person_id: int, **kwargs:dict) -> dict:
         """Add a member to a group.
 
         Arguments:
@@ -424,7 +438,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
         response = self.session.put(url=url, data=data, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             # For unknown reasons the endpoint returns a list of items instead
             # of a single item as specified in the API documentation.
@@ -452,7 +466,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         url = self.domain + f"/api/groups/{group_id}/members/{person_id}"
         response = self.session.delete(url=url)
 
-        if response.status_code == 204:
+        if response.status_code == requests.codes.no_content:
             return True
         logger.warning(
             "%s Something went wrong removing group member: %s",
@@ -473,7 +487,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
 
             response_data = self.combine_paginated_response_data(
@@ -505,7 +519,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         url = self.domain + f"/api/groups/{group_id}/parents/{parent_group_id}"
         response = self.session.put(url=url)
 
-        if response.status_code == 201:
+        if response.status_code == requests.codes.created:
             logger.debug("First response of Add Parent Group successful")
             return True
         logger.warning(
@@ -528,7 +542,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         url = self.domain + f"/api/groups/{group_id}/parents/{parent_group_id}"
         response = self.session.delete(url=url)
 
-        if response.status_code == 204:
+        if response.status_code == requests.codes.no_content:
             logger.debug("First response of Remove Parent Group successful")
             return True
         logger.warning(

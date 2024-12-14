@@ -1,7 +1,11 @@
+"""module test groups."""
+
 import json
 import logging
 import logging.config
 from pathlib import Path
+
+import pytest
 
 from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
 
@@ -17,29 +21,38 @@ with config_file.open(encoding="utf-8") as f_in:
 
 
 class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
+    """Test for Groups."""
+
     def test_get_groups(self) -> None:
-        """1. Test requests all groups and checks that result has more than 50 elements (hence default pagination works)
+        """Checks get_groups.
+
+        1. Test requests all groups and checks that result has more than 50 elements
+            (hence default pagination works)
         2. Test requests group 103 and checks that result matches Test song.
 
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
         groups = self.api.get_groups()
         assert isinstance(groups, list)
         assert isinstance(groups[0], dict)
-        assert len(groups) > 10
 
-        groups = self.api.get_groups(group_id=103)
+        EXPECTED_MIN_NUMBER_OF_GROUPS = 10
+        assert len(groups) > EXPECTED_MIN_NUMBER_OF_GROUPS
+
+        SAMPLE_GROUP_ID = 103
+        groups = self.api.get_groups(group_id=SAMPLE_GROUP_ID)
         assert isinstance(groups, list)
         group = groups[0]
         assert isinstance(group, dict)
-        assert group["id"] == 103
+        assert group["id"] == SAMPLE_GROUP_ID
         assert group["name"] == "TestGruppe"
 
     def test_get_groups_hierarchies(self) -> None:
-        """Checks that the list of group hierarchies can be retrieved and each
-        element contains the keys 'groupId', 'parents' and 'children'.
-        The list should be accessible as dict using groupID as key
+        """Checks that the list of group hierarchies can be retrieved.
+
+        and each element contains the keys 'groupId', 'parents' and 'children'.
+        The list should be accessible as dict using groupID as key.
         """
         hierarchies = self.api.get_groups_hierarchies()
         assert isinstance(hierarchies, dict)
@@ -49,10 +62,12 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
             assert "children" in hierarchy
 
     def test_get_group_statistics(self) -> None:
-        """Checks that the statistics for a group can be retrieved and certain keys
+        """Checks that the statistics for a group.
+
+        can be retrieved and certain keys
         exist in the dict.
 
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
         SAMPLE_GROUP_ID = 103
@@ -64,42 +79,53 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         assert "takenPlaces" in stats["unfiltered"]
 
     def test_get_grouptypes(self) -> None:
-        """Test related to grouptypes
+        """Test related to grouptypes.
 
-        1. Check that the list of grouptypes can be retrieved and each element contains the keys 'id' and 'name'.
+        1. Check that the list of grouptypes can be retrieved and each element contains
+        the keys 'id' and 'name'.
         2. Check that a single grouptype can be retrieved and id and name are matching.
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        IMPORTANT - This test method and the parameters used depend on target system!
         """
         # multiple group types
         grouptypes = self.api.get_grouptypes()
         assert isinstance(grouptypes, dict)
-        assert len(grouptypes) > 2
+        EXPECTED_MIN_NUMBER_OF_GROUPTYPES = 2
+        assert len(grouptypes) > EXPECTED_MIN_NUMBER_OF_GROUPTYPES
         for grouptype in grouptypes.values():
             assert "id" in grouptype
             assert "name" in grouptype
 
         # one type only
+        EXPECTED_SAMPLE_GROUPTYPE = {2: "Dienst"}
+
         grouptypes = self.api.get_grouptypes(grouptype_id=2)
         assert len(grouptypes) == 1
         for grouptype in grouptypes.values():
             assert "id" in grouptype
             assert "name" in grouptype
-            assert grouptype["id"] == 2
-            assert grouptype["name"] == "Dienst"
+            assert grouptype["id"] == next(iter(EXPECTED_SAMPLE_GROUPTYPE))
+            assert grouptype["name"] == next(iter(EXPECTED_SAMPLE_GROUPTYPE.values()))
 
     def test_get_group_permissions(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
-        Checks that the permissions for a group can be retrieved and matches the test permissions.
+        """Checks that the permissions for a group.
+
+        can be retrieved and matches the test permissions.
+        IMPORTANT - This test method and the parameters used depend on target system!
         """
-        permissions = self.api.get_group_permissions(group_id=103)
-        assert permissions["churchdb"]["+see group"] == 2
+        SAMPLE_GROUP_ID = 103
+        EXPECTED_NUMNER_OF_PERMISSIONS = 2
+
+        permissions = self.api.get_group_permissions(group_id=SAMPLE_GROUP_ID)
+        assert permissions["churchdb"]["+see group"] == EXPECTED_NUMNER_OF_PERMISSIONS
         assert permissions["churchdb"]["+edit group infos"]
 
-    def test_create_and_delete_group(self, caplog) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+    def test_create_and_delete_group(self, caplog:pytest.LogCaptureFixture) -> None:
+        """Checks if groups can be created.
+
+        IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
 
-        Checks if groups can be created
+
         1.  with minimal parameters.
         2. More complex group information
         3. Checks if a group can not be created with name of an existing group
@@ -148,7 +174,8 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
             )
         assert group3 is None
         EXPECTED_MESSAGES = [
-            'Duplikat gefunden. Nutze das "force" Flag, um die Gruppe trotzdem anzulegen.'
+            'Duplikat gefunden. Nutze das "force" Flag, um'
+            " die Gruppe trotzdem anzulegen."
         ]
         assert caplog.messages == EXPECTED_MESSAGES
 
@@ -175,11 +202,14 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         assert ret
 
     def test_update_group(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
-        The user needs to be able to change group information - usually "Leiter" permission enables this.
+        """Checks that a field in a group can be set.
 
-        Checks that a field in a group can be set to some value and the returned group has this field value set.
+        to some value and the returned group has this field value set.
         Also cleans the field after executing the test
+
+        IMPORTANT - This test method and the parameters used depend on target system!
+        The user needs to be able to change group information -
+        usually "Leiter" permission enables this.
         """
         SAMPLE_GROUP_ID = 103
         data = {"note": "TestNote - if this exists an automated test case failed"}
@@ -194,10 +224,11 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         assert groups[0]["information"]["note"] == ""
 
     def test_get_group_members(self) -> None:
-        """Checks if group members can be retrieved from the group and filtering
-        for role ids works.
+        """Checks if group members can be retrieved.
 
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        from the group and filtering for role ids works.
+
+        IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
         SAMPLE_GROUP_ID = 103
@@ -220,9 +251,11 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
             assert member["groupTypeRoleId"] == SAMPLE_GROUPTYPE_ROLE_ID
 
     def test_get_groups_members(self) -> None:
-        """Check that a list of groups is received when asking by person and optional role id.
+        """Check that a list of groups is received.
 
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        when asking by person and optional role id.
+
+        IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
         SAMPLE_PERSON_IDS = [513]
@@ -267,7 +300,9 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         assert len(result) == 1
 
     def test_add_and_remove_group_members(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on the target system!
+        """Checks add_and_remove_group_members.
+
+        IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
         SAMPLE_GROUP_ID = 103
@@ -305,7 +340,7 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
     def test_add_and_remove_parent_group(self) -> None:
         """Checks if a parent group can be added to and removed from a group.
 
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
         SAMPLE_GROUP_ID = 103

@@ -1,7 +1,12 @@
+"""module test song."""
+
 import json
 import logging
 import logging.config
 from pathlib import Path
+
+import pytest
+import requests
 
 from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
 
@@ -17,20 +22,27 @@ with config_file.open(encoding="utf-8") as f_in:
 
 
 class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
+    """Test for Songs."""
+
     def test_get_songs(self) -> None:
-        """1. Test requests all songs and checks that result has more than 50 elements (hence default pagination works)
+        """Check get songs.
+
+        1. Test requests all songs and checks that result has more than 50 elements
+         (hence default pagination works)
         2. Test requests song 2034 and checks that result matches "sample".
 
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        IMPORTANT - This test method and the parameters used
+            depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
         SAMPLE_SONG_ID = 2034
 
         songs = self.api.get_songs()
-        assert len(songs) > 50
+        LENGTH_OF_DEFAULT_PAGINATION = 50
+        assert len(songs) > LENGTH_OF_DEFAULT_PAGINATION
 
         song = self.api.get_songs(song_id=SAMPLE_SONG_ID)[0]
-        assert song["id"] == 2034
+        assert song["id"] == SAMPLE_SONG_ID
         assert song["name"] == "sample"
 
     def test_get_song_ajax(self) -> None:
@@ -39,7 +51,8 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         1. Test requests song 408 and checks that result matches Test song
         Keys were last updated / checked with ChurchTools v3.115.1
 
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        IMPORTANT - This test method and the parameters used
+            depend on the target system!
 
         """
         SAMPLE_SONG_ID = 2034
@@ -69,15 +82,23 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         assert song["bezeichnung"] == "sample"
 
     def test_get_song_category_map(self) -> None:
-        """Checks that a dict with respective known values is returned when requesting song categories
-        IMPORTANT - This test method and the parameters used depend on the target system!
-        Requires the connected test system to have a category "Test" mapped as ID 13 (or changed if other system)
+        """Checks that a dict with respective known values.
+
+        is returned when requesting song categories
+        IMPORTANT - This test method and the parameters used
+            depend on the target system!
+        Requires the connected test system to have a category "Test"
+        mapped as ID 13 (or changed if other system)
         :return:
         """
-        song_catgegory_dict = self.api.get_song_category_map()
-        assert song_catgegory_dict["Test"] == 13
+        EXPECTED_CATEGORY = {"Test": 13}
 
-    def test_lookup_song_category_as_id(self, caplog) -> None:
+        song_catgegory_dict = self.api.get_song_category_map()
+        assert all(
+            item in song_catgegory_dict.items() for item in EXPECTED_CATEGORY.items()
+        )
+
+    def test_lookup_song_category_as_id(self, caplog: pytest.LogCaptureFixture) -> None:
         """Checks lookup of song category by text.
 
         On ELKW1610.KRZ.TOOLS "Feiert Jesus 5" = id8
@@ -106,11 +127,14 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         ]
         assert caplog.messages == EXPECTED_MESSAGES
 
-    def test_create_edit_delete_song(self, caplog) -> None:
-        """Test method used to create a new song, edit it's metadata and remove the song.
+    def test_create_edit_delete_song(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Test method used to create a new song.
+
+        edit it's metadata and remove the song.
 
         Does only test metadata not attachments or arrangements
-        IMPORTANT - This test method and the parameters used depend on the target system!
+        IMPORTANT - This test method and the parameters used
+            depend on the target system!
         On ELKW1610.KRZ.TOOLS songcategory_id 13 is TEST
 
         Returns: None
@@ -119,9 +143,17 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         songcategory_id = 13
 
         # 1. Create Song after and check it exists with all params
-        # with self.assertNoLogs(level=logging.WARNING) as cm: #TODO #25
-        song_id = self.api.create_song(title, songcategory_id)
+        caplog.clear()
+        with caplog.at_level(level=logging.INFO, logger="churchtools_api.songs"):
+            song_id = self.api.create_song(title, songcategory_id)
         assert song_id is not None
+        EXPECTED_MESSAGES = [
+            (
+                "Using undocumented AJAX API"
+                " because function does not exist as REST endpoint"
+            )
+        ]
+        assert all(message in caplog.messages for message in EXPECTED_MESSAGES)
 
         ct_song = self.api.get_songs(song_id=song_id)[0]
         assert ct_song["name"] == title
@@ -137,20 +169,20 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         # 3. Edit all fields and check it exists with all params
         data = {
             "bezeichnung": "Test_bezeichnung3",
-            "songcategory_id": 1,  # needs to exist does not matter which because deleted later
+            "songcategory_id": 1,
             "author": "Test_author",
             "copyright": "Test_copyright",
             "ccli": "Test_ccli",
             "practice_yn": 1,
         }
         self.api.edit_song(
-            song_id,
-            data["songcategory_id"],
-            data["bezeichnung"],
-            data["author"],
-            data["copyright"],
-            data["ccli"],
-            data["practice_yn"],
+            song_id=song_id,
+            songcategory_id=data["songcategory_id"],
+            title=data["bezeichnung"],
+            author=data["author"],
+            copyright=data["copyright"],
+            ccli=data["ccli"],
+            practice_yn=data["practice_yn"],
         )
         ct_song = self.api.get_songs(song_id=song_id)[0]
         assert ct_song["name"] == data["bezeichnung"]
@@ -172,13 +204,15 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         assert caplog.messages == EXPECTED_MESSAGES
         assert ct_song is None
 
-    def test_add_remove_song_tag(self, caplog) -> None:
+    def test_add_remove_song_tag(self, caplog: pytest.LogCaptureFixture) -> None:
         """Test method used to add and remove the test tag to some song.
 
         Tag ID and Song ID may vary depending on the server used
-        On ELKW1610.KRZ.TOOLS song_id 408 (sample_no_ct_attachement) and tag_id 53 (Test)
+        On ELKW1610.KRZ.TOOLS song_id 408 (sample_no_ct_attachement)
+            and tag_id 53 (Test)
 
-        self.api.ajax_song_last_update = None is required in order to clear the ajax song cache
+        self.api.ajax_song_last_update = None is required
+            in order to clear the ajax song cache
 
         Returns: None
         """
@@ -190,10 +224,11 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         caplog.clear()
         with caplog.at_level(logging.INFO):
             response = self.api.remove_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
-        assert response.status_code == 200
+        assert response.status_code == requests.codes.ok
 
         EXPECTED_MESSAGES = [
-            "Using undocumented AJAX API because function does not exist as REST endpoint",
+            "Using undocumented AJAX API"
+            " because function does not exist as REST endpoint",
         ]
         assert caplog.messages == EXPECTED_MESSAGES
 
@@ -204,9 +239,10 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         caplog.clear()
         with caplog.at_level(logging.INFO):
             response = self.api.add_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
-        assert response.status_code == 200
+        assert response.status_code == requests.codes.ok
         EXPECTED_MESSAGES = [
-            "Using undocumented AJAX API because function does not exist as REST endpoint",
+            "Using undocumented AJAX API"
+            " because function does not exist as REST endpoint",
         ]
         assert caplog.messages == EXPECTED_MESSAGES
 
@@ -214,12 +250,14 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         assert self.api.contains_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
 
     def test_get_song_tag_original(self) -> None:
+        """Cchek song tag can be retrieved and returned as original."""
         SAMPLE_SONG_ID = 408
         result = self.api.get_song_tags(song_id=SAMPLE_SONG_ID)
         EXPECTED_TAG = 53
         assert EXPECTED_TAG in result
 
     def test_get_song_tag_id_dict(self) -> None:
+        """Check song tag can be retrieved and returned as id dict."""
         SAMPLE_SONG_ID = 408
         result = self.api.get_song_tags(song_id=SAMPLE_SONG_ID, rtype="id_dict")
         EXPECTED_MIN_RESULT = {53: "Test"}
@@ -227,13 +265,15 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         assert all(key in result for key in EXPECTED_MIN_RESULT)
 
     def test_get_song_tag_name_dict(self) -> None:
+        """Check song tag can be retrieved and returned as name dict."""
         SAMPLE_SONG_ID = 408
         result = self.api.get_song_tags(song_id=SAMPLE_SONG_ID, rtype="name_dict")
         EXPECTED_MIN_RESULT = {"Test": 53}
         assert all(item in result.items() for item in EXPECTED_MIN_RESULT.items())
 
     def test_get_songs_with_tag(self) -> None:
-        """Test method to check if fetching all songs with a specific tag works
+        """Test method to check if fetching all songs with a specific tag works.
+
         songId and tag_id will vary depending on the server used
         On ELKW1610.KRZ.TOOLS song ID 408 is tagged with 53 "Test"
         :return:
@@ -255,7 +295,7 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         assert len(result) > 1
         assert all(isinstance(item, dict) for item in result.values())
 
-    def test_lookup_song_source_as_id(self, caplog) -> None:
+    def test_lookup_song_source_as_id(self, caplog: pytest.LogCaptureFixture) -> None:
         """Checks respective method returns some data.
 
         On ELKW1610.KRZ.TOOLS "T" = "Test" = id12
@@ -289,12 +329,14 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
             result = self.api.lookup_song_source_as_id()
         assert result is None
         EXPECTED_MESSAGES = [
-            "Using undocumented AJAX API because function does not exist as REST endpoint",
+            "Using undocumented AJAX API"
+            " because function does not exist as REST endpoint",
             "missing argument longname or shortname required",
         ]
         assert caplog.messages == EXPECTED_MESSAGES
 
     def test_get_song_arrangement(self) -> None:
+        """Checking song arrangement retrieval."""
         SAMPLE_SONG_ID = 408
 
         # part 1 default arrangement
@@ -362,7 +404,9 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         SAMPLE_ARRANGEMENT_NAME2 = "TEST_BEZEICHNUNG"
         SAMPLE_PARAMS = {
             "name": SAMPLE_ARRANGEMENT_NAME2,
-            "source_id": next(iter(SAMPLE_SOURCE.values())),
+            "source_id": next(
+                iter(SAMPLE_SOURCE.values())
+            ),  # using shortname on purpse
             "source_ref": "source_ref",
             "tonality": "tonality",
             "bpm": "bpm",
