@@ -197,7 +197,7 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
                 "longitude": "string",
                 "meetingAt": "string",
                 "street": "Oberdorfstraße 59",
-                "zip": "72270",  # TODO must be without last ,
+                "zip": "72270",
             },
             "link": "string",
         }

@@ -530,7 +530,6 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
 
             if item["type"] == "song":
                 title += ": " + item["song"]["title"]
-                # TODO #5 Word... check if fails on empty song items
                 title += " (" + item["song"]["category"] + ")"
 
             document.add_heading(title, level=2)

@@ -257,7 +257,6 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         # overwrite params in respective type
         for date_param in ["startDate", "endDate"]:
             if date_param in list(kwargs):
-                # TODO startDate and endDate
                 existing_calendar_appointment[date_param] = (
                     kwargs.pop(date_param)
                     .astimezone(pytz.utc)

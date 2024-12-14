@@ -125,14 +125,16 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         EXPECTED_MESSAGES = ["Use of to_ is only allowed together with from_"]
         assert caplog.messages == EXPECTED_MESSAGES
 
-        # load more than 10 events (pagination #TODO #1 improve test case for
-        # pagination
+        # load more than 10 events (pagination)
+        # #TODO @benste: improve test case for pagination
+        # https://github.com/bensteUEM/ChurchToolsAPI/issues/1
         EXPECTED_PAGINATION = 11
         result = self.api.get_events(direction="forward", limit=EXPECTED_PAGINATION)
         assert isinstance(result, list)
         assert len(result) >= EXPECTED_PAGINATION
 
-        # TODO add test cases for uncommon parts #24 * canceled, include
+        # TODO @benste: add test cases for uncommon parts (canceled, include)
+        # https://github.com/bensteUEM/ChurchToolsAPI/issues/24
 
     def test_get_AllEventData_ajax(self) -> None:
         """IMPORTANT - This test method and the parameters used depend on target system!

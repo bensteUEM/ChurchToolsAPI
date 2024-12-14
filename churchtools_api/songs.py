@@ -23,7 +23,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         """Inherited initialization."""
         super()
 
-    def get_songs(self, **kwargs:dict) -> list[dict]:
+    def get_songs(self, **kwargs: dict) -> list[dict]:
         """Gets list of all songs from the server.
 
         Kwargs:
@@ -153,7 +153,8 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         Returns:
             a dictionary of {Index:{valuedict}}.
         """
-        # TODO: #124 implement using REST API once support case 135796 is resolved
+        # TODO @bensteUEM: implement using REST API once support case 135796 is resolved
+        # https://github.com/bensteUEM/ChurchToolsAPI/issues/124
         logging.warning(
             "Using undocumented AJAX API"
             " because function does not exist as REST endpoint"
@@ -209,12 +210,12 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         self,
         title: str,
         songcategory_id: int,
-        author:str="",
-        copyright:str="",  # noqa: A002
-        ccli:str="",
-        tonality:str="",
-        bpm:str="",
-        beat:str="",
+        author: str = "",
+        copyright: str = "",  # noqa: A002
+        ccli: str = "",
+        tonality: str = "",
+        bpm: str = "",
+        beat: str = "",
     ) -> int | None:
         """Method to create a new song using legacy AJAX API.
 
@@ -447,7 +448,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         tags = self.get_song_tags(song_id)
         return song_tag_id in tags
 
-    def get_songs_by_tag(self, song_tag_id:int) -> list[dict]:
+    def get_songs_by_tag(self, song_tag_id: int) -> list[dict]:
         """Helper which returns all songs that contain have a specific tag.
 
         Arguments:
@@ -527,7 +528,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         self,
         song_id: int,
         arrangement_id: int,
-        **kwargs:dict,
+        **kwargs: dict,
     ) -> bool:
         """Updates a existing song arrangment.
 
