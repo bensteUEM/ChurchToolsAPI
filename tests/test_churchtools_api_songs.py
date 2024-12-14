@@ -24,7 +24,9 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
     """Test for Songs."""
 
     def test_get_songs(self) -> None:
-        """1. Test requests all songs and checks that result has more than 50 elements
+        """Check get songs.
+
+        1. Test requests all songs and checks that result has more than 50 elements
          (hence default pagination works)
         2. Test requests song 2034 and checks that result matches "sample".
 
@@ -125,8 +127,9 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         assert caplog.messages == EXPECTED_MESSAGES
 
     def test_create_edit_delete_song(self, caplog) -> None:
-        """Test method used to create a new song,
-            edit it's metadata and remove the song.
+        """Test method used to create a new song.
+
+        edit it's metadata and remove the song.
 
         Does only test metadata not attachments or arrangements
         IMPORTANT - This test method and the parameters used

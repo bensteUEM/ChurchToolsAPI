@@ -111,9 +111,9 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         appointment_id: int,
         start_date: str | datetime,
     ) -> dict:
-        """This method is a helper to retrieve an event
-        for a specific calendar appointment
-        including it's event services.
+        """This method is a helper to retrieve an event.
+
+        for a specific calendar appointment including it's event services.
 
         Args:
             appointment_id: _description_
@@ -151,7 +151,8 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         return None
 
     def get_AllEventData_ajax(self, eventId) -> dict:
-        """Reverse engineered function from legacy AJAX API
+        """Reverse engineered function from legacy AJAX API.
+
         which is used to get all event data for one event.
 
         Required to read special params not yet included in REST getEvents()
@@ -185,7 +186,8 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         return None
 
     def get_event_services_counts_ajax(self, eventId: int, **kwargs) -> dict:
-        """Retrieve the number of services currently set for one specific event id
+        """Retrieve the number of services currently set for one specific event id.
+
         optionally get the number of services for one specific id on that event only.
 
         Arguments:
@@ -351,8 +353,9 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         return False
 
     def get_event_agenda(self, eventId: int) -> list:
-        """Retrieve agenda for event by ID from ChurchTools
-        Params:
+        """Retrieve agenda for event by ID from ChurchTools.
+
+        Arguments:
             eventId: number of the event
         Returns:
             list of event agenda items.
@@ -574,7 +577,8 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         return document
 
     def get_persons_with_service(self, eventId: int, serviceId: int) -> list[dict]:
-        """Helper function which should return the list of persons
+        """Helper function which should return the list of persons.
+
         that are assigned a specific service on a specific event.
 
         Args:
@@ -592,6 +596,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
 
     def get_event_masterdata(self, **kwargs) -> list | list[list] | dict | list[dict]:
         """Function to get the Masterdata of the event module.
+
         This information is required to map some IDs to specific items.
 
         Params

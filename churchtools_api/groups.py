@@ -61,10 +61,11 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_groups_hierarchies(self):
-        """Get list of all group hierarchies and convert them to a dict
-        :return: list of all group hierarchies using groupId as key
-        :rtype: dict.
+    def get_groups_hierarchies(self)->dict:
+        """Get list of all group hierarchies and convert them to a dict.
+
+        Returns:
+            list of all group hierarchies using groupId as key
         """
         url = self.domain + "/api/groups/hierarchies"
         headers = {"accept": "application/json"}
@@ -185,6 +186,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
     def update_group(self, group_id: int, data: dict) -> dict:
         """Update a field of the given group.
+
         to loookup available names use get_group(group_id=xxx).
 
         Arguments:
@@ -242,11 +244,15 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_grouptypes(self, **kwargs):
-        """Get list of all grouptypes
-        :keyword grouptype_id: int: optional filter by grouptype id
-        :return: dict with all grouptypes with id as key (even if only one)
-        :rtype: dict.
+    def get_grouptypes(self, **kwargs)->dict:
+        """Get list of all grouptypes.
+
+        Arguments:
+            kwargs: keyword arguments as listed below
+
+        Keywords:
+            grouptype_id: int: optional filter by grouptype id
+            dict with all grouptypes with id as key (even if only one)
         """
         url = self.domain + "/api/group/grouptypes"
         if "grouptype_id" in kwargs:
@@ -273,11 +279,13 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_group_permissions(self, group_id: int):
-        """Get permissions of the current user for the given group
-        :param group_id: required group_id
-        :return: dict with permissions
-        :rtype: dict.
+    def get_group_permissions(self, group_id: int)->dict:
+        """Get permissions of the current user for the given group.
+
+        Arguments:
+            group_id: required group_id
+        Returns:
+            dict with permissions
         """
         url = self.domain + f"/api/permissions/internal/groups/{group_id}"
         headers = {"accept": "application/json"}
@@ -344,7 +352,8 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         with_deleted: bool = False,
         **kwargs,
     ) -> list[dict]:
-        """Access to /groups/members to lookup group memberships
+        """Access to /groups/members to lookup group memberships.
+
         Similar to get_group_members but not specific to a single group.
 
         Args:

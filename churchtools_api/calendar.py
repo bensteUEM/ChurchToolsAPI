@@ -24,7 +24,8 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         super()
 
     def get_calendars(self) -> list[dict]:
-        """Function to retrieve all calendar objects
+        """Function to retrieve all calendar objects.
+
         This does not include pagination yet.
 
         Returns:

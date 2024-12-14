@@ -111,8 +111,9 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
         domain_identifier: int,
         filename_for_selective_delete: str | None = None,
     ) -> bool:
-        """Helper function to delete ALL attachments
-            of any specified module of ChurchTools#
+        """Helper function to delete ALL attachments.
+
+        of any specified module of ChurchTools#
         or identifying individual file_name_ids and deleting specifc files only.
 
         Params:
@@ -155,8 +156,9 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
         domain_identifier: str,
         target_path: str = "./downloads",
     ) -> bool:
-        """Retrieves the first file from ChurchTools for specific filename,
-            domain_type and domain_identifier from churchtools.
+        """Retrieves the first file from ChurchTools for specific.
+
+        filename, domain_type and domain_identifier from churchtools.
 
         Params:
             filename: display name of the file as shown in ChurchTools
@@ -215,6 +217,7 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
 
     def file_download_from_url(self, file_url: str, target_path: str) -> bool:
         """Retrieves file from ChurchTools for specific file_url from churchtools.
+
         This function is used by file_download(...).
 
         Params:

@@ -72,6 +72,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         self, song_id: int | None = None, require_update_after_seconds: int = 10
     ) -> dict:
         """Legacy AJAX function to get a specific song.
+
         used to e.g. check for tags requires requesting full song list
         for efficiency reasons songs are cached and not updated
         unless older than 15sec or update_required
@@ -215,7 +216,8 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         bpm="",
         beat="",
     ) -> int | None:
-        """Method to create a new song using legacy AJAX API
+        """Method to create a new song using legacy AJAX API.
+
         Does not check for existing duplicates !
         function endpoint see https://api.church.tools/function-churchservice_addNewSong.html
         name for params reverse engineered based on web developer tools
@@ -278,7 +280,8 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         ccli: str | None = None,
         practice_yn: str | None = None,
     ) -> dict:
-        """Method to EDIT an existing song using legacy AJAX API
+        """Method to EDIT an existing song using legacy AJAX API.
+
         Changes are only applied to fields that have values in respective param
         None is considered empty while '' is an empty text which clears existing values.
 
@@ -326,7 +329,8 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         return self.session.post(url=url, data=data)
 
     def delete_song(self, song_id: int) -> dict:
-        """Method to DELETE a song using legacy AJAX API
+        """Method to DELETE a song using legacy AJAX API.
+
         name for params reverse engineered based on web developer tools
         in Firefox and live churchTools instance.
 
@@ -351,7 +355,8 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         return self.session.post(url=url, data=data)
 
     def add_song_tag(self, song_id: int, song_tag_id: int) -> dict:
-        """Method to add a song tag using legacy AJAX API on a specific song
+        """Method to add a song tag using legacy AJAX API on a specific song.
+
         reverse engineered based on web developer tools in Firefox
         and live churchTools instance.
 
@@ -377,7 +382,8 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         return self.session.post(url=url, data=data)
 
     def remove_song_tag(self, song_id: int, song_tag_id: int) -> dict:
-        """Method to remove a song tag using legacy AJAX API on a specifc song
+        """Method to remove a song tag using legacy AJAX API on a specifc song.
+
         reverse engineered based on web developer tools in Firefox
         and live churchTools instance
         re-removing existing tag does not cause any issues.

@@ -132,7 +132,8 @@ class ChurchToolsApi(
         return None
 
     def get_ct_csrf_token(self) -> str:
-        """Requests CSRF Token https://hilfe.church.tools/wiki/0/API-CSRF
+        """Requests CSRF Token https://hilfe.church.tools/wiki/0/API-CSRF.
+
             Storing and transmitting CSRF token in headers is required
             for all legacy AJAX API calls unless disabled by admin
             Therefore it is executed with each new login.
@@ -152,10 +153,11 @@ class ChurchToolsApi(
         )
         return None
 
-    def who_am_i(self):
-        """Simple function which returns the user information for the authorized user
-        :return: CT user dict if found or bool
-        :rtype: dict | bool.
+    def who_am_i(self)->dict|bool:
+        """Simple function which returns the user information for the authorized user.
+
+        Returns:
+            CT user dict if found or bool
         """
         url = self.domain + "/api/whoami"
         response = self.session.get(url=url)
@@ -253,8 +255,9 @@ class ChurchToolsApi(
         return None
 
     def get_tags(self, type: str, *, rtype: str = "original") -> list[dict] | None:  # noqa: A002
-        """Retrieve a list of all available tags
-            of a specific ct_domain type from ChurchTools
+        """Retrieve a list of all available tags.
+
+        of a specific ct_domain type from ChurchTools
         Purpose: be able to find out tag-ids of all available tags for filtering by tag.
 
         Arguments:
@@ -296,6 +299,7 @@ class ChurchToolsApi(
 
     def get_options(self) -> dict:
         """Helper function which returns all configurable option fields from CT.
+
         e.g. common use is sexId.
 
         Returns:

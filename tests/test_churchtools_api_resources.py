@@ -109,7 +109,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert expected_error_message in caplog.messages
 
     def test_get_booking_by_id(self) -> None:
-        """IMPORTANT - This test method and the parameters used
+        """Checks get_booking_by_id.
+
+        IMPORTANT - This test method and the parameters used
             depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
@@ -118,7 +120,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert result[0]["id"] == SAMPLE_BOOKING_ID
 
     def test_get_booking_by_resource_ids(self) -> None:
-        """IMPORTANT - This test method and the parameters used
+        """Checks get_booking_by_resource_ids.
+
+        IMPORTANT - This test method and the parameters used
             depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
@@ -128,7 +132,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert set(RESOURCE_ID_SAMPLES) == result_resource_ids
 
     def test_get_booking_by_status_ids(self, caplog) -> None:
-        """IMPORTANT - This test method and the parameters used
+        """Checks get_booking_by_status_ids.
+
+        IMPORTANT - This test method and the parameters used
             depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
@@ -142,7 +148,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert caplog.messages == EXPECTED_MESSAGES
 
     def test_get_booking_by_resource_and_status_ids(self) -> None:
-        """IMPORTANT - This test method and the parameters used
+        """Checks get_booking_by_resource_and_status_ids.
+
+        IMPORTANT - This test method and the parameters used
             depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
@@ -156,7 +164,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert set(STATUS_ID_SAMPLES) == {i["base"]["statusId"] for i in result}
 
     def test_get_booking_from_to_date_without_resource_id(self, caplog) -> None:
-        """IMPORTANT - This test method and the parameters used
+        """Checks get_booking_from_to_date_without_resource_id.
+
+        IMPORTANT - This test method and the parameters used
             depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
@@ -179,7 +189,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert caplog.messages == EXPECTED_MESSAGES
 
     def test_get_booking_from_date(self, caplog) -> None:
-        """IMPORTANT - This test method and the parameters used
+        """Checks get_booking_from_date.
+
+        IMPORTANT - This test method and the parameters used
             depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
@@ -216,7 +228,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert caplog.messages == EXPECTED_MESSAGES
 
     def test_get_booking_to_date(self, caplog) -> None:
-        """IMPORTANT - This test method and the parameters used
+        """Checks get_booking_to_date.
+
+        IMPORTANT - This test method and the parameters used
             depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
@@ -248,7 +262,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert expected_response in caplog.messages
 
     def test_get_booking_from_to_date(self, caplog) -> None:
-        """IMPORTANT - This test method and the parameters used
+        """Checks get_booking_from_to_date.
+
+        IMPORTANT - This test method and the parameters used
             depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
@@ -285,7 +301,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert caplog.messages == []
 
     def test_get_booking_appointment_id(self, caplog) -> None:
-        """IMPORTANT - This test method and the parameters used
+        """Checks get_booking_appointment_id.
+
+        IMPORTANT - This test method and the parameters used
             depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """
@@ -323,7 +341,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         assert len(result) == 0
 
     def test_get_booking_appointment_id_daterange(self) -> None:
-        """IMPORTANT - This test method and the parameters used
+        """Checks get_booking_appointment_id_daterange.
+
+        IMPORTANT - This test method and the parameters used
             depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
         """

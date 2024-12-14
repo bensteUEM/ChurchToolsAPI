@@ -32,7 +32,8 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
         assert "id" in result[0]
 
     def test_get_calendar_apointments(self) -> None:
-        """Tries to retrieve calendar appointments
+        """Tries to retrieve calendar appointments.
+
         IMPORTANT - This test method and the parameters used depend on target system!
         Requires the connected test system to have a calendar mapped as ID 2 and 42
             (or changed if other system)
@@ -79,7 +80,8 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
         assert test_appointment_id == result[0]["id"]
 
     def test_get_calendar_apointments_datetime(self) -> None:
-        """Tries to retrieve calendar appointments using datetime instead of str params
+        """Tries to retrieve calendar appointments using datetime instead of str params.
+
         IMPORTANT - This test method and the parameters used depend on target system!
         Requires the connected test system to have a calendar mapped as ID 2
             (or changed if other system)
@@ -104,7 +106,8 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
         assert "id" in result[0]
 
     def test_get_calendar_appoints_on_seriess(self) -> None:
-        """This test should check the behaviour of get_calendar_appointments on a series
+        """This test should check behaviour of get_calendar_appointments on a series.
+
         IMPORTANT - This test method and the parameters used depend on target system!
         Requires the connected test system to have a calendar mapped as ID 2
         Calendar 2 should have appointment 304973
@@ -153,7 +156,8 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
         assert result[-1]["endDate"] == "2023-11-26T09:00:00Z"
 
     def test_get_calendar_appointments_none(self) -> None:
-        """Check that there is no error if no item can be found
+        """Check that there is no error if no item can be found.
+
         There should be no calendar appointments on the specified day.
         """
         # Appointment Series by ID
