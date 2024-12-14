@@ -80,28 +80,14 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         if len(calendar_ids) > 1:
             url += "/appointments"
             params["calendar_ids[]"] = calendar_ids
-        elif "appointment_id" in kwargs:
+        elif kwargs.get("appointment_id"):
             url += f"/{calendar_ids[0]}/appointments/{kwargs['appointment_id']}"
         else:
             url += f"/{calendar_ids[0]}/appointments"
 
         headers = {"accept": "application/json"}
 
-        LENGTH_OF_DATE_WITH_HYPHEN = 10
-        if "from_" in kwargs:
-            from_ = kwargs["from_"]
-            if isinstance(from_, datetime):
-                from_ = from_.strftime("%Y-%m-%d")
-            if len(from_) == LENGTH_OF_DATE_WITH_HYPHEN:
-                params["from"] = from_
-        if "to_" in kwargs and "from_" in kwargs:
-            to_ = kwargs["to_"]
-            if isinstance(to_, datetime):
-                to_ = to_.strftime("%Y-%m-%d")
-            if len(to_) == LENGTH_OF_DATE_WITH_HYPHEN:
-                params["to"] = to_
-        elif "to_" in kwargs:
-            logger.warning("Use of to_ is only allowed together with from_")
+        params = self._get_calendar_appointments_params(params=params, **kwargs)
 
         response = self.session.get(url=url, params=params, headers=headers)
 
@@ -151,6 +137,36 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
             response.content,
         )
         return None
+
+    def _get_calendar_appointments_params(self, params: dict, **kwargs: dict) -> dict:
+        """Helper function which generates params from kwargs.
+
+        Split in order to reduce complexity of function
+
+        Args:
+            params: existing pre-set params
+            kwargs: which should be added
+
+        Returns:
+            params dict which should be used for request
+        """
+        LENGTH_OF_DATE_WITH_HYPHEN = 10
+        if "from_" in kwargs:
+            from_ = kwargs["from_"]
+            if isinstance(from_, datetime):
+                from_ = from_.strftime("%Y-%m-%d")
+            if len(from_) == LENGTH_OF_DATE_WITH_HYPHEN:
+                params["from"] = from_
+        if "to_" in kwargs and "from_" in kwargs:
+            to_ = kwargs["to_"]
+            if isinstance(to_, datetime):
+                to_ = to_.strftime("%Y-%m-%d")
+            if len(to_) == LENGTH_OF_DATE_WITH_HYPHEN:
+                params["to"] = to_
+        elif "to_" in kwargs:
+            logger.warning("Use of to_ is only allowed together with from_")
+
+        return params
 
     def create_calender_appointment(  # noqa: PLR0913
         self,

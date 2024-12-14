@@ -67,9 +67,7 @@ select = [
     "ALL",
 ]
 ignore = [
-    "FIX002", # correctly formatted TODO items that have open Github issues
-    "C901","PLR0912", #complexity #TODO 102
-        
+    "FIX002", # correctly formatted TODO items that have open Github issues        
     "COM812", "ISC001", #disabled for formatter compatibility #TODO 102 - move to pyproject.py
 
     "N802", #function lowercase -> breaking change #TODO 125 with release 2.0

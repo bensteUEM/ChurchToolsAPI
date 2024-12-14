@@ -55,38 +55,12 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         params = {"limit": 50}  # increases default pagination size
 
-        LENGTH_OF_DATE_WITH_HYPHEN = 10
-
         if "eventId" in kwargs:
             url += "/{}".format(kwargs["eventId"])
 
         else:
-            if "from_" in kwargs:
-                from_ = kwargs["from_"]
-                if isinstance(from_, datetime):
-                    from_ = from_.astimezone(pytz.utc).strftime("%Y-%m-%d")
-                if len(from_) == LENGTH_OF_DATE_WITH_HYPHEN:
-                    params["from"] = from_
-            if "to_" in kwargs and "from_" in kwargs:
-                to_ = kwargs["to_"]
-                if isinstance(to_, datetime):
-                    to_ = to_.astimezone(pytz.utc).strftime("%Y-%m-%d")
-                if len(to_) == LENGTH_OF_DATE_WITH_HYPHEN:
-                    params["to"] = to_
-            elif "to_" in kwargs:
-                logger.warning("Use of to_ is only allowed together with from_")
-            if "canceled" in kwargs:
-                params["canceled"] = kwargs["canceled"]
-            if "direction" in kwargs:
-                params["direction"] = kwargs["direction"]
-            if "limit" in kwargs and "direction" in kwargs:
-                params["limit"] = kwargs["limit"]
-            elif "direction" in kwargs:
-                logger.warning(
-                    "Use of limit is only allowed together with direction keyword",
-                )
-            if "include" in kwargs:
-                params["include"] = kwargs["include"]
+            params = self._get_events_params_other(params=params, **kwargs)
+            params = self._get_events_params_to_from(params=params, **kwargs)
 
         response = self.session.get(url=url, headers=headers, params=params)
 
@@ -105,6 +79,63 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             response.content,
         )
         return None
+
+    def _get_events_params_other(self, params: dict, **kwargs: dict) -> dict:
+        """Helper function converting kwargs into params for request.
+
+        Split in order to reduce function complexity
+        converting everything except to and from
+
+        Args:
+            params: existing pre-set params
+            kwargs: any additional options
+
+        Returns:
+            prepared params dict which can be used in request
+        """
+        if "canceled" in kwargs:
+            params["canceled"] = kwargs["canceled"]
+        if "direction" in kwargs:
+            params["direction"] = kwargs["direction"]
+        if "limit" in kwargs and "direction" in kwargs:
+            params["limit"] = kwargs["limit"]
+        elif "direction" in kwargs:
+            logger.warning(
+                "Use of limit is only allowed together with direction keyword",
+            )
+        if "include" in kwargs:
+            params["include"] = kwargs["include"]
+        return params
+
+    def _get_events_params_to_from(self, params: dict, **kwargs: dict) -> dict:
+        """Helper function converting kwargs into params for request.
+
+        Split in order to reduce function complexity
+        taking into account to and from only
+
+        Args:
+            params: existing pre-set params
+            kwargs: any additional options
+
+        Returns:
+            prepared params dict which can be used in request
+        """
+        LENGTH_OF_DATE_WITH_HYPHEN = 10
+        if "from_" in kwargs:
+            from_ = kwargs["from_"]
+            if isinstance(from_, datetime):
+                from_ = from_.astimezone(pytz.utc).strftime("%Y-%m-%d")
+            if len(from_) == LENGTH_OF_DATE_WITH_HYPHEN:
+                params["from"] = from_
+        if "to_" in kwargs and "from_" in kwargs:
+            to_ = kwargs["to_"]
+            if isinstance(to_, datetime):
+                to_ = to_.astimezone(pytz.utc).strftime("%Y-%m-%d")
+            if len(to_) == LENGTH_OF_DATE_WITH_HYPHEN:
+                params["to"] = to_
+        elif "to_" in kwargs:
+            logger.warning("Use of to_ is only allowed together with from_")
+        return params
 
     def get_event_by_calendar_appointment(
         self,
@@ -534,48 +565,76 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
 
             document.add_heading(title, level=2)
 
-            responsible_list = []
-            for responsible_item in item["responsible"]["persons"]:
-                if responsible_item["person"] is not None:
-                    responsible_text = responsible_item["person"]["title"]
-                    if not responsible_item["accepted"]:
-                        responsible_text += " (Angefragt)"
-                else:
-                    responsible_text = "?"
-                responsible_text += " " + responsible_item["service"] + ""
-                responsible_list.append(responsible_text)
-
-            if (
-                len(item["responsible"]) > 0
-                and len(item["responsible"]["persons"]) == 0
-                and len(item["responsible"]["text"]) > 0
-            ):
-                responsible_list.append(
-                    item["responsible"]["text"]
-                    + " (Person statt Rolle in ChurchTools hinterlegt!)",
-                )
-
+            responsible_list = self._generate_responsible_list(item=item)
             responsible_text = ", ".join(responsible_list)
             document.add_paragraph(responsible_text)
 
             if item["note"] is not None and item["note"] != "":
                 document.add_paragraph(item["note"])
 
+            self._add_service_group_notes(
+                document=document,
+                service_group_notes=item["serviceGroupNotes"],
+                service_groups=kwargs["serviceGroups"],
+            )
+
+        return document
+
+    def _generate_responsible_list(self, item: dict) -> list:
+        """Extracts information about the responsibility by agenda item.
+
+        Args:
+            item: the agenda item with all it's values
+
+        Returns:
+            prepared list of responsible persons used for further processing
+        """
+        responsible_list = []
+        for responsible_item in item["responsible"]["persons"]:
+            if responsible_item["person"] is not None:
+                responsible_text = responsible_item["person"]["title"]
+                if not responsible_item["accepted"]:
+                    responsible_text += " (Angefragt)"
+            else:
+                responsible_text = "?"
+            responsible_text += " " + responsible_item["service"] + ""
+            responsible_list.append(responsible_text)
+
+        if (
+            len(item["responsible"]) > 0
+            and len(item["responsible"]["persons"]) == 0
+            and len(item["responsible"]["text"]) > 0
+        ):
+            responsible_list.append(
+                item["responsible"]["text"]
+                + " (Person statt Rolle in ChurchTools hinterlegt!)",
+            )
+        return responsible_list
+
+    def _add_service_group_notes(
+        self, document: docx.Document, service_group_notes: list, service_groups: dict
+    ) -> None:
+        """Subfunction which genereates service group note paragaphs.
+
+        Args:
+            document: the document item to work on
+            service_group_notes: the list of items to consider
+            service_groups: the service groups that are known
+        """
+        for item in service_group_notes:
             if len(item["serviceGroupNotes"]) > 0:
                 for note in item["serviceGroupNotes"]:
                     if (
-                        note["serviceGroupId"] in kwargs["serviceGroups"]
+                        note["serviceGroupId"] in service_groups
                         and len(note["note"]) > 0
                     ):
                         document.add_heading(
                             "Bemerkung für {}:".format(
-                                kwargs["serviceGroups"][note["serviceGroupId"]]["name"],
+                                service_groups[note["serviceGroupId"]]["name"],
                             ),
                             level=4,
                         )
                         document.add_paragraph(note["note"])
-
-        return document
 
     def get_persons_with_service(self, eventId: int, serviceId: int) -> list[dict]:
         """Helper function which should return the list of persons.

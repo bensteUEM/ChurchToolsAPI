@@ -62,7 +62,7 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
         logger.error(response)
         return None
 
-    def get_bookings(self, **kwargs:dict) -> list[dict]:
+    def get_bookings(self, **kwargs: dict) -> list[dict]:
         """Access to all Resource bookings in churchtools.
 
         based on a combination of Keyword Arguments.
@@ -97,50 +97,62 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
 
         if booking_id := kwargs.get("booking_id"):
             url = url + f"/{booking_id}"
-        elif resource_ids := kwargs.get("resource_ids"):
-            params["resource_ids[]"] = resource_ids
-
-            if status_ids := kwargs.get("status_ids"):
-                params["status_ids[]"] = status_ids
-            if "from_" in kwargs or "to_" in kwargs:
-                if "from_" not in kwargs or "to_" not in kwargs:
-                    logger.info(
-                        "missing from_ or to_ defaults"
-                        " to first or last day of current month",
-                    )
-                if from_ := kwargs.get("from_"):
-                    params["from"] = from_.strftime("%Y-%m-%d")
-                if to_ := kwargs.get("to_"):
-                    params["to"] = to_.strftime("%Y-%m-%d")
-            if appointment_id := kwargs.get("appointment_id"):
-                if "from" not in params:
-                    logger.warning(
-                        "using appointment ID without date range"
-                        " might be incomplete if current month differs",
-                    )
-                params["appointment_id"] = appointment_id
+        elif kwargs.get("resource_ids"):
+            params = self._get_bookings_params(params=params, **kwargs)
 
         response = self.session.get(url=url, headers=headers, params=params)
 
-        if response.status_code == requests.codes.ok:
-            response_content = json.loads(response.content)
+        if response.status_code != requests.codes.ok:
+            logger.error(response.content)
+            return None
+        response_content = json.loads(response.content)
 
-            response_data = self.combine_paginated_response_data(
-                response_content,
-                url=url,
-                headers=headers,
-                params=params,
-            )
-            result_list = (
-                [response_data] if isinstance(response_data, dict) else response_data
-            )
+        response_data = self.combine_paginated_response_data(
+            response_content,
+            url=url,
+            headers=headers,
+            params=params,
+        )
+        result_list = (
+            [response_data] if isinstance(response_data, dict) else response_data
+        )
 
-            if appointment_id := kwargs.get("appointment_id"):
-                return [
-                    i
-                    for i in result_list
-                    if i["base"]["appointmentId"] == appointment_id
-                ]
-            return result_list
-        logger.error(response.content)
-        return None
+        if appointment_id := kwargs.get("appointment_id"):
+            return [
+                i for i in result_list if i["base"]["appointmentId"] == appointment_id
+            ]
+        return result_list
+
+    def _get_bookings_params(self, params: dict, **kwargs: dict) -> dict:
+        """Helper function for get bookings that prepares params.
+
+        Arguments:
+            params: existing params which were set before
+            kwargs: additional kwargs which should be transformed into params
+
+        Returns:
+            params dict which can be used for request
+        """
+        params["resource_ids[]"] = kwargs.get("resource_ids")
+
+        if status_ids := kwargs.get("status_ids"):
+            params["status_ids[]"] = status_ids
+        if "from_" in kwargs or "to_" in kwargs:
+            if "from_" not in kwargs or "to_" not in kwargs:
+                logger.info(
+                    "missing from_ or to_ defaults"
+                    " to first or last day of current month",
+                )
+            if from_ := kwargs.get("from_"):
+                params["from"] = from_.strftime("%Y-%m-%d")
+            if to_ := kwargs.get("to_"):
+                params["to"] = to_.strftime("%Y-%m-%d")
+        if appointment_id := kwargs.get("appointment_id"):
+            if "from" not in params:
+                logger.warning(
+                    "using appointment ID without date range"
+                    " might be incomplete if current month differs",
+                )
+            params["appointment_id"] = appointment_id
+
+        return params
