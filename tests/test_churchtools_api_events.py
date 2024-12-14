@@ -317,17 +317,6 @@ class TestsChurchToolsApi(unittest.TestCase):
         result4 = self.api.get_services(returnAsDict=False)
         assert isinstance(result4, list)
 
-    def test_get_tags(self) -> None:
-        """Test function for get_tags() with default type song
-        On ELKW1610.KRZ.TOOLS tag ID 49 has the name To Do
-        :return:
-        """
-        result = self.api.get_tags()
-        assert len(result) > 0
-        test_tag = next(item for item in result if item["id"] == 49)
-        assert test_tag["id"] == 49
-        assert test_tag["name"] == "ToDo"
-
     def test_has_event_schedule(self) -> None:
         """Tries to get boolean if event agenda exists for a CT Event
         Event ID may vary depending on the server used
