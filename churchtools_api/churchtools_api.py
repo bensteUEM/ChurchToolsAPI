@@ -11,7 +11,6 @@ from churchtools_api.groups import ChurchToolsApiGroups
 from churchtools_api.persons import ChurchToolsApiPersons
 from churchtools_api.resources import ChurchToolsApiResources
 from churchtools_api.songs import ChurchToolsApiSongs
-from churchtools_api.tags import ChurchToolsApiTags
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +23,6 @@ class ChurchToolsApi(
     ChurchToolsApiFiles,
     ChurchToolsApiCalendar,
     ChurchToolsApiResources,
-    ChurchToolsApiTags,
 ):
     """Main class used to combine all api functions.
 
@@ -36,7 +34,6 @@ class ChurchToolsApi(
         ChurchToolsApiFiles: all functions used for files
         ChurchToolsApiCalendars: all functions used for calendars
         ChurchToolsApiResources: all functions used for resources
-        ChurchToolsApiTags: all functions used for tags
     """
 
     def __init__(
@@ -230,6 +227,35 @@ class ChurchToolsApi(
             )
             return response_data
         logger.info("Services requested failed: %s", response.status_code)
+        return None
+
+    def get_tags(self, type="songs"):  # noqa: A002
+        """Retrieve a list of all available tags of a specific ct_domain type from ChurchTools
+        Purpose: be able to find out tag-ids of all available tags for filtering by tag.
+
+        :param type: 'songs' (default) or 'persons'
+        :type type: str
+        :return: list of dicts describing each tag. Each contains keys 'id' and 'name'
+        :rtype list[dict]
+        """
+        url = self.domain + "/api/tags"
+        headers = {"accept": "application/json"}
+        params = {
+            "type": type,
+        }
+        response = self.session.get(url=url, params=params, headers=headers)
+
+        if response.status_code == 200:
+            response_content = json.loads(response.content)
+            response_content["data"].copy()
+            logger.debug("SongTags load successful %s", response_content)
+
+            return response_content["data"]
+        logger.warning(
+            "%s Something went wrong fetching Song-tags: %s",
+            response.status_code,
+            response.content,
+        )
         return None
 
     def get_options(self) -> dict:

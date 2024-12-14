@@ -3,8 +3,6 @@ import logging
 from datetime import datetime, timedelta
 from typing import Optional
 
-import requests
-
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
 logger = logging.getLogger(__name__)
@@ -35,7 +33,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         params = {"limit": 50}  # increases default pagination size
         response = self.session.get(url=url, headers=headers, params=params)
 
-        if response.status_code == requests.status.ok:
+        if response.status_code == 200:
             response_content = json.loads(response.content)
             response_data = self.combine_paginated_response_data(
                 response_content,
@@ -149,7 +147,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
 
         response = self.session.post(url=url, data=data)
 
-        if response.status_code == requests.status.ok:
+        if response.status_code == 200:
             response_content = json.loads(response.content)
             new_id = int(response_content["data"])
             logger.debug("Song created successful with ID=%s", new_id)
