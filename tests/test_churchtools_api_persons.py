@@ -26,6 +26,10 @@ class TestChurchtoolsApiPersons(TestsChurchToolsApiAbstract):
 
         Be aware that only ct_users that are visible to the user associated
         with the login token can be viewed!
+
+        IMPORTANT - This test method and the parameters used depend on target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+
         On any elkw.KRZ.TOOLS personId 1 'firstName' starts with 'Ben'
         and more than 50 ct_users exist(13. Jan 2023)
         """

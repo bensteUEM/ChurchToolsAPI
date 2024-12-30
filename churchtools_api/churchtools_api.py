@@ -10,6 +10,7 @@ from churchtools_api.events import ChurchToolsApiEvents
 from churchtools_api.files import ChurchToolsApiFiles
 from churchtools_api.groups import ChurchToolsApiGroups
 from churchtools_api.persons import ChurchToolsApiPersons
+from churchtools_api.posts import ChurchToolsApiPosts
 from churchtools_api.resources import ChurchToolsApiResources
 from churchtools_api.songs import ChurchToolsApiSongs
 
@@ -22,6 +23,7 @@ class ChurchToolsApi(
     ChurchToolsApiGroups,
     ChurchToolsApiSongs,
     ChurchToolsApiFiles,
+    ChurchToolsApiPosts,
     ChurchToolsApiCalendar,
     ChurchToolsApiResources,
 ):
@@ -153,7 +155,7 @@ class ChurchToolsApi(
         )
         return None
 
-    def who_am_i(self)->dict|bool:
+    def who_am_i(self) -> dict | bool:
         """Simple function which returns the user information for the authorized user.
 
         Returns:
@@ -215,7 +217,7 @@ class ChurchToolsApi(
         )
         return None
 
-    def get_services(self, **kwargs:dict) -> list[dict]:
+    def get_services(self, **kwargs: dict) -> list[dict]:
         """Function to get list of all or a single services configuration item from CT.
 
         Arguments:
