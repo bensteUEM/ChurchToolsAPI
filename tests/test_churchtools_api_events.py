@@ -136,6 +136,10 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         # TODO @benste: add test cases for uncommon parts (canceled, include)
         # https://github.com/bensteUEM/ChurchToolsAPI/issues/24
 
+    @pytest.mark.skip(
+        "This test relies on a 90 day sample timeframe "
+        "and is therefore excluded from automation"
+    )
     def test_get_AllEventData_ajax(self) -> None:
         """IMPORTANT - This test method and the parameters used depend on target system!
 
@@ -192,6 +196,10 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         )
         assert result
 
+    @pytest.mark.skip(
+        "This test relies on a 90 day sample timeframe "
+        "and is therefore excluded from automation"
+    )
     def test_get_set_event_admins(self) -> None:
         """IMPORTANT - This test method and the parameters used depend on target system!
 
