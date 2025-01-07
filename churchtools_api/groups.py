@@ -21,7 +21,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         """Inherited initialization."""
         super()
 
-    def get_groups(self, **kwargs:dict) -> list[dict]:
+    def get_groups(self, **kwargs: dict) -> list[dict]:
         """Gets list of all groups.
 
         Keywords:
@@ -61,7 +61,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_groups_hierarchies(self)->dict:
+    def get_groups_hierarchies(self) -> dict:
         """Get list of all group hierarchies and convert them to a dict.
 
         Returns:
@@ -126,7 +126,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         name: str,
         group_status_id: int,
         grouptype_id: int,
-        **kwargs:dict,
+        **kwargs: dict,
     ) -> dict:
         """Create a new group.
 
@@ -244,7 +244,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_grouptypes(self, **kwargs:dict)->dict:
+    def get_grouptypes(self, **kwargs: dict) -> dict:
         """Get list of all grouptypes.
 
         Arguments:
@@ -279,7 +279,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_group_permissions(self, group_id: int)->dict:
+    def get_group_permissions(self, group_id: int) -> dict:
         """Get permissions of the current user for the given group.
 
         Arguments:
@@ -306,7 +306,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_group_members(self, group_id: int, **kwargs:dict) -> list[dict]:
+    def get_group_members(self, group_id: int, **kwargs: dict) -> list[dict]:
         """Get list of members for the given group.
 
         Arguments:
@@ -350,7 +350,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         group_ids: list[int] | None = None,
         *,
         with_deleted: bool = False,
-        **kwargs:dict,
+        **kwargs: dict,
     ) -> list[dict]:
         """Access to /groups/members to lookup group memberships.
 
@@ -410,7 +410,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         )
         return None
 
-    def add_group_member(self, group_id: int, person_id: int, **kwargs:dict) -> dict:
+    def add_group_member(self, group_id: int, person_id: int, **kwargs: dict) -> dict:
         """Add a member to a group.
 
         Arguments:

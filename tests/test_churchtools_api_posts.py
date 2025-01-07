@@ -78,10 +78,8 @@ class TestChurchtoolsApiPosts(TestsChurchToolsApiAbstract):
         ]
         assert all(FROM_DATE <= date <= TO_DATE for date in result_all_dates)
 
-    @pytest.mark.skip(
-        "issue with CT implementation reported"
-    )
-    def test_get_posts_before_last_post(self, caplog:pytest.LogCaptureFixture) -> None:
+    @pytest.mark.skip("issue with CT implementation reported")
+    def test_get_posts_before_last_post(self, caplog: pytest.LogCaptureFixture) -> None:
         """Tries to get a all posts using date after filter and last_post_indentifier.
 
         Also tries to request with missing required dependant param
