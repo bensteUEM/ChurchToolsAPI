@@ -329,8 +329,6 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
             result = self.api.lookup_song_source_as_id()
         assert result is None
         EXPECTED_MESSAGES = [
-            "Using undocumented AJAX API"
-            " because function does not exist as REST endpoint",
             "missing argument longname or shortname required",
         ]
         assert caplog.messages == EXPECTED_MESSAGES

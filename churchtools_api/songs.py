@@ -148,23 +148,10 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
     def get_song_source_map(self) -> dict:
         """Requesting CT metadata for mapping of song sources.
 
-        WARNING - uses undocumented AJAX API.
-
         Returns:
             a dictionary of {Index:{valuedict}}.
         """
-        # TODO @bensteUEM: implement using REST API once support case 135796 is resolved
-        # https://github.com/bensteUEM/ChurchToolsAPI/issues/124
-        logging.warning(
-            "Using undocumented AJAX API"
-            " because function does not exist as REST endpoint"
-        )
-        url = self.domain + "/index.php?q=churchservice/ajax"
-        headers = {"accept": "application/json"}
-        data = {"func": "getMasterData"}
-        response = self.session.post(url=url, headers=headers, data=data)
-        response_content = json.loads(response.content)
-        return response_content["data"]["songsource"]
+        return self.get_event_masterdata(resultClass="songSources", returnAsDict=True)
 
     def lookup_song_source_as_id(
         self, longname: str | None = None, shortname: str | None = None

@@ -666,7 +666,9 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
 
         Keywords:
             resultClass: str with name of the masterdata type (not datatype) common
-             types are 'absenceReasons', 'songCategories', 'services', 'serviceGroups'
+             types are 'absenceReasons', 'songCategories', 'songSources'
+            'services', 'serviceGroups', 'facts'
+
             returnAsDict: if the list with one type should be returned as dict by ID
 
         Returns:

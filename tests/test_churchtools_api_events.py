@@ -225,24 +225,37 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
 
         assert self.api.set_event_admins_ajax(SAMPLE_EVENT_ID, EXPECTED_ADMIN_IDS)
 
-    def test_get_event_masterdata(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on target system!
-
-        Tries to get a list of event masterdata and a type of masterdata from CT
-        The values depend on your system data! -
-        Test case is valid against ELKW1610.KRZ.TOOLS
-        """
-        result = self.api.get_event_masterdata()
-        EXPECTED_KEYS = [
+    @pytest.mark.parametrize(
+        ("expected_key"),
+        [
             "absenceReasons",
             "facts",
             "songCategories",
             "songSources",
             "services",
             "serviceGroups",
-        ]
-        assert set(result) == set(EXPECTED_KEYS)
+        ],
+    )
+    def test_get_event_masterdata_all(self, expected_key: str) -> None:
+        """Tries to get a list of event masterdata and a type of masterdata from CT.
 
+        Categories should exist on all systems with CT version 116 or newer
+
+        Args:
+            expected_key: the expected key
+        """
+        result_all = self.api.get_event_masterdata()
+        result_specific = self.api.get_event_masterdata(resultClass=expected_key)
+        assert expected_key in result_all
+        assert len(result_specific) >= 1
+
+    def test_get_event_masterdata_specific(self) -> None:
+        """IMPORTANT - This test method and the parameters used depend on target system!
+
+        Tries to get a list of event masterdata and a type of masterdata from CT
+        The values depend on your system data! -
+        Test case is valid against ELKW1610.KRZ.TOOLS
+        """
         result = self.api.get_event_masterdata(resultClass="serviceGroups")
         assert len(result) > 1
         assert result[0]["name"] == "Programm"
