@@ -138,6 +138,48 @@ class TestChurchtoolsApiFiles(TestsChurchToolsApiAbstract):
             len(song["arrangements"][0]["files"]) == 0
         ), "check that files are deleted"
 
+    def test_file_upload_delete_calendar_image(self) -> None:
+        """Test which tries to upload a calendar_image to a calendar appointment.
+
+        On ELKW1610.KRZ.TOOLS song ID 332233 exists as calendar appointment.
+        """
+        SAMPLE_CALENDAR_ID = 45
+        SAMPLE_CALENDAR_APPOINTMENT_ID = 332233
+        SAMPLE_IMAGE_PATH = Path("samples/pinguin.png")
+
+        image_options = {
+            "image_options": {
+                "crop": {
+                    "top": "0.0",
+                    "bottom": "0.0",
+                    "left": "0.0",
+                    "right": "0.0",
+                },
+                "focus": {"x": "0.5", "y": "0.5"},
+            }
+        }
+
+        is_successful_created = self.api.file_upload(
+            source_filepath=SAMPLE_IMAGE_PATH,
+            domain_type="appointment_image",
+            domain_identifier=SAMPLE_CALENDAR_APPOINTMENT_ID,
+            image_options=image_options,
+        )
+        assert is_successful_created
+
+        result_appointment = self.api.get_calendar_appointments(
+            calendar_ids=[SAMPLE_CALENDAR_ID],
+            appointment_id=SAMPLE_CALENDAR_APPOINTMENT_ID,
+        )[0]
+        assert result_appointment["image"]["name"] == SAMPLE_IMAGE_PATH.name
+        assert isinstance(result_appointment["image"]["imageOption"], dict)
+
+        is_successful_delete = self.api.file_delete(
+            domain_type="appointment_image",
+            domain_identifier=SAMPLE_CALENDAR_APPOINTMENT_ID,
+        )
+        assert is_successful_delete
+
     def test_file_download(self) -> None:
         """Test of file_download and file_download_from_url.
 

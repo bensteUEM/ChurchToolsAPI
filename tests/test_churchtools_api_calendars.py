@@ -200,6 +200,7 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
                 "zip": "72270",
             },
             "link": "string",
+            "image": Path("samples/pinguin.png"),
         }
         # 1. create
         calendar_appointment = self.api.create_calender_appointment(
@@ -212,6 +213,7 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
             isInternal=SAMPLE_DATA.get("isInternal"),
             address=SAMPLE_DATA.get("address"),
             link=SAMPLE_DATA.get("link"),
+            image=SAMPLE_DATA.get("image"),
         )
         appointment_id = calendar_appointment["id"]
 
@@ -225,6 +227,9 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
                     == expected_value.astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%S")
                     + "Z"
                 )
+            elif expected_key == "image":
+                assert check_appointment[expected_key]["name"] == expected_value.name
+                assert isinstance(check_appointment[expected_key]["imageOption"], dict)
             elif expected_key == "address":
                 for (
                     expected_address_key,

@@ -22,12 +22,13 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
         """Inherited initialization."""
         super()
 
-    def file_upload(
+    def file_upload(  # noqa: PLR0913
         self,
-        source_filepath: str,
+        source_filepath: str | Path,
         domain_type: str,
         domain_identifier: int,
         custom_file_name: str | None = None,
+        image_options: dict | None = None,
         *,
         overwrite: bool = False,
     ) -> bool:
@@ -42,14 +43,17 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
             domain_identifier: ID of the object in ChurchTools
             custom_file_name: optional file name -
                 if not specified the one from the file is used
-        :type custom_file_name:
             overwrite: if true delete existing file before upload of new one to replace
             it's content instead of creating a copy
+            image_options: in case of an image additional params can be set as dict
+                see default value in code or API documentation for sample
 
         Returns:
             if successful.
         """
-        source_filepath = Path(source_filepath)
+        if isinstance(source_filepath, Path) is not Path:
+            source_filepath = Path(source_filepath)
+
         with source_filepath.open("rb") as source_file:
             url = f"{self.domain}/api/files/{domain_type}/{domain_identifier}"
 
@@ -92,18 +96,21 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
         #> this fails !
         """
 
-        if response.status_code == requests.codes.ok:
-            try:
-                response_content = json.loads(response.content)
-                logger.debug("Upload successful len=%s", response_content)
-            except (json.JSONDecodeError, TypeError, UnicodeDecodeError):
-                logger.warning(response.content.decode())
-                return False
-            else:
-                return True
-        else:
+        if response.status_code != requests.codes.ok:
             logger.warning(response.content.decode())
             return False
+        try:
+            response_content = json.loads(response.content)
+            file_id = response_content["data"][0]["id"]
+            logger.debug("Upload successful len=%s", response_content)
+
+            if image_options:
+                self.set_image_options(image_id=file_id, image_options=image_options)
+        except (json.JSONDecodeError, TypeError, UnicodeDecodeError):
+            logger.warning(response.content.decode())
+            return False
+        else:
+            return True
 
     def file_delete(
         self,
@@ -248,3 +255,49 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
                 response.content,
             )
             return False
+
+    def set_image_options(self, image_id: int, image_options: dict | None) -> bool:
+        """API endpoint used to PUT image options to an existing image.
+
+        serializes nested dict before sending as json put
+
+        Args:
+            image_id: id of the image
+            image_options: dict defining the crop and focus of image.
+                Defaults to center no crop
+
+        Returns:
+            if successful
+        """
+        if not image_options:
+            image_options = {
+                "image_options": {
+                    "crop": {
+                        "top": "0.0",
+                        "bottom": "0.0",
+                        "left": "0.0",
+                        "right": "0.0",
+                    },
+                    "focus": {"x": "0.5", "y": "0.5"},
+                }
+            }
+        image_options_serialized = {
+            "image_options": json.dumps(image_options["image_options"])
+        }
+
+        url = f"{self.domain}/api/images/{image_id}/options"
+
+        logger.warning(
+            "Open CT support issue ...136046"
+            "image option is applied but wrong dtype after update"
+        )
+        # TODO @bensteUEM: setting image options is not correctly
+        # applied when using endpoint from CT API
+        # https://github.com/bensteUEM/ChurchToolsAPI/issues/122
+
+        with self.session.put(url=url, json=image_options_serialized) as response:
+            if response.status_code != requests.codes.ok:
+                return False
+
+            logger.debug("updated image options")
+            return True

@@ -3,6 +3,7 @@
 import json
 import logging
 from datetime import datetime
+from pathlib import Path
 
 import pytz
 import requests
@@ -179,6 +180,8 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         isInternal: bool = False,  # noqa: FBT001 FBT002
         address: dict | None = None,
         link: str = "",
+        image: Path | None = None,
+        image_options: dict | None = None,
         **kwargs: dict,
     ) -> dict:
         """Basic implementation of create_calendar.
@@ -195,6 +198,8 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
             isInternal: visibility option. Defaults to False.
             address: dict containing CT relevant address information
             link: a weblink refering more details_. Defaults to "".
+            image: path to a file which should be uploaded. Defaults to None
+            image_options: additional crop and focus dict to alter image
             kwargs: additional params as passthrough to JSON data
 
         Returns:
@@ -226,7 +231,13 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
             logger.warning(json.loads(response.content).get("errors"))
             return None
 
-        return json.loads(response.content)["data"]
+        result_data = json.loads(response.content)["data"]
+
+        self._handle_calendar_image(
+            appointment_id=result_data["id"], image=image, image_options=image_options
+        )
+
+        return result_data
 
     def update_calender_appointment(
         self,
@@ -241,6 +252,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         and overwrite all provided kwargs
 
         See create_calendar_appointment for details about other keywords
+        Calendar Images need to be updated using files/file_upload
 
         Args:
             calendar_id: id of the calendar to work with
@@ -256,6 +268,8 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
             isInternal: visibility option. Defaults to previous value if not set
             address: dict containing CT relevant address information
             link: a weblink refering more details_. Defaults to "".
+            image: path to a file which should be uploaded. Defaults to None
+            image_options: additional crop and focus dict to alter image
 
         Returns:
             The dict of the calendar appointment updated or None in case of issues
@@ -319,6 +333,12 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
             logger.warning(json.loads(response.content).get("errors"))
             return None
 
+        self._handle_calendar_image(
+            appointment_id=appointment_id,
+            image=kwargs.get("image"),
+            image_options=kwargs.get("image_options"),
+        )
+
         return json.loads(response.content)["data"]
 
     def delete_calender_appointment(
@@ -346,3 +366,38 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
             return False
 
         return True
+
+    def _handle_calendar_image(
+        self,
+        appointment_id: int,
+        image: Path | None = None,
+        image_options: dict | None = None,
+    ) -> None:
+        """Function which covers nested update of image and options if specified.
+
+        Args:
+            appointment_id: id of the individual calendar appointment
+
+            image: path to a file which should be uploaded. Defaults to None
+            image_options: additional crop and focus dict to alter image
+        """
+        if image:
+            if not image_options:
+                image_options = {
+                    "image_options": {
+                        "crop": {
+                            "top": "0.0",
+                            "bottom": "0.0",
+                            "left": "0.0",
+                            "right": "0.0",
+                        },
+                        "focus": {"x": "0.5", "y": "0.5"},
+                    }
+                }
+
+            self.file_upload(
+                source_filepath=image,
+                domain_type="appointment_image",
+                domain_identifier=appointment_id,
+                image_options=image_options,
+            )
