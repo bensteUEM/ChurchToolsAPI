@@ -74,8 +74,8 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
             logger.debug(
-                "First response of Groups Hierarchies successful %s",
-                response_content,
+                "First response of Groups Hierarchies successful len=%s",
+                len(response_content),
             )
 
             return {group["groupId"]: group for group in response_data}
@@ -111,7 +111,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             )
             logger.debug(
                 "First response of Group Statistics successful len=%s",
-                response_content,
+                len(response_content),
             )
             return response_data
         logger.warning(
@@ -179,7 +179,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         )
         logger.debug(
             "First response of Create Group successful len=%s",
-            response_content,
+            len(response_content),
         )
 
         return response_data
@@ -208,7 +208,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             response_data = response_content["data"].copy()
             logger.debug(
                 "First response of Update Group successful len=%s",
-                response_content,
+                len(response_content),
             )
 
             return response_data
@@ -265,7 +265,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             response_data = response_content["data"].copy()
             logger.debug(
                 "First response of Grouptypes successful len=%s",
-                response_content,
+                len(response_content),
             )
             if isinstance(response_data, list):
                 result = {group["id"]: group for group in response_data}
@@ -296,7 +296,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             response_data = response_content["data"].copy()
             logger.debug(
                 "First response of Group Permissions successful len=%s",
-                response_content,
+                len(response_content),
             )
             return response_data
         logger.warning(

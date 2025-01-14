@@ -206,7 +206,8 @@ class ChurchToolsApi(
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
             logger.debug(
-                "First response of Global Permissions successful %s", response_content
+                "First response of Global Permissions successful len=%s",
+                len(response_content),
             )
 
             return response_data
@@ -295,7 +296,7 @@ class ChurchToolsApi(
                 case _:
                     return response_data
 
-        logger.debug("SongTags load successful %s", response_content)
+        logger.debug("SongTags load successful len=%s", len(response_content))
 
         return response_data
 
@@ -317,7 +318,7 @@ class ChurchToolsApi(
         if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
-            logger.debug("SongTags load successful %s", response_content)
+            logger.debug("SongTags load successful len=%s", len(response_content))
             return {item["name"]: item for item in response_data}
         logger.warning(
             "%s Something went wrong fetching Song-tags: %s",

@@ -51,8 +51,8 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
             response_data = response_content["data"].copy()
 
             logger.debug(
-                "len of first response of GET Persons successful len(%s)",
-                response_content,
+                "len of first response of GET Persons successful len=%s",
+                len(response_content),
             )
 
             if len(response_data) == 0:
@@ -78,7 +78,7 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
                     result[item["id"]] = item
                 response_data = result
 
-            logger.debug("Persons load successful %s", response_data)
+            logger.debug("Persons load successful len=%s", len(response_data))
             return response_data
         logger.info("Persons requested failed: %s", response.status_code)
         return None
@@ -114,7 +114,7 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
                 if returnAsDict:
                     response_data = {item["id"]: item["name"] for item in response_data}
 
-            logger.debug("Person Masterdata load successful len=%s", response_data)
+            logger.debug("Person Masterdata load successful len=%s", len(response_data))
 
             return response_data
         logger.warning(

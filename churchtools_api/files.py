@@ -195,7 +195,7 @@ class ChurchToolsApiFiles(ChurchToolsApiAbstract):
             arrangement_files = response_content["data"].copy()
             logger.debug(
                 "SongArrangement-Files load successful len=%s",
-                response_content,
+                len(response_content),
             )
             file_found = False
 

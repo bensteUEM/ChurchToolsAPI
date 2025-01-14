@@ -130,8 +130,8 @@ class ChurchToolsApiPosts(ChurchToolsApiAbstract):
             response_data = response_content["data"].copy()
 
             logger.debug(
-                "len of first response of GET posts successful len(%s)",
-                response_content,
+                "len of first response of GET posts successful len=%s",
+                len(response_content),
             )
 
             if len(response_data) == 0:
@@ -184,8 +184,8 @@ class ChurchToolsApiPosts(ChurchToolsApiAbstract):
             response_data = response_content["data"].copy()
 
             logger.debug(
-                "len of first response of GET Persons successful len(%s)",
-                response_content,
+                "len of first response of GET Persons successful len=%s",
+                len(response_content),
             )
 
             if len(response_data) == 0:
@@ -205,7 +205,7 @@ class ChurchToolsApiPosts(ChurchToolsApiAbstract):
                 [response_data] if isinstance(response_data, dict) else response_data
             )
 
-            logger.debug("Posts load successful %s", response_data)
+            logger.debug("Posts load successful len=%s", len(response_data))
             return response_data
 
         logger.info("Posts requested failed: %s", response.status_code)

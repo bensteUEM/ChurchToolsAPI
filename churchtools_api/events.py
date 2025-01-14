@@ -688,7 +688,7 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
                 if kwargs.get("returnAsDict"):
                     response_data2 = response_data.copy()
                     response_data = {item["id"]: item for item in response_data2}
-            logger.debug("Event Masterdata load successful len=%s", response_data)
+            logger.debug("Event Masterdata load successful len=%s", len(response_data))
 
             return response_data
         logger.info(
