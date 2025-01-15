@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 
 import pytest
-import pytz
+from tzlocal import get_localzone
 
 from churchtools_api.posts import GroupVisibility, PostVisibility
 from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
@@ -62,8 +62,8 @@ class TestChurchtoolsApiPosts(TestsChurchToolsApiAbstract):
         At present this requires at least 2 post in Dec 2024
         """
         EXPECTED_MIN_NUMBER_OF_POSTS = 2
-        FROM_DATE = datetime(year=2024, month=12, day=1).astimezone(pytz.utc)
-        TO_DATE = datetime(year=2024, month=12, day=31).astimezone(pytz.utc)
+        FROM_DATE = datetime(year=2024, month=12, day=1).astimezone(get_localzone())
+        TO_DATE = datetime(year=2024, month=12, day=31).astimezone(get_localzone())
 
         result = self.api.get_posts(after=FROM_DATE, before=TO_DATE)
         assert isinstance(result, list)
@@ -91,8 +91,8 @@ class TestChurchtoolsApiPosts(TestsChurchToolsApiAbstract):
         of which the later one should have the specified ID
         """
         EXPECTED_NUMBER_OF_POSTS = 2
-        FROM_DATE = datetime(year=2024, month=12, day=1).astimezone(pytz.utc)
-        TO_DATE = datetime(year=2024, month=12, day=31).astimezone(pytz.utc)
+        FROM_DATE = datetime(year=2024, month=12, day=1).astimezone(get_localzone())
+        TO_DATE = datetime(year=2024, month=12, day=31).astimezone(get_localzone())
         TO_GUID = "DA9C24AD-27FE-496E-98D0-DF974F4B6F8D"
 
         result = self.api.get_posts(
@@ -120,8 +120,8 @@ class TestChurchtoolsApiPosts(TestsChurchToolsApiAbstract):
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
         EXPECTED_MIN_NUMBER_OF_POSTS_BY_CAMPUS = {0: 2, 7: 0}
-        FROM_DATE = datetime(year=2024, month=12, day=1).astimezone(pytz.utc)
-        TO_DATE = datetime(year=2024, month=12, day=31).astimezone(pytz.utc)
+        FROM_DATE = datetime(year=2024, month=12, day=1).astimezone(get_localzone())
+        TO_DATE = datetime(year=2024, month=12, day=31).astimezone(get_localzone())
 
         for (
             campus_id,
@@ -145,8 +145,8 @@ class TestChurchtoolsApiPosts(TestsChurchToolsApiAbstract):
         User 629 posted 1time from Oct-Dec 2024
         """
         EXPECTED_NUMBER_OF_POSTS_BY_ACTOR = {9: 2, 629: 1}
-        FROM_DATE = datetime(year=2024, month=9, day=1).astimezone(pytz.utc)
-        TO_DATE = datetime(year=2024, month=12, day=31).astimezone(pytz.utc)
+        FROM_DATE = datetime(year=2024, month=9, day=1).astimezone(get_localzone())
+        TO_DATE = datetime(year=2024, month=12, day=31).astimezone(get_localzone())
 
         for (
             actor_id,

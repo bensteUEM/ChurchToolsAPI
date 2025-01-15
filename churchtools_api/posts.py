@@ -5,7 +5,6 @@ import logging
 from datetime import datetime
 from enum import Enum
 
-import pytz
 import requests
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
@@ -83,13 +82,9 @@ class ChurchToolsApiPosts(ChurchToolsApiAbstract):
         params = {"limit": limit}
 
         if after:
-            params["after"] = (
-                after.astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%S") + "Z",
-            )
+            params["after"] = after.strftime("%Y-%m-%dT%H:%M:%S") + "Z"
         if before:
-            params["before"] = (
-                before.astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%S") + "Z",
-            )
+            params["before"] = before.strftime("%Y-%m-%dT%H:%M:%S") + "Z"
             if last_post_indentifier:
                 params["last_post_indentifier"] = last_post_indentifier
                 # TODO @bensteUEM: issue with CT last_post_ident CT support 137701

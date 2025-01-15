@@ -224,8 +224,7 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
             if expected_key in ["startDate", "endDate"]:
                 assert (
                     check_appointment[expected_key]
-                    == expected_value.astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%S")
-                    + "Z"
+                    == expected_value.strftime("%Y-%m-%dT%H:%M:%S") + "Z"
                 )
             elif expected_key == "image":
                 assert check_appointment[expected_key]["name"] == expected_value.name
@@ -253,8 +252,7 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
         )
         assert (
             check_appointment["endDate"]
-            == new_sample_end_date.astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%S")
-            + "Z"
+            == new_sample_end_date.strftime("%Y-%m-%dT%H:%M:%S") + "Z"
         )
 
         # 2b. update subtitle field

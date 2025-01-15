@@ -27,6 +27,7 @@ pyproject_toml_content = {
                 "python-docx": "^0.8.11",
                 "requests": "^2.31.0",
                 "pytz": "^2024.2",
+                "tzlocal": "^5.2",
             },
             "group": {
                 "dev": {

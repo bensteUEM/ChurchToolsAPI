@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 import pytz
+from tzlocal import get_localzone
 
 from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
 
@@ -54,7 +55,7 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
             .astimezone()
             .date()
         )
-        today_date = datetime.today().astimezone(pytz.utc).date()
+        today_date = datetime.today().astimezone(get_localzone()).date()
         assert result_date >= today_date
 
         # load last event (direction, limit)
@@ -401,6 +402,22 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%SZ").astimezone(
             pytz.timezone("Europe/Berlin")
         )
+
+        result = self.api.get_event_by_calendar_appointment(appointment_id, start_date)
+        assert event_id == result["id"]
+
+    def test_get_event_by_calendar_appointment_dateonly(self) -> None:
+        """Check that event can be retrieved based on known calendar entry .
+
+        using date only instead of full datetime
+
+        On ELKW1610.KRZ.TOOLS (26th. Nov 2023) sample is
+        event_id:4060
+        appointment:331150 starts on 2025-03-30T10:00:00Z. (CEST)
+        """
+        event_id = 4060
+        appointment_id = 331150
+        start_date = datetime(2025, 3, 30).astimezone(pytz.timezone("Europe/Berlin"))
 
         result = self.api.get_event_by_calendar_appointment(appointment_id, start_date)
         assert event_id == result["id"]

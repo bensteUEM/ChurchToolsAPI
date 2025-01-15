@@ -5,7 +5,6 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
-import pytz
 import requests
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
@@ -213,9 +212,8 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
 
         data = {
-            "startDate": startDate.astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%S")
-            + "Z",
-            "endDate": endDate.astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%S") + "Z",
+            "startDate": startDate.strftime("%Y-%m-%dT%H:%M:%S") + "Z",
+            "endDate": endDate.strftime("%Y-%m-%dT%H:%M:%S") + "Z",
             "title": title,
             "subtitle": subtitle,
             "description": description,
@@ -288,10 +286,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         for date_param in ["startDate", "endDate"]:
             if date_param in list(kwargs):
                 existing_calendar_appointment[date_param] = (
-                    kwargs.pop(date_param)
-                    .astimezone(pytz.utc)
-                    .strftime("%Y-%m-%dT%H:%M:%S")
-                    + "Z"
+                    kwargs.pop(date_param).strftime("%Y-%m-%dT%H:%M:%S") + "Z"
                 )
         for bool_param in ["isInternal"]:
             if bool_param in list(kwargs):
