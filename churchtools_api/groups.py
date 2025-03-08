@@ -344,6 +344,38 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             response.content,
         )
         return None
+    
+    def get_group_memberfields(self, group_id: int) -> list[dict]:
+        """Get list of member fields for the given group.
+
+        Arguments:
+            group_id: group id
+
+        Returns:
+            list of group member fields dicts
+        """
+        url = self.domain + f"/api/groups/{group_id}/memberfields"
+        headers = {"accept": "application/json"}
+        params = {}
+
+        response = self.session.get(url=url, headers=headers, params=params)
+
+        if response.status_code == requests.codes.ok:
+            response_content = json.loads(response.content)
+
+            response_data = self.combine_paginated_response_data(
+                response_content,
+                url=url,
+                headers=headers,
+            )
+            return [response_data] if isinstance(response_data, dict) else response_data
+
+        logger.warning(
+            "%s Something went wrong fetching group members: %s",
+            response.status_code,
+            response.content,
+        )
+        return None
 
     def get_groups_members(
         self,

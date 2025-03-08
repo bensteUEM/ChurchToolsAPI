@@ -250,6 +250,23 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
             assert "personId" in member
             assert member["groupTypeRoleId"] == SAMPLE_GROUPTYPE_ROLE_ID
 
+    def test_get_group_memberfields(self) -> None:
+        """Checks if group member fields can be retrieved.
+
+        from the group.
+        
+        IMPORTANT - This test method and the parameters used depend on target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+        """
+        SAMPLE_GROUP_ID = 462
+        memberfields = self.api.get_group_memberfields(group_id=SAMPLE_GROUP_ID)
+
+        assert memberfields is not None
+        assert memberfields != []
+        for memberfield in memberfields:
+            assert "type" in memberfield
+            assert "id" in memberfield["field"]
+
     def test_get_groups_members(self) -> None:
         """Check that a list of groups is received.
 
