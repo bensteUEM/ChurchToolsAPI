@@ -223,6 +223,36 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         groups = self.api.get_groups(group_id=SAMPLE_GROUP_ID)
         assert groups[0]["information"]["note"] == ""
 
+    def test_update_group_member(self) -> None:
+        """Checks that a field of a group member can be set.
+
+        to some value and the returned group member has this field value set.
+        Also cleans the field after executing the test
+
+        IMPORTANT - This test method and the parameters used depend on target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+        """
+        SAMPLE_GROUP_ID = 103
+        SAMPLE_MEMBER_ID = 513
+        SAMPLE_GROUPTYPE_ROLE_ID = 15
+        data = {"comment": "Updated Over API"}
+        group_member_update_result = self.api.update_group_member(
+            group_id=SAMPLE_GROUP_ID,
+            member_id=SAMPLE_MEMBER_ID, 
+            data=data
+        )
+        assert group_member_update_result["comment"] == data["comment"]
+
+        group_member_update_result = self.api.update_group_member(
+            group_id=SAMPLE_GROUP_ID,
+            member_id=SAMPLE_MEMBER_ID,
+            data={"comment": ""},
+        )
+        members = self.api.get_group_members(
+            group_id=SAMPLE_GROUP_ID,
+            role_ids=[SAMPLE_GROUPTYPE_ROLE_ID],)
+        assert members[0]["comment"] == ""
+
     def test_get_group_members(self) -> None:
         """Checks if group members can be retrieved.
 

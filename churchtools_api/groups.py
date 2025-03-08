@@ -218,6 +218,42 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             response.content,
         )
         return None
+    
+    def update_group_member(self, group_id: int, member_id: int, data: dict) -> dict:
+        """Update a field of the given member in group.
+
+        to loookup available names use get_group_member(group_id=xxx).
+
+        Arguments:
+            group_id: number of the group to update
+            member_id: number of the member to update
+            data: all group member fields
+
+        Returns:
+            dict with updated group member
+        """
+        url = self.domain + f"/api/groups/{group_id}/members/{member_id}"
+        headers = {
+            "accept": "application/json",
+            "Content-Type": "application/json",
+        }
+        response = self.session.patch(url=url, headers=headers, data=json.dumps(data))
+
+        if response.status_code == requests.codes.ok:
+            response_content = json.loads(response.content)
+            response_data = response_content["data"].copy()
+            logger.debug(
+                "First response of Update Group Member successful len=%s",
+                len(response_content),
+            )
+
+            return response_data
+        logger.warning(
+            "%s Something went wrong updating group: %s",
+            response.status_code,
+            response.content,
+        )
+        return None
 
     def delete_group(self, group_id: int) -> bool:
         """Delete the given group.
@@ -371,7 +407,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             return [response_data] if isinstance(response_data, dict) else response_data
 
         logger.warning(
-            "%s Something went wrong fetching group members: %s",
+            "%s Something went wrong fetching group member fields: %s",
             response.status_code,
             response.content,
         )
