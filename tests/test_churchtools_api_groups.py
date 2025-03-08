@@ -258,7 +258,7 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
-        SAMPLE_GROUP_ID = 462
+        SAMPLE_GROUP_ID = 103
         memberfields = self.api.get_group_memberfields(group_id=SAMPLE_GROUP_ID)
 
         assert memberfields is not None
