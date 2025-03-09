@@ -219,6 +219,42 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         )
         return None
 
+    def update_group_member(self, group_id: int, person_id: int, data: dict) -> dict:
+        """Update a field of the given member in group.
+
+        to loookup available names use get_group_member(group_id=xxx).
+
+        Arguments:
+            group_id: number of the group to update
+            person_id: number of the member to update
+            data: all group member fields
+
+        Returns:
+            dict with updated group member
+        """
+        url = self.domain + f"/api/groups/{group_id}/members/{person_id}"
+        headers = {
+            "accept": "application/json",
+            "Content-Type": "application/json",
+        }
+        response = self.session.patch(url=url, headers=headers, data=json.dumps(data))
+
+        if response.status_code == requests.codes.ok:
+            response_content = json.loads(response.content)
+            response_data = response_content["data"].copy()
+            logger.debug(
+                "First response of Update Group Member successful len=%s",
+                len(response_content),
+            )
+
+            return response_data
+        logger.warning(
+            "%s Something went wrong updating group: %s",
+            response.status_code,
+            response.content,
+        )
+        return None
+
     def delete_group(self, group_id: int) -> bool:
         """Delete the given group.
 
@@ -311,10 +347,11 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
         Arguments:
             group_id: group id
-            kwargs: see below
+            kwargs: see API documentation - only tested cases below
 
         Kwargs:
             role_ids: list[int]: optional filter list of role ids
+            person_ids: list[int]: optional filter by person_id
 
         Returns:
             list of group member dicts
@@ -325,6 +362,8 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
         if "role_ids" in kwargs:
             params["role_ids[]"] = kwargs["role_ids"]
+        if "person_ids" in kwargs:
+            params["person_id[]"] = kwargs["person_ids"]
 
         response = self.session.get(url=url, headers=headers, params=params)
 
@@ -340,6 +379,38 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
         logger.warning(
             "%s Something went wrong fetching group members: %s",
+            response.status_code,
+            response.content,
+        )
+        return None
+
+    def get_group_memberfields(self, group_id: int) -> list[dict]:
+        """Get list of member fields for the given group.
+
+        Arguments:
+            group_id: group id
+
+        Returns:
+            list of group member fields dicts
+        """
+        url = self.domain + f"/api/groups/{group_id}/memberfields"
+        headers = {"accept": "application/json"}
+        params = {}
+
+        response = self.session.get(url=url, headers=headers, params=params)
+
+        if response.status_code == requests.codes.ok:
+            response_content = json.loads(response.content)
+
+            response_data = self.combine_paginated_response_data(
+                response_content,
+                url=url,
+                headers=headers,
+            )
+            return [response_data] if isinstance(response_data, dict) else response_data
+
+        logger.warning(
+            "%s Something went wrong fetching group member fields: %s",
             response.status_code,
             response.content,
         )

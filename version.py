@@ -2,7 +2,7 @@
 
 import os
 
-VERSION = "1.7.2"
+VERSION = "1.7.3"
 __version__ = VERSION
 
 if __name__ == "__main__":

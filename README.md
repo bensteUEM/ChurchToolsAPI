@@ -90,3 +90,4 @@ Anybody using this code is more than welcome to contribute with change requests 
 * benste - implemented for use at Evangelische Kirchengemeinde Baiersbronn (https://www.evang-kirche-baiersbronn.de/)
 * kolibri52 - Jonathan supporting Liebenzeller Gemeinschaft Oettingen (https://lgv-oe.de/)
 * fschrempf - Frieder supporting CVJM Esslingen e. V. (https://cvjm-esslingen.de)
+* wengc3 - https://github.com/wengc3
