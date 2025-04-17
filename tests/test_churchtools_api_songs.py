@@ -209,15 +209,20 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
 
         Tag ID and Song ID may vary depending on the server used
         On ELKW1610.KRZ.TOOLS song_id 408 (sample_no_ct_attachement)
-            and tag_id 53 (Test)
+            and tag_id 163 (Test)
 
         self.api.ajax_song_last_update = None is required
             in order to clear the ajax song cache
 
+        IMPORTANT - This test method and the parameters used depend on target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+
+        song ID 408 is tagged with 163 "Test"
+
         Returns: None
         """
         SAMPLE_SONG_ID = 408
-        TEST_SONG_TAG = 53
+        TEST_SONG_TAG = 163
 
         self.api.ajax_song_last_update = None
         assert self.api.contains_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
@@ -250,35 +255,55 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         assert self.api.contains_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
 
     def test_get_song_tag_original(self) -> None:
-        """Cchek song tag can be retrieved and returned as original."""
+        """Cchek song tag can be retrieved and returned as original.
+
+        IMPORTANT - This test method and the parameters used depend on target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+
+        song ID 408 is tagged with 163 "Test"
+        """
         SAMPLE_SONG_ID = 408
         result = self.api.get_song_tags(song_id=SAMPLE_SONG_ID)
-        EXPECTED_TAG = 53
+        EXPECTED_TAG = 163
         assert EXPECTED_TAG in result
 
     def test_get_song_tag_id_dict(self) -> None:
-        """Check song tag can be retrieved and returned as id dict."""
+        """Check song tag can be retrieved and returned as id dict.
+
+        IMPORTANT - This test method and the parameters used depend on target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+
+        song ID 408 is tagged with 163 "Test"
+        """
         SAMPLE_SONG_ID = 408
         result = self.api.get_song_tags(song_id=SAMPLE_SONG_ID, rtype="id_dict")
-        EXPECTED_MIN_RESULT = {53: "Test"}
+        EXPECTED_MIN_RESULT = {163: "Test"}
         assert all(item in result.items() for item in EXPECTED_MIN_RESULT.items())
         assert all(key in result for key in EXPECTED_MIN_RESULT)
 
     def test_get_song_tag_name_dict(self) -> None:
-        """Check song tag can be retrieved and returned as name dict."""
+        """Check song tag can be retrieved and returned as name dict.
+
+        IMPORTANT - This test method and the parameters used depend on target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+
+        song ID 408 is tagged with 163 "Test"
+        """
         SAMPLE_SONG_ID = 408
         result = self.api.get_song_tags(song_id=SAMPLE_SONG_ID, rtype="name_dict")
-        EXPECTED_MIN_RESULT = {"Test": 53}
+        EXPECTED_MIN_RESULT = {"Test": 163}
         assert all(item in result.items() for item in EXPECTED_MIN_RESULT.items())
 
     def test_get_songs_with_tag(self) -> None:
         """Test method to check if fetching all songs with a specific tag works.
 
         songId and tag_id will vary depending on the server used
-        On ELKW1610.KRZ.TOOLS song ID 408 is tagged with 53 "Test"
-        :return:
+
+        IMPORTANT - This test method and the parameters used depend on target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+        song ID 408 is tagged with 163 "Test"
         """
-        SAMPLE_TAG_ID = 53
+        SAMPLE_TAG_ID = 163
         SAMPLE_SONG_ID = 408
 
         self.api.ajax_song_last_update = None
