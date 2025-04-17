@@ -86,7 +86,7 @@ pyproject_toml_content = {
                 # Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)
                 # codes by default.
                 "select": ["ALL"],
-                "ignore": ["FIX002", "COM812", "ISC001"],
+                "ignore": ["FIX002", "COM812", "ISC001", "FBT001", "FBT002"],
                 "per-file-ignores": {"tests/*.py": ["S101"]},
                 # Allow fix for all enabled rules (when `--fix`) is provided.
                 "fixable": ["ALL"],
