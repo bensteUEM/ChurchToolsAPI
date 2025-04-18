@@ -223,6 +223,19 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
             **kwargs,
         }
 
+        # TODO@bensteUEM: Something is wrong with timestamp precision when
+        # createing new events - truncated to minutes...
+        # https://github.com/bensteUEM/ChurchToolsAPI/issues/141 - CT case 147654
+        if startDate.second != 0 or endDate.second != 0:
+            logger.warning(
+                (
+                    "Seconds of startdate=%s and enddate=%s are discarded by CT API - "
+                    "Support Case 177654 Github Ticket 141"
+                ),
+                startDate,
+                endDate,
+            )
+
         response = self.session.post(url=url, json=data, headers=headers)
 
         if response.status_code != requests.codes.created:
