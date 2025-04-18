@@ -5,6 +5,8 @@ import logging
 import logging.config
 from pathlib import Path
 
+import pytest
+
 from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
 
 logger = logging.getLogger(__name__)
@@ -53,6 +55,27 @@ class TestsChurchToolsApi(TestsChurchToolsApiAbstract):
         assert (
             len(token) > 0
         ), "Token should be more than one letter but changes each time"
+
+    @pytest.mark.parametrize(
+        ("path",
+        "expected_result"),
+        [
+            (None, "https://elkw1610.krz.tools"),
+            ("abc", "https://elkw1610.krz.tools/abc"),
+            ("/abc/1", "https://elkw1610.krz.tools/abc/1"),
+        ],
+    )
+    def test_generate_url(self, path: str | None, expected_result: str) -> None:
+        """Test checks the respective method.
+
+        Args:
+            path: the path to be added to domain
+            expected_result: the result expected by function execution
+
+        Returns:
+            None
+        """
+        assert self.api.generate_url(path) == expected_result
 
     def test_check_connection_ajax(self) -> None:
         """Checks connection using AJAX endpoints with current session / ct_api."""
