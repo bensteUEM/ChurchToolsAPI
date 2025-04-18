@@ -220,12 +220,9 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
         )[0]
         for expected_key, expected_value in SAMPLE_DATA.items():
             if expected_key in ["startDate", "endDate"]:
-                # TODO@bensteUEM: Workaround removing seconds due to CT 147654
-                # https://github.com/bensteUEM/ChurchToolsAPI/issues/141
                 assert check_appointment[expected_key] == expected_value.replace(
                     second=0
                 ).strftime("%Y-%m-%dT%H:%M:%SZ")
-                logger.info("applied simplification - support CT case 147654 GH 141")
             elif expected_key == "image":
                 assert check_appointment[expected_key]["name"] == expected_value.name
                 assert isinstance(check_appointment[expected_key]["imageOption"], dict)
@@ -250,12 +247,9 @@ class TestsChurchToolsApiCalendars(TestsChurchToolsApiAbstract):
             appointment_id=appointment_id,
             endDate=new_sample_end_date,
         )
-        # TODO@bensteUEM: Workaround removing seconds due to CT 147654
-        # https://github.com/bensteUEM/ChurchToolsAPI/issues/141
         assert check_appointment["endDate"] == new_sample_end_date.replace(
             second=0
         ).strftime("%Y-%m-%dT%H:%M:%SZ")
-        logger.info("applied simplification - support CT case 147654 GH 141")
 
         # 2b. update subtitle field
         new_sample_subtitle = "updated subtitle"
