@@ -237,7 +237,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             "accept": "application/json",
             "Content-Type": "application/json",
         }
-        response = self.session.patch(url=url, headers=headers, data=json.dumps(data))
+        response = self.session.patch(url=url, headers=headers, json=data)
 
         if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
@@ -391,7 +391,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             group_id: group id
 
         Returns:
-            list of group member fields dicts
+            list of dicts with {"type":"group","field":dict} that shows member fields
         """
         url = self.domain + f"/api/groups/{group_id}/memberfields"
         headers = {"accept": "application/json"}
@@ -487,11 +487,12 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
         Arguments:
             group_id: required group id
             person_id: required person id
-            kwargs: see below
+            kwargs: implemented see below
 
         Keywords:
             grouptype_role_id: int: optional grouptype role id
             group_member_status: str: optional member status
+            fields: dict: {"fieldname":"value" ...} to define groupmemberfields
 
         Returns:
             dict with group member
@@ -506,8 +507,10 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             data["groupTypeRoleId"] = kwargs["grouptype_role_id"]
         if "group_member_status" in kwargs:
             data["group_member_status"] = kwargs["group_member_status"]
+        if "fields" in kwargs:
+            data["fields"] = kwargs["fields"]
 
-        response = self.session.put(url=url, data=data, headers=headers)
+        response = self.session.put(url=url, json=data, headers=headers)
 
         if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
