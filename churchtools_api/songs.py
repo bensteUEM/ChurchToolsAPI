@@ -3,16 +3,20 @@
 import json
 import logging
 from datetime import datetime, timedelta
+from time import sleep
 
 import requests
 from tzlocal import get_localzone
 
-from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
+# from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract  # noqa: ERA001 E501
+from churchtools_api.tags import (
+    ChurchToolsApiTags,  # which implements ChurchToolsApiAbstract
+)
 
 logger = logging.getLogger(__name__)
 
 
-class ChurchToolsApiSongs(ChurchToolsApiAbstract):
+class ChurchToolsApiSongs(ChurchToolsApiTags):
     """Part definition of ChurchToolsApi which focuses on songs.
 
     Args:
@@ -341,104 +345,26 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
 
         return True
 
-    def add_song_tag(self, song_id: int, song_tag_id: int) -> dict:
-        """Method to add a song tag using legacy AJAX API on a specific song.
-
-        reverse engineered based on web developer tools in Firefox
-        and live churchTools instance.
-
-        re-adding existing tag does not cause any issues
-
-        Arguments:
-            song_id: ChurchTools site specific song_id which should be modified
-                required
-            song_tag_id: ChurchTools site specific song_tag_id which should be added
-                required
-
-        Returns:
-            response item #TODO 49
-        """
-        logging.warning(
-            "Using undocumented AJAX API"
-            " because function does not exist as REST endpoint"
-        )
-        url = self.domain + "/?q=churchservice/ajax&func=addSongTag"
-
-        data = {"id": song_id, "tag_id": song_tag_id}
-
-        return self.session.post(url=url, data=data)
-
-    def remove_song_tag(self, song_id: int, song_tag_id: int) -> dict:
-        """Method to remove a song tag using legacy AJAX API on a specifc song.
-
-        reverse engineered based on web developer tools in Firefox
-        and live churchTools instance
-        re-removing existing tag does not cause any issues.
-
-        Arguments:
-            song_id: ChurchTools site specific song_id which should be modified
-                required
-            song_tag_id: ChurchTools site specific song_tag_id which should be added
-                required
-
-        Returns:
-            response item #TODO 49
-        """
-        logging.warning(
-            "Using undocumented AJAX API"
-            " because function does not exist as REST endpoint"
-        )
-        url = self.domain + "/?q=churchservice/ajax&func=delSongTag"
-
-        data = {"id": song_id, "tag_id": song_tag_id}
-
-        return self.session.post(url=url, data=data)
-
-    def get_song_tags(self, song_id: int, *, rtype: str = "original") -> list:
-        """Method to get a song tag workaround using legacy AJAX API for getSong.
-
-        Arguments:
-            song_id: ChurchTools site specific song_id which should be modified
-                required
-            rtype: optional return type filter either original, id_dict, name_dict
-
-        Returns:
-            response item in requested format
-        """
-        song = self.get_song_ajax(song_id)
-
-        match rtype:
-            case "original":
-                return song["tags"]
-            case "id_dict":
-                return {
-                    tag_id: self.get_tags(type="song", rtype="id_dict")[tag_id]
-                    for tag_id in song["tags"]
-                }
-            case "name_dict":
-                return {
-                    self.get_tags(type="song", rtype="id_dict")[tag_id]: tag_id
-                    for tag_id in song["tags"]
-                }
-
-    def contains_song_tag(self, song_id: int, song_tag_id: int) -> bool:
+    def contains_song_tag(self, song_id: int, song_tag_name: int) -> bool:
         """Helper which checks if a specific song_tag_id is present on a song.
 
         Arguments:
             song_id: ChurchTools site specific song_id which should checked
-            song_tag_id: ChurchTools site specific song_tag_id which should used
+            song_tag_name: name of the tag which should be checked
 
         Returns:
             bool if present
         """
-        tags = self.get_song_tags(song_id)
-        return song_tag_id in tags
+        tags = self.get_tag(domain_type="song", domain_id=song_id, rtype="name_dict")
+        return song_tag_name in tags
 
-    def get_songs_by_tag(self, song_tag_id: int) -> list[dict]:
+    def get_songs_by_tag(self, song_tag_name: int) -> list[dict]:
         """Helper which returns all songs that contain have a specific tag.
 
         Arguments:
-            song_tag_id: ChurchTools site specific song_tag_id which should be used
+            song_tag_name: ChurchTools site specific song_tag_id which should be used
+            OR
+            song_tag_id
 
         Returns:
             list of songs
@@ -446,11 +372,23 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         songs = self.get_songs()
         songs_dict = {song["id"]: song for song in songs}
 
-        filtered_song_ids = [
-            song_id
-            for song_id in songs_dict
-            if self.contains_song_tag(song_id=song_id, song_tag_id=song_tag_id)
-        ]
+        logger.info(
+            "get_songs_by_tag will need to send a request per song "
+            "method will make a short break after a couple of requests"
+        )
+        filtered_song_ids = []
+        total_len_of_songs = len(songs_dict)
+
+        for count, song_id in enumerate(songs_dict):
+            if count % 100 == 0:
+                logger.debug(
+                    "sleep 5 after 100 to avoid api overload @%s/%s",
+                    count,
+                    total_len_of_songs,
+                )
+                sleep(5)
+            if self.contains_song_tag(song_id=song_id, song_tag_name=song_tag_name):
+                filtered_song_ids.append(song_id)
 
         return [songs_dict[song_id] for song_id in filtered_song_ids]
 

@@ -125,7 +125,6 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
 
-
         1.  with minimal parameters.
         2. More complex group information
         3. Checks if a group can not be created with name of an existing group

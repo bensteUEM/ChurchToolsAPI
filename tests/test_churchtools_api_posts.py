@@ -24,7 +24,7 @@ with config_file.open(encoding="utf-8") as f_in:
 
 
 class TestChurchtoolsApiPosts(TestsChurchToolsApiAbstract):
-    """Test for Persons."""
+    """Test for Posts."""
 
     @pytest.mark.skip("not tested")
     def test_get_external_posts(self) -> None:
