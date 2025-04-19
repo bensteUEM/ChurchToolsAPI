@@ -2,11 +2,9 @@
 
 import json
 import logging
-from datetime import datetime, timedelta
 from time import sleep
 
 import requests
-from tzlocal import get_localzone
 
 # from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract  # noqa: ERA001 E501
 from churchtools_api.tags import (
@@ -71,44 +69,6 @@ class ChurchToolsApiSongs(ChurchToolsApiTags):
             response.content,
         )
         return None
-
-    def get_song_ajax(
-        self, song_id: int | None = None, require_update_after_seconds: int = 10
-    ) -> dict:
-        """Legacy AJAX function to get a specific song.
-
-        used to e.g. check for tags requires requesting full song list
-        for efficiency reasons songs are cached and not updated
-        unless older than 15sec or update_required
-        Be aware that params of the returned object might differ
-        from REST API responsens (e.g. Bezeichnung instead of name).
-
-        Params:
-            song_id: the id of the song to be searched for
-            require_update_after_seconds: number of seconds after which
-                an update of ajax song cache is required
-            defaults to 10 sedonds
-
-        Returns:
-            response content interpreted as json
-        """
-        logging.warning(
-            "Using undocumented AJAX API because "
-            "function does not exist as REST endpoint"
-        )
-        if self.ajax_song_last_update is None:
-            require_update = True
-        else:
-            require_update = self.ajax_song_last_update + timedelta(
-                seconds=require_update_after_seconds
-            ) < datetime.now().astimezone(get_localzone())
-        if require_update:
-            url = self.domain + "/?q=churchservice/ajax&func=getAllSongs"
-            response = self.session.post(url=url)
-            self.ajax_song_cache = json.loads(response.content)["data"]["songs"]
-            self.ajax_song_last_update = datetime.now().astimezone(get_localzone())
-
-        return self.ajax_song_cache[str(song_id)]
 
     def get_song_category_map(self) -> dict:
         """Helpfer function creating requesting CT metadata for mapping of categories.
