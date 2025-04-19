@@ -520,15 +520,10 @@ class ChurchToolsApiSongs(ChurchToolsApiTags):
         Returns:
             if deleted successfull
         """
-        url = self.domain + "/?q=churchservice/ajax"
+        url = f"{self.domain}/api/songs/{song_id}/arrangements/{arrangement_id}"
 
-        data = {
-            "func": "delArrangement",
-            "song_id": song_id,
-            "id": arrangement_id,
-        }
-        response = self.session.post(url=url, data=data)
-        if response.status_code != requests.codes.ok:
+        response = self.session.delete(url=url)
+        if response.status_code != requests.codes.no_content:
             logger.error(response)
             return False
 
