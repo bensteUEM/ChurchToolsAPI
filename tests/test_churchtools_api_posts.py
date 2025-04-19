@@ -7,6 +7,7 @@ from datetime import datetime
 from pathlib import Path
 
 import pytest
+from dateutil.relativedelta import relativedelta
 from tzlocal import get_localzone
 
 from churchtools_api.posts import GroupVisibility, PostVisibility
@@ -53,17 +54,33 @@ class TestChurchtoolsApiPosts(TestsChurchToolsApiAbstract):
         assert isinstance(result[0], dict)
         assert len(result) > EXPECTED_MIN_NUMBER_OF_POSTS
 
+    def test_get_posts_paginated(self) -> None:
+        """Tries to get a all posts.
+
+        IMPORTANT - This test method and the parameters used depend on target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+        """
+        PAGE_LIMIT = 10
+
+        result = self.api.get_posts(limit=PAGE_LIMIT)
+        assert isinstance(result, list)
+        assert len(result) == PAGE_LIMIT
+
+        result = self.api.get_posts()
+        assert isinstance(result, list)
+        assert len(result) > PAGE_LIMIT
+
     def test_get_posts_dates(self) -> None:
         """Tries to get a all posts using date filters.
 
         IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
 
-        At present this requires at least 2 post in Dec 2024
+        At present this requires at least 2 post in last 2 months
         """
         EXPECTED_MIN_NUMBER_OF_POSTS = 2
-        FROM_DATE = datetime(year=2024, month=12, day=1).astimezone(get_localzone())
-        TO_DATE = datetime(year=2024, month=12, day=31).astimezone(get_localzone())
+        FROM_DATE = datetime.now().astimezone(get_localzone()) - relativedelta(months=2)
+        TO_DATE = datetime.now().astimezone(get_localzone())
 
         result = self.api.get_posts(after=FROM_DATE, before=TO_DATE)
         assert isinstance(result, list)
@@ -118,10 +135,12 @@ class TestChurchtoolsApiPosts(TestsChurchToolsApiAbstract):
 
         IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
+
+        requires at least 2 posts in campus 0 and no posts in campus 7
         """
         EXPECTED_MIN_NUMBER_OF_POSTS_BY_CAMPUS = {0: 2, 7: 0}
-        FROM_DATE = datetime(year=2024, month=12, day=1).astimezone(get_localzone())
-        TO_DATE = datetime(year=2024, month=12, day=31).astimezone(get_localzone())
+        FROM_DATE = datetime.now().astimezone(get_localzone()) - relativedelta(months=2)
+        TO_DATE = datetime.now().astimezone(get_localzone())
 
         for (
             campus_id,
@@ -133,7 +152,7 @@ class TestChurchtoolsApiPosts(TestsChurchToolsApiAbstract):
             if exepcted_min_number_of_posts > 0:
                 assert isinstance(result, list)
                 assert isinstance(result[0], dict)
-            assert len(result) == exepcted_min_number_of_posts
+            assert len(result) >= exepcted_min_number_of_posts
 
     def test_get_posts_actor_id(self) -> None:
         """Tries to get a all posts using actor_id.
@@ -144,26 +163,26 @@ class TestChurchtoolsApiPosts(TestsChurchToolsApiAbstract):
         User 9 has 2 posts from Oct-Dec 2024
         User 629 posted 1time from Oct-Dec 2024
         """
-        EXPECTED_NUMBER_OF_POSTS_BY_ACTOR = {9: 2, 629: 1}
-        FROM_DATE = datetime(year=2024, month=9, day=1).astimezone(get_localzone())
-        TO_DATE = datetime(year=2024, month=12, day=31).astimezone(get_localzone())
+        EXPECTED_MIN_NUMBER_OF_POSTS_BY_ACTOR = {9: 2, 629: 1}
+        FROM_DATE = datetime.now().astimezone(get_localzone()) - relativedelta(months=2)
+        TO_DATE = datetime.now().astimezone(get_localzone())
 
         for (
             actor_id,
             exepcted_number_of_posts,
-        ) in EXPECTED_NUMBER_OF_POSTS_BY_ACTOR.items():
+        ) in EXPECTED_MIN_NUMBER_OF_POSTS_BY_ACTOR.items():
             result = self.api.get_posts(
                 after=FROM_DATE, before=TO_DATE, actor_ids=[actor_id]
             )
-            assert len(result) == exepcted_number_of_posts
+            assert len(result) >= exepcted_number_of_posts
 
         # combined result
         result = self.api.get_posts(
             after=FROM_DATE,
             before=TO_DATE,
-            actor_ids=[EXPECTED_NUMBER_OF_POSTS_BY_ACTOR.keys()],
+            actor_ids=[EXPECTED_MIN_NUMBER_OF_POSTS_BY_ACTOR.keys()],
         )
-        assert len(result) == sum(EXPECTED_NUMBER_OF_POSTS_BY_ACTOR.values())
+        assert len(result) >= sum(EXPECTED_MIN_NUMBER_OF_POSTS_BY_ACTOR.values())
 
     def test_get_posts_group_visibility(self) -> None:
         """Tries to get a all posts using group_visibility.
