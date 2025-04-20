@@ -181,42 +181,44 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         )
         return None
 
-    def get_AllEventData_ajax(self, eventId: int) -> dict:
-        """Reverse engineered function from legacy AJAX API.
+    def update_event(
+        self, event_id: int, *, admin_ids: list[int] | None = None
+    ) -> bool:
+        """Method used to update events.
 
-        which is used to get all event data for one event.
-        Required to read special params not yet included in REST getEvents()
-        Legacy AJAX request might stop working with any future release
-            ... CSRF-Token is required in session header
+        Args:
+            event_id: numeric id of event to change
 
-        Arguments:
-            eventId: number of the event to be requested
+        Optional Arguments
+            admin_ids: _description_. Defaults to list[int].
+
+            ADDITIONAL Params available but not tested -
+            if added as param please write test case
 
         Returns:
-            event information
-        """
-        url = self.domain + "/index.php"
-        headers = {"accept": "application/json"}
-        params = {"q": "churchservice/ajax"}
-        data = {"id": eventId, "func": "getAllEventData"}
-        response = self.session.post(url=url, headers=headers, params=params, data=data)
+            if successful
 
-        if response.status_code == requests.codes.ok:
-            response_content = json.loads(response.content)
-            if len(response_content["data"]) > 0:
-                response_data = response_content["data"][str(eventId)]
-                logger.debug("AJAX Event data len=%s", len(response_data))
-                return response_data
-            logger.info(
-                "AJAX All Event data not successful - no event found:%s",
+        Permissions - this requires Events/edit_masterdata
+        """
+        url = f"{self.domain}/api/events/{event_id}"
+
+        params = {}
+
+        if admin_ids:
+            params.update({"adminIds": admin_ids})
+
+        response = self.session.put(url=url, json=params)
+
+        if response.status_code != requests.codes.ok:
+            logger.warning(
+                "%s Something went wrong updating event %s: %s",
                 response.status_code,
+                event_id,
+                json.loads(response.content).get("errors"),
             )
-            return None
-        logger.info(
-            "AJAX All Event data not successful: %s",
-            response.status_code,
-        )
-        return None
+            return False
+
+        return True
 
     def get_event_services_counts_ajax(self, eventId: int, **kwargs: dict) -> dict:
         """Retrieve the number of services currently set for one specific event id.
@@ -323,64 +325,6 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             return False
         logger.info(
             "set_event_services_counts_ajax not successful: %s",
-            response.status_code,
-        )
-        return False
-
-    def get_event_admins_ajax(self, eventId: int) -> list:
-        """Get the admin id list of an event using legacy AJAX API.
-
-        Params:
-            eventId: number of the event to be changed
-        Returns:
-            list of admin ids.
-        """
-        event_data = self.get_AllEventData_ajax(eventId=eventId)
-        if event_data is not None:
-            if "admin" in event_data:
-                admin_ids = [
-                    int(available_event_id)
-                    for available_event_id in event_data["admin"].split(",")
-                ]
-            else:
-                admin_ids = []
-            return admin_ids
-        logger.info("No admins found because event not found")
-        return []
-
-    def set_event_admins_ajax(self, eventId: int, admin_ids: list) -> bool:
-        """Set the admin id list of an event using legacy AJAX API.
-
-        Parameters:
-            eventId: number of the event to be changed
-            admin_ids: list of admin user ids to be set as admin for event
-
-        Returns:
-            if successful.
-        """
-        url = self.domain + "/index.php"
-        headers = {"accept": "application/json"}
-        params = {"q": "churchservice/ajax"}
-
-        data = {
-            "id": eventId,
-            "admin": ", ".join([str(admin_id) for admin_id in admin_ids]),
-            "func": "updateEventInfo",
-        }
-        response = self.session.post(url=url, headers=headers, params=params, data=data)
-
-        if response.status_code == requests.codes.ok:
-            response_content = json.loads(response.content)
-            response_data = response_content["status"] == "success"
-            logger.debug(
-                "Setting Admin IDs %s for event %s success", admin_ids, eventId
-            )
-
-            return response_data
-        logger.info(
-            "Setting Admin IDs %s for event %s failed with : %s",
-            admin_ids,
-            eventId,
             response.status_code,
         )
         return False

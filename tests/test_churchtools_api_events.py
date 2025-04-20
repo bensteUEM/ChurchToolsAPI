@@ -197,10 +197,6 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         )
         assert result
 
-    @pytest.mark.skip(
-        "This test relies on a 90 day sample timeframe "
-        "and is therefore excluded from automation"
-    )
     def test_get_set_event_admins(self) -> None:
         """IMPORTANT - This test method and the parameters used depend on target system!
 
@@ -208,23 +204,32 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         and check again (and reset to original)
         On ELKW1610.KRZ.TOOLS event ID 3348 is an existing
         Event with schedule (29. Sept 2024)
-        Please be aware that this function is limited to the timeframe configured
-        for cache in CT (by default -90days)
         """
         SAMPLE_EVENT_ID = 3348
         EXPECTED_ADMIN_IDS = [336]
 
-        admin_ids_original = self.api.get_event_admins_ajax(SAMPLE_EVENT_ID)
-        assert admin_ids_original == EXPECTED_ADMIN_IDS
+        # check initial state
+        check_event = self.api.get_events(eventId=SAMPLE_EVENT_ID)[0]
+        assert set(check_event["adminIds"]) == set(EXPECTED_ADMIN_IDS)
 
-        admin_ids_change = [0, 1, 2]
-        result = self.api.set_event_admins_ajax(SAMPLE_EVENT_ID, admin_ids_change)
+        # modify param and check it's applied
+        SAMPLE_ADMIN_IDS_CHANGED = [1, 2]
+        result = self.api.update_event(
+            event_id=SAMPLE_EVENT_ID, admin_ids=SAMPLE_ADMIN_IDS_CHANGED
+        )
         assert result
 
-        admin_ids_test = self.api.get_event_admins_ajax(SAMPLE_EVENT_ID)
-        assert admin_ids_change == admin_ids_test
+        check_event = self.api.get_events(eventId=SAMPLE_EVENT_ID)[0]
+        assert set(check_event["adminIds"]) == set(SAMPLE_ADMIN_IDS_CHANGED)
 
-        assert self.api.set_event_admins_ajax(SAMPLE_EVENT_ID, EXPECTED_ADMIN_IDS)
+        # reset to original state
+        result = self.api.update_event(
+            event_id=SAMPLE_EVENT_ID, admin_ids=EXPECTED_ADMIN_IDS
+        )
+        assert result
+
+        check_event = self.api.get_events(eventId=SAMPLE_EVENT_ID)[0]
+        assert set(check_event["adminIds"]) == set(EXPECTED_ADMIN_IDS)
 
     @pytest.mark.parametrize(
         ("expected_key"),
