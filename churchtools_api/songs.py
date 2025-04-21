@@ -2,7 +2,6 @@
 
 import json
 import logging
-from time import sleep
 
 import requests
 
@@ -336,19 +335,11 @@ class ChurchToolsApiSongs(ChurchToolsApiTags):
             "get_songs_by_tag will need to send a request per song "
             "method will make a short break after a couple of requests"
         )
-        filtered_song_ids = []
-        total_len_of_songs = len(songs_dict)
-
-        for count, song_id in enumerate(songs_dict):
-            if count % 100 == 0:
-                logger.debug(
-                    "sleep 5 after 100 to avoid api overload @%s/%s",
-                    count,
-                    total_len_of_songs,
-                )
-                sleep(5)
-            if self.contains_song_tag(song_id=song_id, song_tag_name=song_tag_name):
-                filtered_song_ids.append(song_id)
+        filtered_song_ids = [
+            song_id
+            for song_id in songs_dict
+            if self.contains_song_tag(song_id=song_id, song_tag_name=song_tag_name)
+        ]
 
         return [songs_dict[song_id] for song_id in filtered_song_ids]
 

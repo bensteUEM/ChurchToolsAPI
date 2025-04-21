@@ -28,6 +28,7 @@ pyproject_toml_content = {
                 "requests": "^2.31.0",
                 "pytz": "^2024.2",
                 "tzlocal": "^5.2",
+                "ratelimit": "^2.2.1",
             },
             "group": {
                 "dev": {
