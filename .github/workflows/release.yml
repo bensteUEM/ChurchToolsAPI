@@ -1,18 +1,17 @@
-name: Create Release
+name: Build & Release Package
+
 on:
   push:
     tags:
-      - '*'
-          
+      - 'v*'
+
 jobs:
-  build:
+  build-release:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.1
-
-      - name: Version from Python
-        run: echo "VERSION=$(python3 -c 'import version; print(version.VERSION)')" >> $GITHUB_ENV
 
       - name: Set up Python
         uses: actions/setup-python@v5.2.0
@@ -27,22 +26,23 @@ jobs:
           POETRY_HOME: ${{ github.workspace }}/.poetry
 
       - name: Install project dependencies
-        run: |
-          poetry install
+        run: poetry install
         env:
           POETRY_HOME: ${{ github.workspace }}/.poetry
 
       - name: Build package
-        run: |
-          poetry build
+        run: poetry build
         env:
           POETRY_HOME: ${{ github.workspace }}/.poetry
 
-      - name: Create Release
+      - name: Get version from tag
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
         uses: ncipollo/release-action@v1.14.0
         with:
-          tag: ${{ env.VERSION}}
-          name: Version ${{env.VERSION}}
+          tag: ${{ env.VERSION }}
+          name: Version ${{ env.VERSION }}
           body: |
             Automated Release preparation using Git Tag
             - make sure tests didn't fail
