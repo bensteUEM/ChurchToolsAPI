@@ -220,10 +220,8 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
 
         return True
 
-    def get_event_services_counts_ajax(self, eventId: int, **kwargs: dict) -> dict:
+    def get_event_services_counts(self, eventId: int, **kwargs: dict) -> dict:
         """Retrieve the number of services currently set for one specific event id.
-
-        optionally get the number of services for one specific id on that event only.
 
         Arguments:
             eventId: id number of the calendar event
@@ -236,14 +234,10 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         Returns:
             dict of service types and the number of services required for this event
         """
-        event = self.get_events(eventId=eventId)[0]
-
+        serviceGroupServiceIds = None
         if "serviceId" in kwargs and "serviceGroupId" not in kwargs:
-            service_count = 0
-            for service in event["eventServices"]:
-                if service["serviceId"] == kwargs["serviceId"]:
-                    service_count += 1
-            return {kwargs["serviceId"]: service_count}
+            serviceGroupServiceIds = [kwargs["serviceId"]]
+
         if "serviceId" not in kwargs and "serviceGroupId" in kwargs:
             all_services = self.get_services()
             serviceGroupServiceIds = [
@@ -251,17 +245,21 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
                 for service in all_services
                 if service["serviceGroupId"] == kwargs["serviceGroupId"]
             ]
+        if serviceGroupServiceIds:
+            event_detail = self.get_events(eventId=eventId, include="EventServices")[0]
+            result = {}
+            for serviceId in serviceGroupServiceIds:
+                result.update(
+                    {
+                        serviceId: sum(
+                            1
+                            for service in event_detail["eventServices"]
+                            if service["serviceId"] == serviceId
+                        )
+                    }
+                )
+            return result
 
-            services = {}
-            for service in event["eventServices"]:
-                serviceId = service["serviceId"]
-                if serviceId in serviceGroupServiceIds:
-                    if serviceId in services:
-                        services[serviceId] += 1
-                    else:
-                        services[serviceId] = 1
-
-            return services
         logger.warning("Illegal combination of kwargs - check documentation either")
         return None
 
@@ -281,12 +279,21 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         headers = {"accept": "application/json"}
         params = {"q": "churchservice/ajax"}
 
+        # TODO@bensteUEM: legacy API is obsolete once correct endpoint is publishd
+        # CT API already includes ability to change count therefore endpoint exists
+        # CT Support issue - 147953
+        # https://github.com/bensteUEM/ChurchToolsAPI/issues/149
+        logging.warning(
+            "Using undocumented AJAX API because "
+            "function does not exist as REST endpoint"
+        )
+
         # restore other ServiceGroup assignments required for request form data
 
         services = self.get_services(returnAsDict=True)
         serviceGroupId = services[serviceId]["serviceGroupId"]
-        servicesOfServiceGroup = self.get_event_services_counts_ajax(
-            eventId,
+        servicesOfServiceGroup = self.get_event_services_counts(
+            eventId=eventId,
             serviceGroupId=serviceGroupId,
         )
         # set new assignment
@@ -305,27 +312,28 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
 
         response = self.session.post(url=url, headers=headers, params=params, data=data)
 
-        if response.status_code == requests.codes.ok:
-            response_content = json.loads(response.content)
-            response_success = response_content["status"] == "success"
-
-            number_match = (
-                self.get_event_services_counts_ajax(eventId, serviceId=serviceId)[
-                    serviceId
-                ]
-                == servicesCount
-            )
-            if number_match and response_success:
-                return True
-            logger.warning(
-                "Request was successful but serviceId %s not changed to count %s ",
-                serviceId,
-                servicesCount,
+        if response.status_code != requests.codes.ok:
+            logger.info(
+                "set_event_services_counts_ajax not successful: %s",
+                response.status_code,
             )
             return False
-        logger.info(
-            "set_event_services_counts_ajax not successful: %s",
-            response.status_code,
+
+        response_content = json.loads(response.content)
+        response_success = response_content["status"] == "success"
+
+        number_match = (
+            self.get_event_services_counts(eventId=eventId, serviceId=serviceId)[
+                serviceId
+            ]
+            == servicesCount
+        )
+        if number_match and response_success:
+            return True
+        logger.warning(
+            "Request was successful but serviceId %s not changed to count %s ",
+            serviceId,
+            servicesCount,
         )
         return False
 
