@@ -1,56 +1,15 @@
-name: Create Release
+name: Release Please
+
 on:
   push:
-    tags:
-      - '*'
-          
+    branches:
+      - main
+
 jobs:
-  build:
+  release-please:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4.2.1
-
-      - name: Version from Python
-        run: echo "VERSION=$(python3 -c 'import version; print(version.VERSION)')" >> $GITHUB_ENV
-
-      - name: Set up Python
-        uses: actions/setup-python@v5.2.0
+      - name: Release
+        uses: google-github-actions/release-please-action@v4
         with:
-          python-version: 3.x
-
-      - name: Install Poetry
-        run: |
-          pip install poetry
-          poetry config virtualenvs.create false  # Skip creating a virtual environment
-        env:
-          POETRY_HOME: ${{ github.workspace }}/.poetry
-
-      - name: Install project dependencies
-        run: |
-          poetry install
-        env:
-          POETRY_HOME: ${{ github.workspace }}/.poetry
-
-      - name: Build package
-        run: |
-          poetry build
-        env:
-          POETRY_HOME: ${{ github.workspace }}/.poetry
-
-      - name: Create Release
-        uses: ncipollo/release-action@v1.14.0
-        with:
-          tag: ${{ env.VERSION}}
-          name: Version ${{env.VERSION}}
-          body: |
-            Automated Release preparation using Git Tag
-            - make sure tests didn't fail
-            - needs to be published from draft online
-            
-            Install as package using:
-            pip install git+https://github.com/bensteUEM/ChurchToolsAPI.git@${{env.VERSION}}#egg=churchtools-api
-            
-          draft: true
-          prerelease: false
-          artifacts: dist/*
+          release-type: python
