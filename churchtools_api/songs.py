@@ -426,6 +426,14 @@ class ChurchToolsApiSongs(ChurchToolsApiTags):
             duration: (int) lenght in full seconds.
             note: (str) more detailed explanation text.
 
+        Not useable Keywords due to bug
+            #TODO@bensteUEM: only some parameters can be applied
+            # CT support case 147728
+            # https://github.com/bensteUEM/ChurchToolsAPI/issues/144
+            source_name: (int|str) id of the source as defined in masterdata.
+                Alternatively also accepts shortname.
+            source_reference: (str) source reference number.
+
         Returns:
             if changes were applied successful
         """
@@ -434,16 +442,35 @@ class ChurchToolsApiSongs(ChurchToolsApiTags):
         existing_arrangement = self.get_song_arrangement(
             song_id=song_id, arrangement_id=arrangement_id
         )
-
-        if isinstance(kwargs.get("source_id"), int):
-            source_id = kwargs.get("source_id")
-        elif isinstance(kwargs.get("source_id"), str):
-            source_id = self.lookup_song_source_as_id(shortname=kwargs.get("source_id"))
+        # TODO@bensteUEM: only some parameters can be applied
+        # CT support case 147728
+        # https://github.com/bensteUEM/ChurchToolsAPI/issues/144
+        """
+        if isinstance(kwargs.get("source_name"), int):
+            source_name = kwargs.get("source_name")
+        elif isinstance(kwargs.get("source_name"), str):
+            source_name = self.lookup_song_source_as_id(
+                shortname=kwargs.get("source_name")
+            )
         else:
-            source_id = self.lookup_song_source_as_id(
+            source_name = self.lookup_song_source_as_id(
                 shortname=existing_arrangement["sourceName"]
             )
-
+        """
+        if kwargs.get("source_name") or kwargs.get("source_reference"):
+            logger.warning(
+                "CT support cas 147728 source_name and reference are "
+                "not updateabel via REST API"
+            )
+        # TODO@bensteUEM: only some parameters can be applied
+        # CT support case 147728
+        # https://github.com/bensteUEM/ChurchToolsAPI/issues/144
+        """
+        "sourceName": source_name,
+        "sourceReference": kwargs.get(
+            "source_reference", existing_arrangement["sourceReference"]
+        ),
+        """
         data = {
             "name": kwargs.get("name", existing_arrangement["name"]),
             "key": kwargs.get("key", existing_arrangement["key"]),
