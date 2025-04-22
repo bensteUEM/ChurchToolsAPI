@@ -1,6 +1,10 @@
 name: Python Tests ChurchToolsAPI
 
-on: [ push, pull_request ]
+on: 
+  push:
+    branches-ignore:
+      - main
+  pull_request:
 
 env:
   CT_TOKEN: ${{ secrets.CT_TOKEN }}
