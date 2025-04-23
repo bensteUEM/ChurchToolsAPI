@@ -5,5 +5,8 @@
       "branch": "main"
     }
   ],
+  "packages": {
+    "churchtools_api": {}
+  },
   "draft": true
 }
