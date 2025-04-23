@@ -9,10 +9,21 @@ permissions:
         pull-requests: write  
 
 jobs:
-  release-please:
+  release:
     runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.release.outputs.upload_url }}
+      version: ${{ steps.release.outputs.version }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      release_created: ${{ steps.release.outputs.release_created }}
     steps:
       - uses: googleapis/release-please-action@v4
         with:
             token: ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}
-            release-type: python
+  upload-assets:
+    needs: release
+    if: needs.release.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upload files
+        run: echo "Uploading to version ${{ needs.release.outputs.version }} at ${{ needs.release.outputs.upload_url }} for tag name ${{ steps.release.outputs.tag_name }} created on ${{ steps.release.outputs.release_created }}"
