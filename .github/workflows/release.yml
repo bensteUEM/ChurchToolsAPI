@@ -1,12 +1,12 @@
 name: 1. Release-Please
 
 on:
-    push:
-      branches:
-        - main
+  push:
+    branches:
+      - main
 permissions:
-        contents: write
-        pull-requests: write  
+  contents: write
+  pull-requests: write  
 
 jobs:
   release:
@@ -19,7 +19,8 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v4
         with:
-            token: ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}
+          token: ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}
+
   upload-assets:
     needs: release
     if: needs.release.outputs.release_created == 'true'

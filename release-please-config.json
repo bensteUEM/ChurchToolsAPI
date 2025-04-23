@@ -1,9 +1,9 @@
 {
-    "release-type": "python",
-    "branches": [
-      {
-        "branch": "main"
-      }
-    ],
-   "draft": true
-  }
+  "release-type": "python",
+  "branches": [
+    {
+      "branch": "main"
+    }
+  ],
+  "draft": true
+}
