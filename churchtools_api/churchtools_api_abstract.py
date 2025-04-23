@@ -3,6 +3,10 @@
 import json
 import logging
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import requests
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +21,8 @@ class ChurchToolsApiAbstract(ABC):
     @abstractmethod
     def __init__(self) -> None:
         """Preparing base variables."""
-        self.session = None
-        self.domain = None
+        self.session:requests.Session |None = None
+        self.domain:str|None = None
 
     def combine_paginated_response_data(
         self,

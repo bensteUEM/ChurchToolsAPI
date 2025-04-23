@@ -1,9 +1,14 @@
 {
-    "release-type": "python",
-    "branches": [
-      {
-        "branch": "main"
-      }
-    ],
-   "draft": true
-  }
+  "release-type": "python",
+  "branches": [
+    {
+      "branch": "main"
+    }
+  ],
+  "package-name": "churchtools_api",
+  "include-component-in-tag": false,
+  "include-v-in-tag": false,
+  "draft": true,
+  "changelog-path": "CHANGELOG.md",
+  "manifest": true
+}
