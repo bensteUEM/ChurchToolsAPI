@@ -6,7 +6,10 @@
     }
   ],
   "packages": {
-    "churchtools-api": {}
+    "churchtools-api": {
+      "packageName": "churchtools-api",
+      "packagePath": "churchtools_api"
+    }
   },
   "draft": true,
   "tagPrefix": ""
