@@ -5,9 +5,8 @@
       "branch": "main"
     }
   ],
-  "packages": {
-    "churchtools_api": {}
-  },
+  "package-name": "churchtools_api",
+  "path": "churchtools_api",
   "draft": true,
   "tagPrefix": ""
 }
