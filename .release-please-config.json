@@ -1,8 +1,12 @@
 {
-    "release-type": "python",
-    "branches": [
-      {
-        "branch": "main"
-      }
-    ]
-  }
+  "release-type": "python",
+  "branches": [
+    {
+      "branch": "main"
+    }
+  ],
+  "package-name": "churchtools_api",
+  "path": "churchtools_api",
+  "draft": true,
+  "tagPrefix": ""
+}
