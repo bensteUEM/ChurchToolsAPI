@@ -7,8 +7,7 @@
   ],
   "packages": {
     "churchtools-api": {
-      "packageName": "churchtools-api",
-      "packagePath": "churchtools_api"
+      "packageName": "churchtools-api"
     }
   },
   "draft": true,
