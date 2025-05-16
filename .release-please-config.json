@@ -6,7 +6,7 @@
     }
   ],
   "packages": {
-    "churchtools_api": {}
+    "churchtools-api": {}
   },
   "draft": true,
   "tagPrefix": ""
