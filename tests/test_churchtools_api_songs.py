@@ -6,7 +6,6 @@ import logging.config
 from pathlib import Path
 
 import pytest
-import requests
 
 from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
 
@@ -195,15 +194,12 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         assert caplog.messages == EXPECTED_MESSAGES
         assert ct_song is None
 
-    def test_add_remove_song_tag(self, caplog: pytest.LogCaptureFixture) -> None:
+    def test_add_remove_song_tag(self) -> None:
         """Test method used to add and remove the test tag to some song.
 
         Tag ID and Song ID may vary depending on the server used
         On ELKW1610.KRZ.TOOLS song_id 408 (sample_no_ct_attachement)
             and tag_id 163 (Test)
-
-        self.api.ajax_song_last_update = None is required
-            in order to clear the ajax song cache
 
         IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
@@ -213,77 +209,32 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         Returns: None
         """
         SAMPLE_SONG_ID = 408
-        TEST_SONG_TAG = 163
+        TEST_SONG_TAG = "Test"
 
-        self.api.ajax_song_last_update = None
-        assert self.api.contains_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
-        caplog.clear()
-        with caplog.at_level(logging.INFO):
-            response = self.api.remove_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
-        assert response.status_code == requests.codes.ok
+        tag_is_assigned = self.api.contains_song_tag(
+            song_id=SAMPLE_SONG_ID, song_tag_name=TEST_SONG_TAG
+        )
+        assert tag_is_assigned
 
-        EXPECTED_MESSAGES = [
-            "Using undocumented AJAX API"
-            " because function does not exist as REST endpoint",
-        ]
-        assert caplog.messages == EXPECTED_MESSAGES
+        remove_success = self.api.remove_tag(
+            domain_type="song", domain_id=SAMPLE_SONG_ID, tag_name=TEST_SONG_TAG
+        )
+        assert remove_success
 
-        self.api.ajax_song_last_update = None
-        assert not self.api.contains_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
+        tag_is_assigned = self.api.contains_song_tag(
+            song_id=SAMPLE_SONG_ID, song_tag_name=TEST_SONG_TAG
+        )
+        assert not tag_is_assigned
 
-        self.api.ajax_song_last_update = None
-        caplog.clear()
-        with caplog.at_level(logging.INFO):
-            response = self.api.add_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
-        assert response.status_code == requests.codes.ok
-        EXPECTED_MESSAGES = [
-            "Using undocumented AJAX API"
-            " because function does not exist as REST endpoint",
-        ]
-        assert caplog.messages == EXPECTED_MESSAGES
+        add_success = self.api.add_tag(
+            domain_type="song", domain_id=SAMPLE_SONG_ID, tag_name=TEST_SONG_TAG
+        )
+        assert add_success
 
-        self.api.ajax_song_last_update = None
-        assert self.api.contains_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
-
-    def test_get_song_tag_original(self) -> None:
-        """Cchek song tag can be retrieved and returned as original.
-
-        IMPORTANT - This test method and the parameters used depend on target system!
-        the hard coded sample exists on ELKW1610.KRZ.TOOLS
-
-        song ID 408 is tagged with 163 "Test"
-        """
-        SAMPLE_SONG_ID = 408
-        result = self.api.get_song_tags(song_id=SAMPLE_SONG_ID)
-        EXPECTED_TAG = 163
-        assert EXPECTED_TAG in result
-
-    def test_get_song_tag_id_dict(self) -> None:
-        """Check song tag can be retrieved and returned as id dict.
-
-        IMPORTANT - This test method and the parameters used depend on target system!
-        the hard coded sample exists on ELKW1610.KRZ.TOOLS
-
-        song ID 408 is tagged with 163 "Test"
-        """
-        SAMPLE_SONG_ID = 408
-        result = self.api.get_song_tags(song_id=SAMPLE_SONG_ID, rtype="id_dict")
-        EXPECTED_MIN_RESULT = {163: "Test"}
-        assert all(item in result.items() for item in EXPECTED_MIN_RESULT.items())
-        assert all(key in result for key in EXPECTED_MIN_RESULT)
-
-    def test_get_song_tag_name_dict(self) -> None:
-        """Check song tag can be retrieved and returned as name dict.
-
-        IMPORTANT - This test method and the parameters used depend on target system!
-        the hard coded sample exists on ELKW1610.KRZ.TOOLS
-
-        song ID 408 is tagged with 163 "Test"
-        """
-        SAMPLE_SONG_ID = 408
-        result = self.api.get_song_tags(song_id=SAMPLE_SONG_ID, rtype="name_dict")
-        EXPECTED_MIN_RESULT = {"Test": 163}
-        assert all(item in result.items() for item in EXPECTED_MIN_RESULT.items())
+        tag_is_assigned = self.api.contains_song_tag(
+            song_id=SAMPLE_SONG_ID, song_tag_name=TEST_SONG_TAG
+        )
+        assert tag_is_assigned
 
     def test_get_songs_with_tag(self) -> None:
         """Test method to check if fetching all songs with a specific tag works.
@@ -294,11 +245,10 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         song ID 408 is tagged with 163 "Test"
         """
-        SAMPLE_TAG_ID = 163
+        SAMPLE_TAG_NAME = "Test"
         SAMPLE_SONG_ID = 408
 
-        self.api.ajax_song_last_update = None
-        result = self.api.get_songs_by_tag(SAMPLE_TAG_ID)
+        result = self.api.get_songs_by_tag(song_tag_name=SAMPLE_TAG_NAME)
         result_ids = [song["id"] for song in result]
         assert SAMPLE_SONG_ID in result_ids
 
