@@ -6,8 +6,12 @@
     }
   ],
   "package-name": "churchtools-api",
-  "bump-minor-pre-major": true,
   "include-v-in-tag": false,
   "draft": true,
-  "tagPrefix": ""
+  "tagPrefix": "",
+  "version-file": {
+    "path": "pyproject.toml",
+    "regex": "\\[tool\\.poetry\\][\\s\\S]*?^version\\s*=\\s*\"(?<version>\\d+\\.\\d+\\.\\d+)\"",
+    "updater": "toml"
+  }
 }
