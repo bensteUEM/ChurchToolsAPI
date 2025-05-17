@@ -1,0 +1,17 @@
+{
+  "release-type": "python",
+  "branches": [
+    {
+      "branch": "main"
+    }
+  ],
+  "packages" :{
+    "churchtools_api": {
+      "package-name": "churchtools-api",
+      "version-file": "../pyproject.toml"
+    }
+  },
+  "include-component-in-tag": false,
+  "include-v-in-tag": false,
+  "draft": true
+}
