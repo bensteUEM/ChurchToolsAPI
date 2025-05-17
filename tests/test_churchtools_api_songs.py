@@ -34,51 +34,15 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
             depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
-        SAMPLE_SONG_ID = 2034
+        SAMPLE_SONG = {"id":2034,"name":"sample"}
 
         songs = self.api.get_songs()
         LENGTH_OF_DEFAULT_PAGINATION = 50
         assert len(songs) > LENGTH_OF_DEFAULT_PAGINATION
 
-        song = self.api.get_songs(song_id=SAMPLE_SONG_ID)[0]
-        assert song["id"] == SAMPLE_SONG_ID
-        assert song["name"] == "sample"
-
-    def test_get_song_ajax(self) -> None:
-        """Testing legacy AJAX API to request one specific song.
-
-        1. Test requests song 408 and checks that result matches Test song
-        Keys were last updated / checked with ChurchTools v3.115.1
-
-        IMPORTANT - This test method and the parameters used
-            depend on the target system!
-
-        """
-        SAMPLE_SONG_ID = 2034
-        song = self.api.get_song_ajax(song_id=SAMPLE_SONG_ID)
-        assert isinstance(song, dict)
-
-        EXPECTED_KEYS = [
-            "id",
-            "name",
-            "songcategory_id",
-            "practice_yn",
-            "author",
-            "ccli",
-            "copyright",
-            "note",
-            "created_date",
-            "created_pid",
-            "modified_date",
-            "modified_pid",
-            "arrangement",
-            "tags",
-        ]
-
-        assert all(key in EXPECTED_KEYS for key in song)
-
-        assert int(song["id"]) == SAMPLE_SONG_ID
-        assert song["name"] == "sample"
+        song = self.api.get_songs(song_id=SAMPLE_SONG["id"])[0]
+        assert song["id"] == SAMPLE_SONG["id"]
+        assert song["name"] == SAMPLE_SONG["name"]
 
     def test_get_song_category_map(self) -> None:
         """Checks that a dict with respective known values.

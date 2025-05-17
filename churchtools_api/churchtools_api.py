@@ -63,8 +63,6 @@ class ChurchToolsApi(
         super().__init__()
         self.session = None
         self.domain = domain
-        self.ajax_song_last_update = None
-        self.ajax_song_cache = []
 
         if ct_token is not None:
             self.login_ct_rest_api(ct_token=ct_token)
