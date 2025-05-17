@@ -5,7 +5,7 @@
       "branch": "main"
     }
   ],
-  "package-name": "churchtools_api",
+  "package-name": "churchtools-api",
   "include-component-in-tag": false,
   "include-v-in-tag": false,
   "draft": true,

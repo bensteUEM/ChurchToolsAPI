@@ -1,5 +1,5 @@
 {
-  ".": {
+  "": {
     "release-type": "python",
     "packages": {
       "pyproject.toml": {}
