@@ -1,12 +1,8 @@
 [tool.poetry]
 name = "churchtools-api"
-version = "1.7.3"
+version = "1.8.0"
 description = "A python wrapper for use with ChurchToolsAPI"
-authors = [
-    "bensteUEM",
-    "kolibri52",
-    "fschrempf",
-]
+authors = ["bensteUEM", "kolibri52", "fschrempf"]
 homepage = "https://github.com/bensteUEM/ChurchToolsAPI"
 license = "CC-BY-SA"
 readme = "README.md"
@@ -65,12 +61,11 @@ target-version = "py310"
 output-format = "grouped"
 
 [tool.ruff.lint]
-select = [
-    "ALL",
-]
+select = ["ALL"]
 ignore = [
     "FIX002", # correctly formatted TODO items that have open Github issues        
-    "COM812", "ISC001", #disabled for formatter compatibility #TODO 102 - move to pyproject.py
+    "COM812",
+    "ISC001", #disabled for formatter compatibility #TODO 102 - move to pyproject.py
 
     "N802", #function lowercase -> breaking change #TODO 125 with release 2.0
     "N803", #argument lowercase -> breaking change #TODO 125 with release 2.0
@@ -78,18 +73,15 @@ ignore = [
 
     "FBT001", # boolean-type-hint-positional-argument
     "FBT002", # boolean-default-value-positional-argument
-    ]
-
-fixable = [
-    "ALL",
 ]
+
+fixable = ["ALL"]
+
 unfixable = []
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*.py" = [
-    "S101",
-]
+"tests/*.py" = ["S101"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -103,7 +95,5 @@ docstring-code-format = false
 docstring-code-line-length = "dynamic"
 
 [build-system]
-requires = [
-    "poetry-core",
-]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
