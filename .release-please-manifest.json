@@ -1,6 +1,6 @@
 {
-  "churchtools-api": {
-    "release-type": "python",
+  "churchtools_api": {
+    "component": "churchtools-api",
     "include-component-in-tag": false
   }
 }
