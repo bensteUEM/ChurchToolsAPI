@@ -45,6 +45,7 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
             "nameTranslated",
             "sortKey",
             "campusId",
+            "meta",
         }
         assert set(next(iter(result))) == EXPECTED_KEYS
 
@@ -61,14 +62,17 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
             "resourceTypeId",
             "location",
             "iCalLocation",
+            "description",
             "isAutoAccept",
             "doesRequireCalEntry",
             "isVirtual",
             "adminIds",
             "randomString",
+            "needsAppointment",
+            "meta",
         }
 
-        assert set(result[0]) == EXPECTED_KEYS
+        assert set(result[0]) - {"@deprecated"} == EXPECTED_KEYS
 
     def test_get_resource_masterdata_resources_dict(self) -> None:
         """Check resources can be retrieved as dict."""
@@ -88,14 +92,19 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
             "resourceTypeId",
             "location",
             "iCalLocation",
+            "description",
             "isAutoAccept",
             "doesRequireCalEntry",
             "isVirtual",
             "adminIds",
             "randomString",
+            "needsAppointment",
+            "meta",
         }
 
-        assert set(next(iter(result.values())).keys()) == EXPECTED_KEYS
+        assert (
+            set(next(iter(result.values())).keys()) - {"@deprecated"} == EXPECTED_KEYS
+        )
 
     def test_get_resource_masterdata_other(
         self, caplog: pytest.LogCaptureFixture
