@@ -174,6 +174,23 @@ class ChurchToolsApi(
         logger.warning("Checking who am i failed with %s", response.status_code)
         return False
 
+    def generate_url(self, path: str | None = None) -> str:
+        """Return a complete URL reference.
+
+        Adds path to base_url of the connection itself
+
+        Arguments:
+            path: path extension for the url. Defaults to None
+
+        Returns:
+            DOMAIN/path
+        """
+        if not path:
+            return self.domain
+        if not path.startswith("/"):
+            path = f"/{path}"
+        return self.domain + path
+
     def check_connection_ajax(self) -> bool:
         """Cecks connection using the legacy AJAX API.
 
