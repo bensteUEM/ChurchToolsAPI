@@ -7,6 +7,7 @@
   ],
   "package-name": "churchtools-api",
   "path": "churchtools_api",
+  "tag-pattern": "v?\\d+\\.\\d+\\.\\d+$",
   "include-v-in-tag": false,
   "tagPrefix": "",
   "draft": true
