@@ -1,25 +1,41 @@
-name: Create Release
+name: 1. Release-Please
+
 on:
   push:
-    tags:
-      - '*'
-          
+    branches:
+      - main
+permissions:
+  contents: write
+  pull-requests: write  
+
 jobs:
-  build:
+  release-please:
     runs-on: ubuntu-latest
     steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          config-file: .release-please-config.json
+          manifest-file: .release-please-manifest.json
+          token: ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}
+
+      - name: Debug release outputs
+        run: |
+          echo "release_created=${{ steps.release.outputs.release_created }}"
+          echo "version=${{ steps.release.outputs.version }}"
+          echo "tag_name=${{ steps.release.outputs.tag_name }}"
+          echo "upload_url=${{ steps.release.outputs.upload_url }}"
       - name: Checkout code
         uses: actions/checkout@v4.2.1
 
-      - name: Version from Python
-        run: echo "VERSION=$(python3 -c 'import version; print(version.VERSION)')" >> $GITHUB_ENV
-
       - name: Set up Python
+        if: ${{ steps.release.outputs.release_created }}
         uses: actions/setup-python@v5.2.0
         with:
           python-version: 3.x
 
       - name: Install Poetry
+        if: ${{ steps.release.outputs.release_created }}
         run: |
           pip install poetry
           poetry config virtualenvs.create false  # Skip creating a virtual environment
@@ -27,30 +43,54 @@ jobs:
           POETRY_HOME: ${{ github.workspace }}/.poetry
 
       - name: Install project dependencies
-        run: |
-          poetry install
+        if: ${{ steps.release.outputs.release_created }}
+        run: poetry install
         env:
           POETRY_HOME: ${{ github.workspace }}/.poetry
 
       - name: Build package
-        run: |
-          poetry build
+        if: ${{ steps.release.outputs.release_created }}
+        run: poetry build
         env:
           POETRY_HOME: ${{ github.workspace }}/.poetry
 
-      - name: Create Release
-        uses: ncipollo/release-action@v1.14.0
-        with:
-          tag: ${{ env.VERSION}}
-          name: Version ${{env.VERSION}}
-          body: |
-            Automated Release preparation using Git Tag
-            - make sure tests didn't fail
-            - needs to be published from draft online
-            
-            Install as package using:
-            pip install git+https://github.com/bensteUEM/ChurchToolsAPI.git@${{env.VERSION}}#egg=churchtools-api
-            
-          draft: true
-          prerelease: false
-          artifacts: dist/*
+      - name: Append custom release notes
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          release_id=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/releases/tags/${{ needs.release.outputs.tag_name }} \
+            --jq .id)
+
+          # Fetch existing release body
+          existing_body=$(gh api /repos/${{ github.repository }}/releases/$release_id --jq .body)
+
+          # Create temporary file for new body
+          tmpfile=$(mktemp)
+
+          # Write combined content into the file
+          {
+            echo "$existing_body"
+            echo
+            echo "Automated Release preparation using Git Tag"
+            echo "  - make sure tests didn't fail"
+            echo "  - needs to be published from draft online"
+            echo
+            echo "Install as package using:"
+            echo '```bash'
+            echo "pip install git+https://github.com/bensteUEM/ChurchToolsAPI.git@${{ needs.release.outputs.version }}#egg=churchtools-api"
+            echo '```'
+          } > "$tmpfile"
+
+          # Update the release body using the file
+          gh api \
+            -X PATCH \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/releases/$release_id \
+            -F body="$(cat "$tmpfile")"
+
+      - name: Upload Release Artifact
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload ${{ steps.release.outputs.tag_name }} .dist
