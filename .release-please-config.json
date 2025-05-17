@@ -6,9 +6,11 @@
     }
   ],
   "path": "churchtools_api",
-  "package-name": "churchtools-api",
+  "package-name": "churchtools_api",
   "version-file": "../pyproject.toml",
   "include-component-in-tag": false,
   "include-v-in-tag": false,
-  "draft": true
+  "draft": true,
+  "changelog-path": "CHANGELOG.md",
+  "manifest": true
 }
