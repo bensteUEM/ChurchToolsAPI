@@ -6,6 +6,7 @@ from datetime import datetime
 from enum import Enum
 
 import requests
+from tzlocal import get_localzone
 
 from churchtools_api.churchtools_api_abstract import ChurchToolsApiAbstract
 
@@ -53,7 +54,7 @@ class ChurchToolsApiPosts(ChurchToolsApiAbstract):
         post_visibility: PostVisibility = PostVisibility.ANY,
         group_ids: list[int] | None = None,
         include: list[str] | None = None,
-        limit: int = 10,
+        limit: int | None = None,
         only_my_groups: bool = False,
     ) -> list[dict]:
         """Retrieve posts applying all optionally defined arguments.
@@ -71,7 +72,7 @@ class ChurchToolsApiPosts(ChurchToolsApiAbstract):
             group_ids: group ids to take into account. Defaults to Any.
             include: more details to include in response. Defaults to None.
                 known values are "comments", "reactions" and "linkings"
-            limit: pagination used. Defaults to 10.
+            limit: pagination limit used. Defaults to 10 on CT side.
             only_my_groups: limit results to groups that the requesting user is part of.
                 Defaults to False.
 
@@ -130,18 +131,40 @@ class ChurchToolsApiPosts(ChurchToolsApiAbstract):
             )
 
             if len(response_data) == 0:
-                logger.warning(
+                logger.info(
                     "Requesting posts %s returned an empty response - "
-                    "make sure the filters match content",
+                    "make sure the filters and permission match content",
                     params,
                 )
 
-            response_data = self.combine_paginated_response_data(
-                response_content,
-                url=url,
-                headers=headers,
-                params=params,
-            )
+            # special pagination
+            total_entries = response_content.get("meta", {}).get("pagination")["total"]
+            page_entries = response_content.get("meta", {}).get("pagination")["limit"]
+            if total_entries > page_entries and not limit:
+                last_date = response_content["data"][-1]["publishedDate"]
+                logger.info(
+                    "pagination based on before date /api/posts"
+                    "running recursion for anything before %s",
+                    last_date,
+                )
+                new_kwargs = {
+                    "before": datetime.strptime(
+                        last_date, "%Y-%m-%dT%H:%M:%SZ"
+                    ).astimezone(get_localzone()),
+                    "last_post_indentifier": last_post_indentifier,
+                    "after": after,
+                    "campus_ids": campus_ids,
+                    "actor_ids": actor_ids,
+                    "group_visibility": group_visibility,
+                    "post_visibility": post_visibility,
+                    "group_ids": group_ids,
+                    "include": include,
+                    "limit": limit,
+                    "only_my_groups": only_my_groups,
+                }
+                next_page_results = self.get_posts(**new_kwargs)
+                response_data = response_content["data"] + (next_page_results)
+
             response_data = (
                 [response_data] if isinstance(response_data, dict) else response_data
             )

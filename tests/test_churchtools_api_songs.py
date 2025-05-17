@@ -6,7 +6,6 @@ import logging.config
 from pathlib import Path
 
 import pytest
-import requests
 
 from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
 
@@ -35,51 +34,15 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
             depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
-        SAMPLE_SONG_ID = 2034
+        SAMPLE_SONG = {"id":2034,"name":"sample"}
 
         songs = self.api.get_songs()
         LENGTH_OF_DEFAULT_PAGINATION = 50
         assert len(songs) > LENGTH_OF_DEFAULT_PAGINATION
 
-        song = self.api.get_songs(song_id=SAMPLE_SONG_ID)[0]
-        assert song["id"] == SAMPLE_SONG_ID
-        assert song["name"] == "sample"
-
-    def test_get_song_ajax(self) -> None:
-        """Testing legacy AJAX API to request one specific song.
-
-        1. Test requests song 408 and checks that result matches Test song
-        Keys were last updated / checked with ChurchTools v3.115.1
-
-        IMPORTANT - This test method and the parameters used
-            depend on the target system!
-
-        """
-        SAMPLE_SONG_ID = 2034
-        song = self.api.get_song_ajax(song_id=SAMPLE_SONG_ID)
-        assert isinstance(song, dict)
-
-        EXPECTED_KEYS = [
-            "id",
-            "bezeichnung",
-            "songcategory_id",
-            "practice_yn",
-            "author",
-            "ccli",
-            "copyright",
-            "note",
-            "created_date",
-            "created_pid",
-            "modified_date",
-            "modified_pid",
-            "arrangement",
-            "tags",
-        ]
-
-        assert all(key in EXPECTED_KEYS for key in song)
-
-        assert int(song["id"]) == SAMPLE_SONG_ID
-        assert song["bezeichnung"] == "sample"
+        song = self.api.get_songs(song_id=SAMPLE_SONG["id"])[0]
+        assert song["id"] == SAMPLE_SONG["id"]
+        assert song["name"] == SAMPLE_SONG["name"]
 
     def test_get_song_category_map(self) -> None:
         """Checks that a dict with respective known values.
@@ -143,54 +106,45 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         songcategory_id = 13
 
         # 1. Create Song after and check it exists with all params
-        caplog.clear()
-        with caplog.at_level(level=logging.INFO, logger="churchtools_api.songs"):
-            song_id = self.api.create_song(title, songcategory_id)
+        song_id = self.api.create_song(name=title, songcategory_id=songcategory_id)
         assert song_id is not None
-        EXPECTED_MESSAGES = [
-            (
-                "Using undocumented AJAX API"
-                " because function does not exist as REST endpoint"
-            )
-        ]
-        assert all(message in caplog.messages for message in EXPECTED_MESSAGES)
 
         ct_song = self.api.get_songs(song_id=song_id)[0]
         assert ct_song["name"] == title
-        assert ct_song["author"] == ""
+        assert ct_song["author"] is None
         assert ct_song["category"]["id"] == songcategory_id
 
         # 2. Edit Song title and check it exists with all params
-        self.api.edit_song(song_id, title="Test_bezeichnung2")
+        self.api.edit_song(song_id, name="Test_bezeichnung2")
         ct_song = self.api.get_songs(song_id=song_id)[0]
-        assert ct_song["author"] == ""
+        assert ct_song["author"] is None
         assert ct_song["name"] == "Test_bezeichnung2"
 
         # 3. Edit all fields and check it exists with all params
         data = {
-            "bezeichnung": "Test_bezeichnung3",
+            "name": "Test_bezeichnung3",
             "songcategory_id": 1,
             "author": "Test_author",
             "copyright": "Test_copyright",
             "ccli": "Test_ccli",
-            "practice_yn": 1,
+            "should_practice": 1,
         }
         self.api.edit_song(
             song_id=song_id,
             songcategory_id=data["songcategory_id"],
-            title=data["bezeichnung"],
+            name=data["name"],
             author=data["author"],
             copyright=data["copyright"],
             ccli=data["ccli"],
-            practice_yn=data["practice_yn"],
+            should_practice=data["should_practice"],
         )
         ct_song = self.api.get_songs(song_id=song_id)[0]
-        assert ct_song["name"] == data["bezeichnung"]
+        assert ct_song["name"] == data["name"]
         assert ct_song["category"]["id"] == data["songcategory_id"]
         assert ct_song["author"] == data["author"]
         assert ct_song["copyright"] == data["copyright"]
         assert ct_song["ccli"] == data["ccli"]
-        assert ct_song["shouldPractice"] == data["practice_yn"]
+        assert ct_song["shouldPractice"] == data["should_practice"]
 
         # Delete Song
         self.api.delete_song(song_id)
@@ -204,85 +158,61 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         assert caplog.messages == EXPECTED_MESSAGES
         assert ct_song is None
 
-    def test_add_remove_song_tag(self, caplog: pytest.LogCaptureFixture) -> None:
+    def test_add_remove_song_tag(self) -> None:
         """Test method used to add and remove the test tag to some song.
 
         Tag ID and Song ID may vary depending on the server used
         On ELKW1610.KRZ.TOOLS song_id 408 (sample_no_ct_attachement)
-            and tag_id 53 (Test)
+            and tag_id 163 (Test)
 
-        self.api.ajax_song_last_update = None is required
-            in order to clear the ajax song cache
+        IMPORTANT - This test method and the parameters used depend on target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+
+        song ID 408 is tagged with 163 "Test"
 
         Returns: None
         """
         SAMPLE_SONG_ID = 408
-        TEST_SONG_TAG = 53
+        TEST_SONG_TAG = "Test"
 
-        self.api.ajax_song_last_update = None
-        assert self.api.contains_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
-        caplog.clear()
-        with caplog.at_level(logging.INFO):
-            response = self.api.remove_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
-        assert response.status_code == requests.codes.ok
+        tag_is_assigned = self.api.contains_song_tag(
+            song_id=SAMPLE_SONG_ID, song_tag_name=TEST_SONG_TAG
+        )
+        assert tag_is_assigned
 
-        EXPECTED_MESSAGES = [
-            "Using undocumented AJAX API"
-            " because function does not exist as REST endpoint",
-        ]
-        assert caplog.messages == EXPECTED_MESSAGES
+        remove_success = self.api.remove_tag(
+            domain_type="song", domain_id=SAMPLE_SONG_ID, tag_name=TEST_SONG_TAG
+        )
+        assert remove_success
 
-        self.api.ajax_song_last_update = None
-        assert not self.api.contains_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
+        tag_is_assigned = self.api.contains_song_tag(
+            song_id=SAMPLE_SONG_ID, song_tag_name=TEST_SONG_TAG
+        )
+        assert not tag_is_assigned
 
-        self.api.ajax_song_last_update = None
-        caplog.clear()
-        with caplog.at_level(logging.INFO):
-            response = self.api.add_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
-        assert response.status_code == requests.codes.ok
-        EXPECTED_MESSAGES = [
-            "Using undocumented AJAX API"
-            " because function does not exist as REST endpoint",
-        ]
-        assert caplog.messages == EXPECTED_MESSAGES
+        add_success = self.api.add_tag(
+            domain_type="song", domain_id=SAMPLE_SONG_ID, tag_name=TEST_SONG_TAG
+        )
+        assert add_success
 
-        self.api.ajax_song_last_update = None
-        assert self.api.contains_song_tag(SAMPLE_SONG_ID, TEST_SONG_TAG)
-
-    def test_get_song_tag_original(self) -> None:
-        """Cchek song tag can be retrieved and returned as original."""
-        SAMPLE_SONG_ID = 408
-        result = self.api.get_song_tags(song_id=SAMPLE_SONG_ID)
-        EXPECTED_TAG = 53
-        assert EXPECTED_TAG in result
-
-    def test_get_song_tag_id_dict(self) -> None:
-        """Check song tag can be retrieved and returned as id dict."""
-        SAMPLE_SONG_ID = 408
-        result = self.api.get_song_tags(song_id=SAMPLE_SONG_ID, rtype="id_dict")
-        EXPECTED_MIN_RESULT = {53: "Test"}
-        assert all(item in result.items() for item in EXPECTED_MIN_RESULT.items())
-        assert all(key in result for key in EXPECTED_MIN_RESULT)
-
-    def test_get_song_tag_name_dict(self) -> None:
-        """Check song tag can be retrieved and returned as name dict."""
-        SAMPLE_SONG_ID = 408
-        result = self.api.get_song_tags(song_id=SAMPLE_SONG_ID, rtype="name_dict")
-        EXPECTED_MIN_RESULT = {"Test": 53}
-        assert all(item in result.items() for item in EXPECTED_MIN_RESULT.items())
+        tag_is_assigned = self.api.contains_song_tag(
+            song_id=SAMPLE_SONG_ID, song_tag_name=TEST_SONG_TAG
+        )
+        assert tag_is_assigned
 
     def test_get_songs_with_tag(self) -> None:
         """Test method to check if fetching all songs with a specific tag works.
 
         songId and tag_id will vary depending on the server used
-        On ELKW1610.KRZ.TOOLS song ID 408 is tagged with 53 "Test"
-        :return:
+
+        IMPORTANT - This test method and the parameters used depend on target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+        song ID 408 is tagged with 163 "Test"
         """
-        SAMPLE_TAG_ID = 53
+        SAMPLE_TAG_NAME = "Test"
         SAMPLE_SONG_ID = 408
 
-        self.api.ajax_song_last_update = None
-        result = self.api.get_songs_by_tag(SAMPLE_TAG_ID)
+        result = self.api.get_songs_by_tag(song_tag_name=SAMPLE_TAG_NAME)
         result_ids = [song["id"] for song in result]
         assert SAMPLE_SONG_ID in result_ids
 
@@ -402,16 +332,11 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         SAMPLE_ARRANGEMENT_NAME2 = "TEST_BEZEICHNUNG"
         SAMPLE_PARAMS = {
             "name": SAMPLE_ARRANGEMENT_NAME2,
-            "source_id": next(
-                iter(SAMPLE_SOURCE.values())
-            ),  # using shortname on purpse
-            "source_ref": "source_ref",
-            "tonality": "tonality",
-            "bpm": "bpm",
+            "key": "F",
+            "tempo": 50,
             "beat": "beat",
-            "length_min": 1,
-            "length_sec": 2,
-            "note": "note",
+            "duration": 60,
+            "description": "note",
         }
         was_applied = self.api.edit_song_arrangement(
             song_id=SAMPLE_SONG_ID, arrangement_id=arrangement_id, **SAMPLE_PARAMS
@@ -421,7 +346,10 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
             song_id=SAMPLE_SONG_ID, arrangement_id=arrangement_id
         )
         assert created_arrangement["name"] == SAMPLE_ARRANGEMENT_NAME2
-        assert created_arrangement["sourceName"] == next(iter(SAMPLE_SOURCE.values()))
+        assert all(
+            created_arrangement[expected_key] == expected_value
+            for expected_key, expected_value in SAMPLE_PARAMS.items()
+        )
 
         # edit2 - source as key id
         SAMPLE_PARAMS_SHORT = {
@@ -435,10 +363,7 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
             song_id=SAMPLE_SONG_ID, arrangement_id=arrangement_id
         )
         assert created_arrangement["sourceName"] == next(iter(SAMPLE_SOURCE.values()))
-        assert (
-            created_arrangement["duration"]
-            == SAMPLE_PARAMS["length_min"] * 60 + SAMPLE_PARAMS["length_sec"]
-        )
+        assert created_arrangement["duration"] == SAMPLE_PARAMS["duration"]
 
         # delete
         was_deleted = self.api.delete_song_arrangement(

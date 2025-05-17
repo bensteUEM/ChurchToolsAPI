@@ -176,7 +176,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         title: str,
         subtitle: str = "",
         description: str = "",
-        isInternal: bool = False,  # noqa: FBT001 FBT002
+        isInternal: bool = False,
         address: dict | None = None,
         link: str = "",
         image: Path | None = None,
@@ -222,6 +222,15 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
             "link": link,
             **kwargs,
         }
+
+        if startDate.second != 0 or endDate.second != 0:
+            logger.info(
+                (
+                    "Seconds of startdate=%s and enddate=%s are discarded by CT API"
+                ),
+                startDate,
+                endDate,
+            )
 
         response = self.session.post(url=url, json=data, headers=headers)
 
