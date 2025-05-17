@@ -5,10 +5,12 @@
       "branch": "main"
     }
   ],
-  "packages" :{
-    "churchtools_api": {
+  "packages": {
+    "churchtools-api": { 
       "package-name": "churchtools-api",
-      "version-file": "../pyproject.toml"
+      "path": "churchtools_api",
+      "version-file": "../pyproject.toml",
+      "tag-pattern": "v?\\d+\\.\\d+\\.\\d+$"
     }
   },
   "include-component-in-tag": false,
