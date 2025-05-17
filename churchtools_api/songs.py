@@ -413,12 +413,12 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
                 return song["tags"]
             case "id_dict":
                 return {
-                    tag_id: self.get_tags(type="songs", rtype="id_dict")[tag_id]
+                    tag_id: self.get_tags(type="song", rtype="id_dict")[tag_id]
                     for tag_id in song["tags"]
                 }
             case "name_dict":
                 return {
-                    self.get_tags(type="songs", rtype="id_dict")[tag_id]: tag_id
+                    self.get_tags(type="song", rtype="id_dict")[tag_id]: tag_id
                     for tag_id in song["tags"]
                 }
 
