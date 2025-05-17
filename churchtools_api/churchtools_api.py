@@ -11,6 +11,7 @@ from churchtools_api.files import ChurchToolsApiFiles
 from churchtools_api.groups import ChurchToolsApiGroups
 from churchtools_api.persons import ChurchToolsApiPersons
 from churchtools_api.posts import ChurchToolsApiPosts
+from churchtools_api.ratelimitedsession import RateLimitedSession
 from churchtools_api.resources import ChurchToolsApiResources
 from churchtools_api.songs import ChurchToolsApiSongs
 
@@ -94,7 +95,7 @@ class ChurchToolsApi(
         Returns:
             personId if login successful otherwise False
         """
-        self.session = requests.Session()
+        self.session = RateLimitedSession()
 
         if ct_token:
             logger.info("Trying Login with token")

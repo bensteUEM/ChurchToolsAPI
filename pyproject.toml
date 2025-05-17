@@ -13,6 +13,7 @@ python-docx = "^0.8.11"
 requests = "^2.31.0"
 pytz = "^2024.2"
 tzlocal = "^5.2"
+ratelimit = "^2.2.1"
 
 [tool.poetry.group.dev.dependencies]
 poetry = "^1.6.1"
