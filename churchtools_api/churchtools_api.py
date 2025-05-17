@@ -14,6 +14,8 @@ from churchtools_api.posts import ChurchToolsApiPosts
 from churchtools_api.resources import ChurchToolsApiResources
 from churchtools_api.songs import ChurchToolsApiSongs
 
+# from churchtools_api.tags import ChurchToolsApiTags # already part of songs  # noqa: ERA001 E501
+
 logger = logging.getLogger(__name__)
 
 
@@ -37,6 +39,7 @@ class ChurchToolsApi(
         ChurchToolsApiFiles: all functions used for files
         ChurchToolsApiCalendars: all functions used for calendars
         ChurchToolsApiResources: all functions used for resources
+        ChurchToolsApiTags: all functions used for tags
     """
 
     def __init__(
@@ -274,43 +277,6 @@ class ChurchToolsApi(
         logger.info("Services requested failed: %s", response.status_code)
         return None
 
-    def get_tags(self, type: str, *, rtype: str = "original") -> list[dict]:  # noqa: A002
-        """Retrieve a list of all available tags.
-
-        of a specific ct_domain type from ChurchTools
-        Purpose: be able to find out tag-ids of all available tags for filtering by tag.
-
-        Arguments:
-            type: 'song', 'person', 'group'
-            rtype: original, id_dict or name_dict.
-                Defaults to original
-        Returns:
-            list of dicts usually with one dict per tag with
-        """
-        url = f"{self.domain}/api/tags/{type}"
-        headers = {"accept": "application/json"}
-        response = self.session.get(url=url, headers=headers)
-
-        response_content = json.loads(response.content)
-
-        if response.status_code != requests.codes.ok:
-            logger.warning(response.content)
-            return None
-
-        response_data = response_content["data"]
-
-        match rtype:
-            case "id_dict":
-                result = {item["id"]: item["name"] for item in response_data}
-            case "name_dict":
-                result = {item["name"]: item["id"] for item in response_data}
-            case _:
-                result = response_data
-
-        logger.debug("Tag load successful len=%s", len(result))
-
-        return result
-
     def get_options(self) -> dict:
         """Helper function which returns all configurable option fields from CT.
 
@@ -329,10 +295,10 @@ class ChurchToolsApi(
         if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
             response_data = response_content["data"].copy()
-            logger.debug("SongTags load successful len=%s", len(response_content))
+            logger.debug("Options load successful len=%s", len(response_content))
             return {item["name"]: item for item in response_data}
         logger.warning(
-            "%s Something went wrong fetching Song-tags: %s",
+            "%s Something went wrong fetching Options: %s",
             response.status_code,
             response.content,
         )
