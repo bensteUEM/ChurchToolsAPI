@@ -7,7 +7,7 @@
   ],
   "package-name": "churchtools-api",
   "path": "churchtools_api",
-  "tag-pattern": "v?\\d+\\.\\d+\\.\\d+$",
+  "version-file": "pyproject.toml",
   "include-v-in-tag": false,
   "tagPrefix": "",
   "draft": true
