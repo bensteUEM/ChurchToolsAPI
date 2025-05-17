@@ -176,7 +176,7 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
         title: str,
         subtitle: str = "",
         description: str = "",
-        isInternal: bool = False,  # noqa: FBT001 FBT002
+        isInternal: bool = False,
         address: dict | None = None,
         link: str = "",
         image: Path | None = None,
@@ -223,14 +223,10 @@ class ChurchToolsApiCalendar(ChurchToolsApiAbstract):
             **kwargs,
         }
 
-        # TODO@bensteUEM: Something is wrong with timestamp precision when
-        # createing new events - truncated to minutes...
-        # https://github.com/bensteUEM/ChurchToolsAPI/issues/141 - CT case 147654
         if startDate.second != 0 or endDate.second != 0:
-            logger.warning(
+            logger.info(
                 (
-                    "Seconds of startdate=%s and enddate=%s are discarded by CT API - "
-                    "Support Case 177654 Github Ticket 141"
+                    "Seconds of startdate=%s and enddate=%s are discarded by CT API"
                 ),
                 startDate,
                 endDate,
