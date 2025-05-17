@@ -17,15 +17,9 @@ jobs:
       - uses: googleapis/release-please-action@v4
         id: release
         with:
-          release-type: python
+          config-file: .release-please-config.json
+          manifest-file: .release-please-manifest.json
           token: ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}
-
-      - name: Debug release outputs
-        run: |
-          echo "release_created=${{ steps.release.outputs.release_created }}"
-          echo "version=${{ steps.release.outputs.version }}"
-          echo "tag_name=${{ steps.release.outputs.tag_name }}"
-          echo "upload_url=${{ steps.release.outputs.upload_url }}"
           
       - name: Checkout code
         uses: actions/checkout@v4.2.1
@@ -34,8 +28,15 @@ jobs:
         id: get_last_release
         run: |
           LAST_RELEASE_TAG=$(gh release list --limit 2 --json tagName -q '.[1].tagName') 
-          echo "last_release=$LAST_RELEASE_TAG"
           echo "last_release=$LAST_RELEASE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Debug release outputs
+        run: |
+          echo "release_created=${{ steps.release.outputs.release_created }}"
+          echo "version=${{ steps.release.outputs.version }}"
+          echo "tag_name=${{ steps.release.outputs.tag_name }}"
+          echo "upload_url=${{ steps.release.outputs.upload_url }}"
+          echo "last_release=${{ steps.get_last_release.outputs.last_release }}"
 
       - name: Set up Python
         if: ${{ steps.release.outputs.release_created }}
