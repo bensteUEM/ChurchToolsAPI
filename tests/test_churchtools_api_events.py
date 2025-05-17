@@ -137,25 +137,6 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         # TODO @benste: add test cases for uncommon parts (canceled, include)
         # https://github.com/bensteUEM/ChurchToolsAPI/issues/24
 
-    @pytest.mark.skip(
-        "This test relies on a 90 day sample timeframe "
-        "and is therefore excluded from automation"
-    )
-    def test_get_AllEventData_ajax(self) -> None:
-        """IMPORTANT - This test method and the parameters used depend on target system!
-
-        Test function to check the get_AllEventData_ajax function for a specific ID
-        On ELKW1610.KRZ.TOOLS event ID 3348 is an existing Test Event
-        with schedule (29. Sept 2024)
-        Please be aware that this function is limited to the timeframe
-        configured for cache in CT (by default -90days)
-        :return:
-        """
-        SAMPLE_EVENT_ID = 3348
-        result = self.api.get_AllEventData_ajax(SAMPLE_EVENT_ID)
-        assert "id" in result
-        assert result["id"] == str(SAMPLE_EVENT_ID)
-
     def test_get_set_event_services_counts(self) -> None:
         """IMPORTANT - This test method and the parameters used depend on target system!
 
