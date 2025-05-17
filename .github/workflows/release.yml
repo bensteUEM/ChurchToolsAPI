@@ -15,6 +15,8 @@ jobs:
       - uses: googleapis/release-please-action@v4
         name: release
         with:
+          config-file: .release-please-config.json
+          manifest-file: .release-please-manifest.json
           token: ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}
 
       - name: Debug release outputs
