@@ -25,7 +25,9 @@ jobs:
           echo "version=${{ steps.release.outputs.version }}"
           echo "tag_name=${{ steps.release.outputs.tag_name }}"
           echo "upload_url=${{ steps.release.outputs.upload_url }}"
+          
       - name: Checkout code
+        if: ${{ steps.release.outputs.release_created }}
         uses: actions/checkout@v4.2.1
 
       - name: Set up Python

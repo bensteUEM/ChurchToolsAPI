@@ -11,6 +11,7 @@
     }
   },
   "version-file": "pyproject.toml",
+  "versioning": "poetry",
   "include-component-in-tag": false,
   "include-v-in-tag": false,
   "draft": true
