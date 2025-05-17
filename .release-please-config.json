@@ -9,6 +9,5 @@
   "path": "churchtools_api",
   "version-file": "pyproject.toml",
   "include-v-in-tag": false,
-  "tagPrefix": "",
   "draft": true
 }
