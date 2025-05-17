@@ -11,7 +11,7 @@
   "tagPrefix": "",
   "version-file": {
     "path": "pyproject.toml",
-    "regex": "\\[tool\\.poetry\\][\\s\\S]*?^version\\s*=\\s*\"(?<version>\\d+\\.\\d+\\.\\d+)\"",
+    "regex": "\\[tool\\.poetry\\][\\s\\S]*?version\\s*=\\s*\"(?<version>\\d+\\.\\d+\\.\\d+)\"",
     "updater": "toml"
   }
 }
