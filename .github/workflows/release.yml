@@ -16,7 +16,6 @@ jobs:
         id: release
         with:
           token: ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}
-          config-file: .release-please-config.json
 
       - name: Debug release outputs
         run: |
