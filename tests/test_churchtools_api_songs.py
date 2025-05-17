@@ -61,7 +61,7 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
 
         EXPECTED_KEYS = [
             "id",
-            "bezeichnung",
+            "name",
             "songcategory_id",
             "practice_yn",
             "author",
@@ -79,7 +79,7 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         assert all(key in EXPECTED_KEYS for key in song)
 
         assert int(song["id"]) == SAMPLE_SONG_ID
-        assert song["bezeichnung"] == "sample"
+        assert song["name"] == "sample"
 
     def test_get_song_category_map(self) -> None:
         """Checks that a dict with respective known values.
@@ -143,54 +143,45 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         songcategory_id = 13
 
         # 1. Create Song after and check it exists with all params
-        caplog.clear()
-        with caplog.at_level(level=logging.INFO, logger="churchtools_api.songs"):
-            song_id = self.api.create_song(title, songcategory_id)
+        song_id = self.api.create_song(name=title, songcategory_id=songcategory_id)
         assert song_id is not None
-        EXPECTED_MESSAGES = [
-            (
-                "Using undocumented AJAX API"
-                " because function does not exist as REST endpoint"
-            )
-        ]
-        assert all(message in caplog.messages for message in EXPECTED_MESSAGES)
 
         ct_song = self.api.get_songs(song_id=song_id)[0]
         assert ct_song["name"] == title
-        assert ct_song["author"] == ""
+        assert ct_song["author"] is None
         assert ct_song["category"]["id"] == songcategory_id
 
         # 2. Edit Song title and check it exists with all params
-        self.api.edit_song(song_id, title="Test_bezeichnung2")
+        self.api.edit_song(song_id, name="Test_bezeichnung2")
         ct_song = self.api.get_songs(song_id=song_id)[0]
-        assert ct_song["author"] == ""
+        assert ct_song["author"] is None
         assert ct_song["name"] == "Test_bezeichnung2"
 
         # 3. Edit all fields and check it exists with all params
         data = {
-            "bezeichnung": "Test_bezeichnung3",
+            "name": "Test_bezeichnung3",
             "songcategory_id": 1,
             "author": "Test_author",
             "copyright": "Test_copyright",
             "ccli": "Test_ccli",
-            "practice_yn": 1,
+            "should_practice": 1,
         }
         self.api.edit_song(
             song_id=song_id,
             songcategory_id=data["songcategory_id"],
-            title=data["bezeichnung"],
+            name=data["name"],
             author=data["author"],
             copyright=data["copyright"],
             ccli=data["ccli"],
-            practice_yn=data["practice_yn"],
+            should_practice=data["should_practice"],
         )
         ct_song = self.api.get_songs(song_id=song_id)[0]
-        assert ct_song["name"] == data["bezeichnung"]
+        assert ct_song["name"] == data["name"]
         assert ct_song["category"]["id"] == data["songcategory_id"]
         assert ct_song["author"] == data["author"]
         assert ct_song["copyright"] == data["copyright"]
         assert ct_song["ccli"] == data["ccli"]
-        assert ct_song["shouldPractice"] == data["practice_yn"]
+        assert ct_song["shouldPractice"] == data["should_practice"]
 
         # Delete Song
         self.api.delete_song(song_id)
@@ -427,16 +418,11 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         SAMPLE_ARRANGEMENT_NAME2 = "TEST_BEZEICHNUNG"
         SAMPLE_PARAMS = {
             "name": SAMPLE_ARRANGEMENT_NAME2,
-            "source_id": next(
-                iter(SAMPLE_SOURCE.values())
-            ),  # using shortname on purpse
-            "source_ref": "source_ref",
-            "tonality": "tonality",
-            "bpm": "bpm",
+            "key": "F",
+            "tempo": 50,
             "beat": "beat",
-            "length_min": 1,
-            "length_sec": 2,
-            "note": "note",
+            "duration": 60,
+            "description": "note",
         }
         was_applied = self.api.edit_song_arrangement(
             song_id=SAMPLE_SONG_ID, arrangement_id=arrangement_id, **SAMPLE_PARAMS
@@ -446,7 +432,10 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
             song_id=SAMPLE_SONG_ID, arrangement_id=arrangement_id
         )
         assert created_arrangement["name"] == SAMPLE_ARRANGEMENT_NAME2
-        assert created_arrangement["sourceName"] == next(iter(SAMPLE_SOURCE.values()))
+        assert all(
+            created_arrangement[expected_key] == expected_value
+            for expected_key, expected_value in SAMPLE_PARAMS.items()
+        )
 
         # edit2 - source as key id
         SAMPLE_PARAMS_SHORT = {
@@ -460,10 +449,7 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
             song_id=SAMPLE_SONG_ID, arrangement_id=arrangement_id
         )
         assert created_arrangement["sourceName"] == next(iter(SAMPLE_SOURCE.values()))
-        assert (
-            created_arrangement["duration"]
-            == SAMPLE_PARAMS["length_min"] * 60 + SAMPLE_PARAMS["length_sec"]
-        )
+        assert created_arrangement["duration"] == SAMPLE_PARAMS["duration"]
 
         # delete
         was_deleted = self.api.delete_song_arrangement(

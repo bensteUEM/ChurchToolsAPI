@@ -195,7 +195,7 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
 
     def create_song(  # noqa: PLR0913
         self,
-        title: str,
+        name: str,
         songcategory_id: int,
         author: str = "",
         copyright: str = "",  # noqa: A002
@@ -203,17 +203,13 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         tonality: str = "",
         bpm: str = "",
         beat: str = "",
+        should_practice: bool = False,
     ) -> int | None:
-        """Method to create a new song using legacy AJAX API.
-
-        Does not check for existing duplicates !
-        function endpoint see https://api.church.tools/function-churchservice_addNewSong.html
-        name for params reverse engineered based on web developer tools
-        in Firefox and live churchTools instance.
+        """Method to create a new song using REST API.
 
         Arguments:
-            title: Title of the Song
-            songcategory_id: int id of site specific songcategories
+            name: Title of the Song (former title)
+            songcategory_id: id of site specific songcategories former songcategory_id
                 (created in CT Metadata) - required
             author: name of author or authors, ideally
                 comma separated if multiple - optional
@@ -225,83 +221,80 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
                 see ChurchTools for details e.g. Ab,A,C,C# ... - optional
             bpm: Beats per Minute - optional
             beat: Beat - optional
+            should_practice: - if should be highlighted for practice. defaults to False
 
         Returns:
             song_id: ChurchTools song_id of the Song created or None if not successful
         """
-        logging.warning(
-            "Using undocumented AJAX API"
-            " because function does not exist as REST endpoint"
-        )
-        url = self.domain + "/?q=churchservice/ajax&func=addNewSong"
+        url = self.domain + "/api/songs"
 
         data = {
-            "bezeichnung": title,
-            "songcategory_id": songcategory_id,
+            "name": name,
+            "categoryId": songcategory_id,
             "author": author,
             "copyright": copyright,
             "ccli": ccli,
             "tonality": tonality,
             "bpm": bpm,
             "beat": beat,
+            "shouldPractice": should_practice,
         }
 
-        response = self.session.post(url=url, data=data)
+        response = self.session.post(url=url, json=data)
 
-        if response.status_code == requests.codes.ok:
-            response_content = json.loads(response.content)
-            new_id = int(response_content["data"])
-            logger.debug("Song created successful with ID=%s", new_id)
-            return new_id
+        if response.status_code != requests.codes.created:
+            logger.warning(
+                "%s Creating song failed with: %s",
+                response.status_code,
+                response.content,
+            )
+            return None
 
-        logger.info("Creating song failed with %s", response.status_code)
-        return None
+        response_content = json.loads(response.content)
+        new_id = int(response_content["data"]["id"])
+        logger.debug("Song created successful with ID=%s", new_id)
+        return new_id
 
     def edit_song(  # noqa: PLR0913
         self,
         song_id: int,
         *,
         songcategory_id: int | None = None,
-        title: str | None = None,
+        name: str | None = None,
         author: str | None = None,
         copyright: str | None = None,  # noqa: A002
         ccli: str | None = None,
-        practice_yn: str | None = None,
+        should_practice: str | None = None,
     ) -> dict:
-        """Method to EDIT an existing song using legacy AJAX API.
+        """Method to EDIT an existing song using REST API.
 
         Changes are only applied to fields that have values in respective param
         None is considered empty while '' is an empty text which clears existing values.
 
-        function endpoint see https://api.church.tools/function-churchservice_editSong.html
-        name for params reverse engineered based on web developer tools
-        in Firefox and live churchTools instance
         NOTE - BPM and BEAT used in create are part of arrangement
         and not song therefore not editable in this method
 
         Arguments:
             song_id: ChurchTools site specific song_id which should be modified
                 required
-            title: Title of the Song
+            name: Title of the Song
             songcategory_id: int id of site specific songcategories
                 (created in CT Metadata)
             author: name of author or authors, ideally comma separated if multiple
             copyright: name of organization responsible for rights distribution
             ccli: CCLI ID see songselect.ccli.com/ - using "-" if empty on purpose
-            practice_yn: bool as 0 and 1 -
-                additional param which does not exist in create method!
+            should_practice: if should be highlighted for practice
 
-        Returns: response item #TODO 49
+        Returns: song after change
         """
-        # system/churchservice/churchservice_db.php
-        url = self.domain + "/?q=churchservice/ajax&func=editSong"
+        url = f"{self.domain}/api/songs/{song_id}"
 
         existing_song = self.get_songs(song_id=song_id)[0]
 
         data = {
             "id": song_id if song_id is not None else existing_song["name"],
-            "bezeichnung": title if title is not None else existing_song["name"],
-            "songcategory_id": songcategory_id
+            "name": name if name is not None else existing_song["name"],
+            "categoryId": songcategory_id
             if songcategory_id is not None
             else existing_song["category"]["id"],
             "author": author if author is not None else existing_song["author"],
@@ -309,38 +302,44 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
             if copyright is not None
             else existing_song["copyright"],
             "ccli": ccli if ccli is not None else existing_song["ccli"],
-            "practice_yn": practice_yn
-            if practice_yn is not None
+            "shouldPractice": should_practice
+            if should_practice is not None
             else existing_song["shouldPractice"],
         }
+        response = self.session.put(url=url, json=data)
 
-        return self.session.post(url=url, data=data)
+        if response.status_code != requests.codes.ok:
+            logger.warning(
+                "%s Creating song failed with: %s",
+                response.status_code,
+                response.content,
+            )
+            return None
 
-    def delete_song(self, song_id: int) -> dict:
-        """Method to DELETE a song using legacy AJAX API.
+        return json.loads(response.content)["data"]
 
-        name for params reverse engineered based on web developer tools
-        in Firefox and live churchTools instance.
+    def delete_song(self, song_id: int) -> bool:
+        """Method to DELETE a song using REST API.
 
         Arguments:
             song_id: ChurchTools site specific song_id which should be modified
                 required
 
         Returns:
-            response item #TODO 49
+            if successful
         """
-        logging.warning(
-            "Using undocumented AJAX API"
-            " because function does not exist as REST endpoint"
-        )
-        # system/churchservice/churchservice_db.php
-        url = self.domain + "/?q=churchservice/ajax&func=deleteSong"
+        url = f"{self.domain}/api/songs/{song_id}"
 
-        data = {
-            "id": song_id,
-        }
+        response = self.session.delete(url=url)
+        if response.status_code != requests.codes.no_content:
+            logger.warning(
+                "%s Creating song failed with: %s",
+                response.status_code,
+                response.content,
+            )
+            return False
 
-        return self.session.post(url=url, data=data)
+        return True
 
     def add_song_tag(self, song_id: int, song_tag_id: int) -> dict:
         """Method to add a song tag using legacy AJAX API on a specific song.
@@ -485,6 +484,8 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
     def create_song_arrangement(self, song_id: int, arrangement_name: str) -> int:
         """Creates a new song arrangment.
 
+        Use edit_song_arrangement to write additional params
+
         Arguments:
             song_id: id of the song which should be modified
             arrangement_name: human readable name of the arrangement to be created
@@ -492,24 +493,23 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
         Returns:
             arrangement_id
         """
-        logging.warning(
-            "Using undocumented AJAX API"
-            " because function does not exist as REST endpoint"
-        )
-
-        url = self.domain + "/?q=churchservice/ajax"
+        url = f"{self.domain}/api/songs/{song_id}/arrangements"
 
         data = {
-            "func": "addArrangement",
-            "song_id": song_id,
-            "bezeichnung": arrangement_name,
+            "name": arrangement_name,
         }
-        response = self.session.post(url=url, data=data)
-        if response.status_code != requests.codes.ok:
-            logger.error(response)
+
+        response = self.session.post(url=url, json=data)
+
+        if response.status_code != requests.codes.created:
+            logger.warning(
+                "%s Creating song arrangement failed with: %s",
+                response.status_code,
+                response.content,
+            )
             return None
 
-        return json.loads(response.content)["data"]
+        return json.loads(response.content)["data"]["id"]
 
     def edit_song_arrangement(
         self,
@@ -527,26 +527,20 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
             kwargs: optional keyword arguments as listed below
                 preserves original state if not specified
 
+
+
         Kwargs
             name: (str) originally called "bezeichnung in CT"
-            source_id: (int|str) id of the source as defined in masterdata.
-                Alternatively also accepts shortname.
-            source_ref: (str) source reference number.
-            tonality: (str) e.g. Ab.
+            key: (str) e.g. Ab.
             bpm: (str) beats per minute.
             beat: (str) e.g. 4/4.
-            length_min: (int) lenght in full minutes.
-            length_sec: (int) length addiotn - seconds.
+            duration: (int) lenght in full seconds.
             note: (str) more detailed explanation text.
 
         Returns:
-            if changes were applied
+            if changes were applied successful
         """
-        logger.warning(
-            "Using undocumented AJAX API"
-            " because function does not exist as REST endpoint"
-        )
-        url = self.domain + "/?q=churchservice/ajax"
+        url = f"{self.domain}/api/songs/{song_id}/arrangements/{arrangement_id}"
 
         existing_arrangement = self.get_song_arrangement(
             song_id=song_id, arrangement_id=arrangement_id
@@ -562,28 +556,16 @@ class ChurchToolsApiSongs(ChurchToolsApiAbstract):
             )
 
         data = {
-            "func": "editArrangement",
-            "song_id": song_id,
-            "id": arrangement_id,
-            "bezeichnung": kwargs.get("name", existing_arrangement["name"]),
-            "source_id": source_id,
-            "source_ref": kwargs.get(
-                "source_ref", existing_arrangement["sourceReference"]
-            ),
-            "tonality": kwargs.get(
-                "tonality", existing_arrangement["keyOfArrangement"]
-            ),
-            "bpm": kwargs.get("bpm", existing_arrangement["bpm"]),
+            "name": kwargs.get("name", existing_arrangement["name"]),
+            "key": kwargs.get("key", existing_arrangement["key"]),
+            "tempo": kwargs.get("tempo", existing_arrangement["tempo"]),
             "beat": kwargs.get("beat", existing_arrangement["bpm"]),
-            "length_min": kwargs.get(
-                "length_min", existing_arrangement["duration"] // 60
+            "duration": kwargs.get("duration", existing_arrangement["duration"]),
+            "description": kwargs.get(
+                "description", existing_arrangement["description"]
             ),
-            "length_sec": kwargs.get(
-                "length_sec", existing_arrangement["duration"] % 60
-            ),
-            "note": kwargs.get("note", existing_arrangement["note"]),
         }
-        response = self.session.post(url=url, data=data)
+        response = self.session.put(url=url, json=data)
         if response.status_code != requests.codes.ok:
             logger.error(json.loads(response.content)["errors"])
             return False
