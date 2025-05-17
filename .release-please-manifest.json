@@ -1,9 +1,2 @@
 {
-  "churchtools-api": {
-    "package-name": "churchtools-api",
-    "path": "churchtools_api",
-    "tag-pattern": "v?\\d+\\.\\d+\\.\\d+$",
-    "version-file": "pyproject.toml",
-    "initial-version": "1.8.0"
-  }
 }
