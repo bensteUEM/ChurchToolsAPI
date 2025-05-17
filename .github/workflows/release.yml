@@ -17,7 +17,6 @@ jobs:
         with:
           token: ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}
           config-file: .release-please-config.json
-          manifest-file: .release-please-manifest.json
 
       - name: Debug release outputs
         run: |

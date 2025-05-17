@@ -1,6 +1,0 @@
-{
-  "churchtools_api": {
-    "component": "churchtools-api",
-    "include-component-in-tag": false
-  }
-}
