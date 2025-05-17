@@ -5,6 +5,8 @@
       "branch": "main"
     }
   ],
+  "path": "churchtools_api",
+  "version-file": "../pyproject.toml",
   "include-v-in-tag": false,
   "draft": true
 }
