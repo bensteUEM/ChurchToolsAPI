@@ -145,38 +145,50 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         tries to increase that number
         tries to get the number again
         tries to set it back to original
+        verifies original value is restored
+
         On ELKW1610.KRZ.TOOLS event ID 2626 is an existing test Event
         with schedule (1. Jan 2023)
         On ELKW1610.KRZ.TOOLS serviceID 1 is Predigt (1. Jan 2023)
-        :return:
+
+        Returns:
+            None
         """
         eventId = 2626
         serviceId = 1
-        original_count_comapre = 3
 
         self.api.get_events(eventId=eventId)
 
-        original_count = self.api.get_event_services_counts_ajax(
+        original_count = self.api.get_event_services_counts(
             eventId=eventId,
             serviceId=serviceId,
         )
-        assert original_count == {serviceId: original_count_comapre}
 
-        result = self.api.set_event_services_counts_ajax(eventId, serviceId, 2)
-        assert result
+        is_updated = self.api.set_event_services_counts_ajax(
+            eventId=eventId,
+            serviceId=serviceId,
+            servicesCount=original_count[serviceId] + 1,
+        )
+        assert is_updated
 
-        new_count = self.api.get_event_services_counts_ajax(
+        new_count = self.api.get_event_services_counts(
             eventId=eventId,
             serviceId=serviceId,
         )
-        assert new_count == {serviceId: 2}
+        assert new_count == {serviceId: original_count[serviceId] + 1}
 
-        result = self.api.set_event_services_counts_ajax(
-            eventId,
-            serviceId,
-            original_count[serviceId],
+        is_updated = self.api.set_event_services_counts_ajax(
+            eventId=eventId,
+            serviceId=serviceId,
+            servicesCount=original_count[serviceId],
         )
-        assert result
+        assert is_updated
+
+        original_count = self.api.get_event_services_counts(
+            eventId=eventId,
+            serviceId=serviceId,
+        )
+        assert original_count == {serviceId: original_count[serviceId]}
 
     def test_get_set_event_admins(self) -> None:
         """IMPORTANT - This test method and the parameters used depend on target system!
