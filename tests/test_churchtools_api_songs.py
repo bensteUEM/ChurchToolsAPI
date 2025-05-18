@@ -34,7 +34,7 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
             depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
-        SAMPLE_SONG = {"id":2034,"name":"sample"}
+        SAMPLE_SONG = {"id": 2034, "name": "sample"}
 
         songs = self.api.get_songs()
         LENGTH_OF_DEFAULT_PAGINATION = 50
@@ -332,15 +332,24 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         SAMPLE_ARRANGEMENT_NAME2 = "TEST_BEZEICHNUNG"
         SAMPLE_PARAMS = {
             "name": SAMPLE_ARRANGEMENT_NAME2,
+            "sourceName": next(iter(SAMPLE_SOURCE.values())),
+            "sourceReference": "source_ref",
             "key": "F",
             "tempo": 50,
             "beat": "beat",
             "duration": 60,
             "description": "note",
         }
+        key_map = {
+            "sourceReference": "source_reference",
+            "sourceName": "source_name_short",
+        }
+        formatted_params = {key_map.get(k, k): v for k, v in SAMPLE_PARAMS.items()}
+
         was_applied = self.api.edit_song_arrangement(
-            song_id=SAMPLE_SONG_ID, arrangement_id=arrangement_id, **SAMPLE_PARAMS
+            song_id=SAMPLE_SONG_ID, arrangement_id=arrangement_id, **formatted_params
         )
+
         assert was_applied
         created_arrangement = self.api.get_song_arrangement(
             song_id=SAMPLE_SONG_ID, arrangement_id=arrangement_id
@@ -351,22 +360,42 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
             for expected_key, expected_value in SAMPLE_PARAMS.items()
         )
 
-        # edit2 - source as key id
-        SAMPLE_PARAMS_SHORT = {
-            "source_id": int(next(iter(SAMPLE_SOURCE.keys()))),
-        }
-        was_applied = self.api.edit_song_arrangement(
-            song_id=SAMPLE_SONG_ID, arrangement_id=arrangement_id, **SAMPLE_PARAMS_SHORT
-        )
-        assert was_applied
-        created_arrangement = self.api.get_song_arrangement(
-            song_id=SAMPLE_SONG_ID, arrangement_id=arrangement_id
-        )
-        assert created_arrangement["sourceName"] == next(iter(SAMPLE_SOURCE.values()))
-        assert created_arrangement["duration"] == SAMPLE_PARAMS["duration"]
-
         # delete
         was_deleted = self.api.delete_song_arrangement(
             song_id=SAMPLE_SONG_ID, arrangement_id=arrangement_id
         )
         assert was_deleted
+
+    def test_set_default_arrangement(self) -> None:
+        """Test method to modify default arrangement.
+
+        IMPORTANT - This test method and the parameters used depend on target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+        """
+        SAMPLE_SONG_ID = 408
+        SAMPLE_DEFAULT_ARRANGEMENT_ID = 5272
+        SAMPLE_OTHER_ARRANGEMENT_ID = 5374
+
+        # check pre-existing default situation
+        assert (
+            self.api.get_song_arrangement(song_id=SAMPLE_SONG_ID)["id"]
+            == SAMPLE_DEFAULT_ARRANGEMENT_ID
+        )
+
+        # change default
+        was_changed = self.api.set_default_arrangement(
+            song_id=SAMPLE_SONG_ID, arrangement_id=SAMPLE_OTHER_ARRANGEMENT_ID
+        )
+        assert was_changed
+
+        # check modified default situation
+        assert (
+            self.api.get_song_arrangement(song_id=SAMPLE_SONG_ID)["id"]
+            == SAMPLE_OTHER_ARRANGEMENT_ID
+        )
+
+        # reset to original default situation
+        was_reset = self.api.set_default_arrangement(
+            song_id=SAMPLE_SONG_ID, arrangement_id=SAMPLE_DEFAULT_ARRANGEMENT_ID
+        )
+        assert was_reset

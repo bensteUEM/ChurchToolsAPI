@@ -304,7 +304,7 @@ class ChurchToolsApiSongs(ChurchToolsApiTags):
 
         return True
 
-    def contains_song_tag(self, song_id: int, song_tag_name: int) -> bool:
+    def contains_song_tag(self, song_id: int, song_tag_name: str) -> bool:
         """Helper which checks if a specific song_tag_id is present on a song.
 
         Arguments:
@@ -317,13 +317,12 @@ class ChurchToolsApiSongs(ChurchToolsApiTags):
         tags = self.get_tag(domain_type="song", domain_id=song_id, rtype="name_dict")
         return song_tag_name in tags
 
-    def get_songs_by_tag(self, song_tag_name: int) -> list[dict]:
+    def get_songs_by_tag(self, song_tag_name: str) -> list[dict]:
         """Helper which returns all songs that contain have a specific tag.
 
         Arguments:
-            song_tag_name: ChurchTools site specific song_tag_id which should be used
-            OR
-            song_tag_id
+            song_tag_name: name of a song tag that is used
+                in respective ChurchTools instace
 
         Returns:
             list of songs
@@ -367,7 +366,7 @@ class ChurchToolsApiSongs(ChurchToolsApiTags):
         return next(
             arrangement
             for arrangement in song["arrangements"]
-            if song["arrangements"][0]["isDefault"]
+            if arrangement["isDefault"]
         )
 
     def create_song_arrangement(self, song_id: int, arrangement_name: str) -> int:
@@ -425,6 +424,10 @@ class ChurchToolsApiSongs(ChurchToolsApiTags):
             beat: (str) e.g. 4/4.
             duration: (int) lenght in full seconds.
             note: (str) more detailed explanation text.
+            source_id: (int) id of the source as defined in masterdata
+            source_name_short: (str) short name of source - will be mapped to source_id
+            source_name: (str) full name of source - will be mapped to source_id
+            source_reference: (str) source reference e.g. number within source.
 
         Returns:
             if changes were applied successful
@@ -434,16 +437,20 @@ class ChurchToolsApiSongs(ChurchToolsApiTags):
         existing_arrangement = self.get_song_arrangement(
             song_id=song_id, arrangement_id=arrangement_id
         )
-
         if isinstance(kwargs.get("source_id"), int):
             source_id = kwargs.get("source_id")
-        elif isinstance(kwargs.get("source_id"), str):
-            source_id = self.lookup_song_source_as_id(shortname=kwargs.get("source_id"))
+        elif isinstance(kwargs.get("source_name_short"), str):
+            source_id = self.lookup_song_source_as_id(
+                shortname=kwargs.get("source_name_short")
+            )
+        elif isinstance(kwargs.get("source_name"), str):
+            source_id = self.lookup_song_source_as_id(
+                longname=kwargs.get("source_name")
+            )
         else:
             source_id = self.lookup_song_source_as_id(
                 shortname=existing_arrangement["sourceName"]
             )
-
         data = {
             "name": kwargs.get("name", existing_arrangement["name"]),
             "key": kwargs.get("key", existing_arrangement["key"]),
@@ -452,6 +459,10 @@ class ChurchToolsApiSongs(ChurchToolsApiTags):
             "duration": kwargs.get("duration", existing_arrangement["duration"]),
             "description": kwargs.get(
                 "description", existing_arrangement["description"]
+            ),
+            "sourceId": source_id,
+            "sourceReference": kwargs.get(
+                "source_reference", existing_arrangement["sourceReference"]
             ),
         }
         response = self.session.put(url=url, json=data)
@@ -474,6 +485,25 @@ class ChurchToolsApiSongs(ChurchToolsApiTags):
         url = f"{self.domain}/api/songs/{song_id}/arrangements/{arrangement_id}"
 
         response = self.session.delete(url=url)
+        if response.status_code != requests.codes.no_content:
+            logger.error(response)
+            return False
+
+        return True
+
+    def set_default_arrangement(self, song_id: int, arrangement_id: int) -> bool:
+        """Modify which arrangement is labeled as default for one song.
+
+        Args:
+            song_id: the number of the song to modify
+            arrangement_id: the arrangement id within the song to delete
+
+        Returns:
+            if deleted successfull
+        """
+        url = f"{self.domain}/api/songs/{song_id}/arrangements/{arrangement_id}/default"
+
+        response = self.session.patch(url=url)
         if response.status_code != requests.codes.no_content:
             logger.error(response)
             return False
