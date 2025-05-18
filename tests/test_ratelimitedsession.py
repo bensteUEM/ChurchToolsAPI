@@ -1,17 +1,13 @@
 """This test module is used to verify integrity of the Ratelimited session."""
-#TODO@bensteUEM: inquiry to CT Team 147987 for configured threshold
-# https://github.com/bensteUEM/ChurchToolsAPI/issues/37
 
 import json
 import logging
 import logging.config
-import time
 from pathlib import Path
 
 import pytest
-import requests
 
-from churchtools_api.ratelimitedsession import RateLimitedSession
+from tests.test_churchtools_api_abstract import TestsChurchToolsApiAbstract
 
 logger = logging.getLogger(__name__)
 
@@ -23,41 +19,19 @@ with config_file.open(encoding="utf-8") as f_in:
         log_directory.mkdir(parents=True)
     logging.config.dictConfig(config=logging_config)
 
-# Make sure test values are adjusted
-#  - e.g. 250* google.com with 10 req per 2seconds ~= 50 sec
-#  - e.g. 250* google.com with no threshold ~= 30 sec
-SAMPLE_URL = "https://google.com"
-EXPECTED_TIME = 30
 
+class TestsRateLimitedSession(TestsChurchToolsApiAbstract):
+    """Test for Rate limits."""
 
-@pytest.mark.skip("execute only if ratelimit is decreased")
-def test_no_rate_limit() -> None:
-    """Reference time for 250 requests without throttle using google.com.
+    def test_no_rate_limit(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Reference time for 250 requests without throttle using google.com."""
+        SAMPLE_SONG_ID = 408
 
-    Actual time might depend on internet speed!
+        with caplog.at_level(logging.INFO, logger="ratelimitedsession"):
+            for _i in range(750):
+                self.api.get_songs(song_id=SAMPLE_SONG_ID)
+        EXPECTED_MESSAGES = [
+            "rate limit reached - waiting 15 sec before repeating request"
+        ]
 
-    Only checks GET request for simplification.
-    """
-    session = requests.Session()
-
-    start = time.perf_counter()
-    for _i in range(250):
-        session.get(url=SAMPLE_URL)
-    end = time.perf_counter()
-
-    assert end - start < EXPECTED_TIME
-
-@pytest.mark.skip("execute only if ratelimit is decreased")
-def test_rate_limited() -> None:
-    """Reference time for 250 requests with throttle using google.com.
-
-    Only checks GET request for simplification.
-    """
-    session = RateLimitedSession()
-
-    start = time.perf_counter()
-    for _i in range(250):
-        session.get(url=SAMPLE_URL)
-    end = time.perf_counter()
-
-    assert end-start > EXPECTED_TIME
+        assert caplog.messages == EXPECTED_MESSAGES

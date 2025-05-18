@@ -62,8 +62,8 @@ class ChurchToolsApi(
 
         """
         super().__init__()
-        self.session = None
-        self.domain = domain
+        self.session : None | RateLimitedSession = None
+        self.domain : str = domain
 
         if ct_token is not None:
             self.login_ct_rest_api(ct_token=ct_token)

@@ -1,14 +1,15 @@
 """This code is used to wrap the most common requests into a rate limited model.
 
-ChurchTools API usually accepts X / sec requests and will return an error if exceeded
+ChurchTools API usually responds code 429 on excessive use
+ - repeating request after timeout will suceed
 """
-#TODO@bensteUEM: inquiry to CT Team 147987 for configured thresholds
-# https://github.com/bensteUEM/ChurchToolsAPI/issues/37
-
+import logging
+from time import sleep
 from typing import override
 
 import requests
-from ratelimit import limits, sleep_and_retry
+
+logger = logging.getLogger(__name__)
 
 
 class RateLimitedSession(requests.Session):
@@ -17,18 +18,21 @@ class RateLimitedSession(requests.Session):
     with rate limits and retry
     """
 
-    MAX_CALLS = 50
-    LIMIT_PERIOD_SECONDS = 2
-
     def __init__(self) -> None:
         """Inits session with additional params."""
+        logger.debug("init rate limited session")
         super().__init__()
 
-    @sleep_and_retry
-    @limits(calls=MAX_CALLS, period=LIMIT_PERIOD_SECONDS)
     def _rate_limited_request(self, method, url, **kwargs) -> requests.Response:  # noqa: ANN001, ANN003
         """Rate limiting execution of original request method."""
-        return super().request(method, url, **kwargs)
+        result = super().request(method, url, **kwargs)
+
+        while result.status_code == requests.codes.too_many_requests:
+            logger.info("rate limit reached - waiting 15 sec before repeating request")
+            sleep(15.0)
+            result = self._rate_limited_request(method=method, url=url, **kwargs)
+
+        return result
 
     @override
     def request(self, method, url, **kwargs) -> requests.Response:  # noqa: ANN001, ANN003
