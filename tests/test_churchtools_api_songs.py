@@ -34,7 +34,7 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
             depend on the target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS
         """
-        SAMPLE_SONG = {"id":2034,"name":"sample"}
+        SAMPLE_SONG = {"id": 2034, "name": "sample"}
 
         songs = self.api.get_songs()
         LENGTH_OF_DEFAULT_PAGINATION = 50
@@ -326,28 +326,30 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
         )
         assert created_arrangement["name"] == SAMPLE_ARRANGEMENT_NAME
 
-        # SAMPLE_SOURCE = {"12": "T"} #noqa: ERA001
+        SAMPLE_SOURCE = {"12": "T"}
 
         # edit source as text and changed params
         SAMPLE_ARRANGEMENT_NAME2 = "TEST_BEZEICHNUNG"
         SAMPLE_PARAMS = {
             "name": SAMPLE_ARRANGEMENT_NAME2,
-            # TODO@bensteUEM: only some parameters can be applied
-            # CT support case 147728
-            # https://github.com/bensteUEM/ChurchToolsAPI/issues/144
-            # "sourceName": next(
-            #     iter(SAMPLE_SOURCE.values())  # noqa: ERA001
-            # ),  # using shortname on purpse
-            # "sourceReference": "source_ref",  # noqa: ERA001
+            "sourceName": next(iter(SAMPLE_SOURCE.values())),
+            "sourceReference": "source_ref",
             "key": "F",
             "tempo": 50,
             "beat": "beat",
             "duration": 60,
             "description": "note",
         }
+        key_map = {
+            "sourceReference": "source_reference",
+            "sourceName": "source_name_short",
+        }
+        formatted_params = {key_map.get(k, k): v for k, v in SAMPLE_PARAMS.items()}
+
         was_applied = self.api.edit_song_arrangement(
-            song_id=SAMPLE_SONG_ID, arrangement_id=arrangement_id, **SAMPLE_PARAMS
+            song_id=SAMPLE_SONG_ID, arrangement_id=arrangement_id, **formatted_params
         )
+
         assert was_applied
         created_arrangement = self.api.get_song_arrangement(
             song_id=SAMPLE_SONG_ID, arrangement_id=arrangement_id
@@ -357,25 +359,7 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
             created_arrangement[expected_key] == expected_value
             for expected_key, expected_value in SAMPLE_PARAMS.items()
         )
-        # TODO@bensteUEM: only some parameters can be applied
-        # CT support case 147728
-        # https://github.com/bensteUEM/ChurchToolsAPI/issues/144
-        # assert created_arrangement["sourceName"] == next(iter(SAMPLE_SOURCE.values()))  # noqa: ERA001 E501
 
-        # edit2 - source as key id
-        """
-        SAMPLE_PARAMS_SHORT = {
-            "source_id": int(next(iter(SAMPLE_SOURCE.keys()))),
-        }
-        was_applied = self.api.edit_song_arrangement(
-            song_id=SAMPLE_SONG_ID, arrangement_id=arrangement_id, **SAMPLE_PARAMS_SHORT
-        )
-        assert was_applied
-        created_arrangement = self.api.get_song_arrangement(
-            song_id=SAMPLE_SONG_ID, arrangement_id=arrangement_id
-        )
-        assert created_arrangement["sourceName"] == next(iter(SAMPLE_SOURCE.values()))
-        """
         # delete
         was_deleted = self.api.delete_song_arrangement(
             song_id=SAMPLE_SONG_ID, arrangement_id=arrangement_id
