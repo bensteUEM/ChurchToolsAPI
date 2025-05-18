@@ -115,8 +115,8 @@ class ChurchToolsApiTags(ChurchToolsApiAbstract):
         return True
 
     def get_tag(
-        self, domain_type: str, domain_id: str, rtype: str = "original"
-    ) -> list[dict]:
+        self, domain_type: str, domain_id: int, rtype: str = "original"
+    ) -> list[dict] | None:
         """Retrieves the readable tags of one single object.
 
         Args:

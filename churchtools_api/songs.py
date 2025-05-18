@@ -304,7 +304,7 @@ class ChurchToolsApiSongs(ChurchToolsApiTags):
 
         return True
 
-    def contains_song_tag(self, song_id: int, song_tag_name: int) -> bool:
+    def contains_song_tag(self, song_id: int, song_tag_name: str) -> bool:
         """Helper which checks if a specific song_tag_id is present on a song.
 
         Arguments:
@@ -317,13 +317,12 @@ class ChurchToolsApiSongs(ChurchToolsApiTags):
         tags = self.get_tag(domain_type="song", domain_id=song_id, rtype="name_dict")
         return song_tag_name in tags
 
-    def get_songs_by_tag(self, song_tag_name: int) -> list[dict]:
+    def get_songs_by_tag(self, song_tag_name: str) -> list[dict]:
         """Helper which returns all songs that contain have a specific tag.
 
         Arguments:
-            song_tag_name: ChurchTools site specific song_tag_id which should be used
-            OR
-            song_tag_id
+            song_tag_name: name of a song tag that is used
+                in respective ChurchTools instace
 
         Returns:
             list of songs
@@ -367,7 +366,7 @@ class ChurchToolsApiSongs(ChurchToolsApiTags):
         return next(
             arrangement
             for arrangement in song["arrangements"]
-            if song["arrangements"][0]["isDefault"]
+            if arrangement["isDefault"]
         )
 
     def create_song_arrangement(self, song_id: int, arrangement_name: str) -> int:
@@ -426,6 +425,14 @@ class ChurchToolsApiSongs(ChurchToolsApiTags):
             duration: (int) lenght in full seconds.
             note: (str) more detailed explanation text.
 
+        Not useable Keywords due to bug
+            #TODO@bensteUEM: only some parameters can be applied
+            # CT support case 147728
+            # https://github.com/bensteUEM/ChurchToolsAPI/issues/144
+            source_name: (int|str) id of the source as defined in masterdata.
+                Alternatively also accepts shortname.
+            source_reference: (str) source reference number.
+
         Returns:
             if changes were applied successful
         """
@@ -434,16 +441,35 @@ class ChurchToolsApiSongs(ChurchToolsApiTags):
         existing_arrangement = self.get_song_arrangement(
             song_id=song_id, arrangement_id=arrangement_id
         )
-
-        if isinstance(kwargs.get("source_id"), int):
-            source_id = kwargs.get("source_id")
-        elif isinstance(kwargs.get("source_id"), str):
-            source_id = self.lookup_song_source_as_id(shortname=kwargs.get("source_id"))
+        # TODO@bensteUEM: only some parameters can be applied
+        # CT support case 147728
+        # https://github.com/bensteUEM/ChurchToolsAPI/issues/144
+        """
+        if isinstance(kwargs.get("source_name"), int):
+            source_name = kwargs.get("source_name")
+        elif isinstance(kwargs.get("source_name"), str):
+            source_name = self.lookup_song_source_as_id(
+                shortname=kwargs.get("source_name")
+            )
         else:
-            source_id = self.lookup_song_source_as_id(
+            source_name = self.lookup_song_source_as_id(
                 shortname=existing_arrangement["sourceName"]
             )
-
+        """
+        if kwargs.get("source_name") or kwargs.get("source_reference"):
+            logger.warning(
+                "CT support cas 147728 source_name and reference are "
+                "not updateabel via REST API"
+            )
+        # TODO@bensteUEM: only some parameters can be applied
+        # CT support case 147728
+        # https://github.com/bensteUEM/ChurchToolsAPI/issues/144
+        """
+        "sourceName": source_name,
+        "sourceReference": kwargs.get(
+            "source_reference", existing_arrangement["sourceReference"]
+        ),
+        """
         data = {
             "name": kwargs.get("name", existing_arrangement["name"]),
             "key": kwargs.get("key", existing_arrangement["key"]),
