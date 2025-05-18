@@ -365,3 +365,37 @@ class TestChurchtoolsApiSongs(TestsChurchToolsApiAbstract):
             song_id=SAMPLE_SONG_ID, arrangement_id=arrangement_id
         )
         assert was_deleted
+
+    def test_set_default_arrangement(self) -> None:
+        """Test method to modify default arrangement.
+
+        IMPORTANT - This test method and the parameters used depend on target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+        """
+        SAMPLE_SONG_ID = 408
+        SAMPLE_DEFAULT_ARRANGEMENT_ID = 5272
+        SAMPLE_OTHER_ARRANGEMENT_ID = 5374
+
+        # check pre-existing default situation
+        assert (
+            self.api.get_song_arrangement(song_id=SAMPLE_SONG_ID)["id"]
+            == SAMPLE_DEFAULT_ARRANGEMENT_ID
+        )
+
+        # change default
+        was_changed = self.api.set_default_arrangement(
+            song_id=SAMPLE_SONG_ID, arrangement_id=SAMPLE_OTHER_ARRANGEMENT_ID
+        )
+        assert was_changed
+
+        # check modified default situation
+        assert (
+            self.api.get_song_arrangement(song_id=SAMPLE_SONG_ID)["id"]
+            == SAMPLE_OTHER_ARRANGEMENT_ID
+        )
+
+        # reset to original default situation
+        was_reset = self.api.set_default_arrangement(
+            song_id=SAMPLE_SONG_ID, arrangement_id=SAMPLE_DEFAULT_ARRANGEMENT_ID
+        )
+        assert was_reset

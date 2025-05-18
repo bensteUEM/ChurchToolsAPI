@@ -490,3 +490,22 @@ class ChurchToolsApiSongs(ChurchToolsApiTags):
             return False
 
         return True
+
+    def set_default_arrangement(self, song_id: int, arrangement_id: int) -> bool:
+        """Modify which arrangement is labeled as default for one song.
+
+        Args:
+            song_id: the number of the song to modify
+            arrangement_id: the arrangement id within the song to delete
+
+        Returns:
+            if deleted successfull
+        """
+        url = f"{self.domain}/api/songs/{song_id}/arrangements/{arrangement_id}/default"
+
+        response = self.session.patch(url=url)
+        if response.status_code != requests.codes.no_content:
+            logger.error(response)
+            return False
+
+        return True
