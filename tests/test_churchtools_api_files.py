@@ -36,7 +36,7 @@ class TestChurchtoolsApiFiles(TestsChurchToolsApiAbstract):
         cleanup delete all files
         """
         SAMPLE_SONG_ID = 408
-        SAMPLE_ARANGEMENT_ID = 417
+        SAMPLE_ARANGEMENT_ID = 5272
 
         # 0. Clean and delete files in test
         self.api.file_delete("song_arrangement", SAMPLE_ARANGEMENT_ID)
@@ -98,7 +98,7 @@ class TestChurchtoolsApiFiles(TestsChurchToolsApiAbstract):
         self.api.file_upload(
             "samples/pinguin.png",
             "song_arrangement",
-            417,
+            SAMPLE_ARANGEMENT_ID,
             "pinguin2.png",
             overwrite=True,
         )
@@ -113,7 +113,7 @@ class TestChurchtoolsApiFiles(TestsChurchToolsApiAbstract):
         self.api.file_upload(
             "samples/pinguin.png",
             "song_arrangement",
-            417,
+            SAMPLE_ARANGEMENT_ID,
             "pinguin.png",
             overwrite=True,
         )
