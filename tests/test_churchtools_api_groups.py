@@ -125,6 +125,7 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         IMPORTANT - This test method and the parameters used depend on target system!
         the hard coded sample exists on ELKW1610.KRZ.TOOLS.
 
+        0. delete any group which contains sample group name to have clean system setup
         1.  with minimal parameters.
         2. More complex group information
         3. Checks if a group can not be created with name of an existing group
@@ -134,9 +135,15 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         SAMPLE_NEW_GROUP_TYPE = 2
         SAMPLE_GROUP_STATUS_ID = 1
         SAMPLE_CAMPUS_ID = 0
+        SAMPLE_GROUP_NAME = "TestGroup"
+        SAMPLE_GROUP_NAME2 = "TestGroup With Campus And Superior"
+
+        # 0. cleanup delete existing groups which contain name sample_group_name
+        existing_groups = self.api.get_groups(query=SAMPLE_GROUP_NAME)
+        for group in existing_groups:
+            self.api.delete_group(group_id=group["id"])
 
         # 1. minimal group
-        SAMPLE_GROUP_NAME = "TestGroup"
 
         group1 = self.api.create_group(
             SAMPLE_GROUP_NAME,
@@ -149,7 +156,6 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         assert group1["information"]["groupStatusId"] == SAMPLE_GROUP_STATUS_ID
 
         # 2. more complex group
-        SAMPLE_GROUP_NAME2 = "TestGroup With Campus And Superior"
         group2 = self.api.create_group(
             SAMPLE_GROUP_NAME2,
             group_status_id=SAMPLE_GROUP_STATUS_ID,

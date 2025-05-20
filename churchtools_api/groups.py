@@ -26,7 +26,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
         Keywords:
             group_id: int: optional filter by group id (only to be used on it's own)
-            kwargs: keyword arguments passthrough
+            kwargs: keyword arguments passthrough e.g. query
 
         Keywords:
             group_id
@@ -39,11 +39,14 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
         """
         url = self.domain + "/api/groups"
+        params = {}
         if "group_id" in kwargs:
             url = url + "/{}".format(kwargs["group_id"])
+        else:
+            params = {**kwargs}
 
         headers = {"accept": "application/json"}
-        response = self.session.get(url=url, headers=headers)
+        response = self.session.get(url=url, headers=headers, params=params)
 
         if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
