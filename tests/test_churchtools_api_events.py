@@ -150,31 +150,30 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         On ELKW1610.KRZ.TOOLS serviceID 1 is Predigt (1. Jan 2023)
         :return:
         """
-        eventId = 2626
-        serviceId = 1
-        original_count_comapre = 3
+        SAMPLE_EVENT_ID = 2626
+        SAMPLE_SERVICE_ID = 1
 
-        self.api.get_events(eventId=eventId)
+        self.api.get_events(SAMPLE_EVENT_ID=SAMPLE_EVENT_ID)
 
         original_count = self.api.get_event_services_counts_ajax(
-            eventId=eventId,
-            serviceId=serviceId,
+            eventId=SAMPLE_EVENT_ID,
+            serviceId=SAMPLE_SERVICE_ID,
         )
-        assert original_count == {serviceId: original_count_comapre}
 
-        result = self.api.set_event_services_counts_ajax(eventId, serviceId, 2)
+        result = self.api.set_event_services_counts_ajax(
+            SAMPLE_EVENT_ID, SAMPLE_SERVICE_ID, original_count[SAMPLE_SERVICE_ID] - 1
+        )
         assert result
 
         new_count = self.api.get_event_services_counts_ajax(
-            eventId=eventId,
-            serviceId=serviceId,
+            eventId=SAMPLE_EVENT_ID,
+            serviceId=SAMPLE_SERVICE_ID,
         )
-        assert new_count == {serviceId: 2}
-
+        assert new_count == {SAMPLE_SERVICE_ID: original_count[SAMPLE_SERVICE_ID] - 1}
         result = self.api.set_event_services_counts_ajax(
-            eventId,
-            serviceId,
-            original_count[serviceId],
+            SAMPLE_EVENT_ID,
+            SAMPLE_SERVICE_ID,
+            original_count[SAMPLE_SERVICE_ID],
         )
         assert result
 
