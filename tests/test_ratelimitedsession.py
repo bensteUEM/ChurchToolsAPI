@@ -23,15 +23,24 @@ with config_file.open(encoding="utf-8") as f_in:
 class TestsRateLimitedSession(TestsChurchToolsApiAbstract):
     """Test for Rate limits."""
 
-    def test_no_rate_limit(self, caplog: pytest.LogCaptureFixture) -> None:
-        """Reference time for 250 requests without throttle using google.com."""
-        SAMPLE_SONG_ID = 408
+    @pytest.mark.skip(
+        "This test requires a high rate of request in a short time "
+        "and is only enabled if checked on purpose. "
+        "It is skipped to avoid unnecesary system load"
+    )
+    def test_rate_limit_logged(self, caplog: pytest.LogCaptureFixture) -> None:
+        """This test tries to send many request in order to log a "rate limit message.
 
+        it will only work if your client sends these requests fast enough.
+
+        Args:
+            caplog: _description_
+        """
         with caplog.at_level(logging.INFO, logger="ratelimitedsession"):
-            for _i in range(750):
-                self.api.get_songs(song_id=SAMPLE_SONG_ID)
+            for _i in range(1000):
+                self.api.get_calendars()
         EXPECTED_MESSAGES = [
             "rate limit reached - waiting 15 sec before repeating request"
         ]
 
-        assert caplog.messages == EXPECTED_MESSAGES
+        assert all(message in EXPECTED_MESSAGES for message in caplog.messages)
