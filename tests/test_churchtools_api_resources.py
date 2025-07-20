@@ -122,6 +122,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         expected_error_message = "get_resource_masterdata does not know result_type= "
         assert expected_error_message in caplog.messages
 
+    @pytest.mark.skip(
+        "CT changed API - see https://github.com/bensteUEM/ChurchToolsAPI/issues/278"
+    )
     def test_get_booking_by_id(self) -> None:
         """Checks get_booking_by_id.
 
@@ -131,7 +134,9 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         """
         SAMPLE_BOOKING_ID = 5108
         result = self.api.get_bookings(booking_id=SAMPLE_BOOKING_ID)
-        assert result[0]["id"] == SAMPLE_BOOKING_ID
+        assert result[0]["booking"]["id"] == SAMPLE_BOOKING_ID
+        # TODO@bensteUEM: CT Support case 155079 - -reported 20.7.2025
+        # https://github.com/bensteUEM/ChurchToolsAPI/issues/278
 
     def test_get_booking_by_resource_ids(self) -> None:
         """Checks get_booking_by_resource_ids.
