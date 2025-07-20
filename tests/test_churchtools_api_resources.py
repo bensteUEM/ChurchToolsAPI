@@ -44,6 +44,8 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
             "name",
             "nameTranslated",
             "sortKey",
+            "namePlural",
+            "namePluralTranslated",
             "campusId",
             "meta",
         }
