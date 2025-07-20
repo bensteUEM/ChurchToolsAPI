@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.1](https://github.com/bensteUEM/ChurchToolsAPI/compare/v2.0.0...v2.0.1) (2025-07-20)
+
+
+### Bug Fixes
+
+* **event_agenda:** get_event_agenda_docx ([cc6f9b0](https://github.com/bensteUEM/ChurchToolsAPI/commit/cc6f9b0c5e80f58813efd1e120975e84bb9bfce9))
+* **persons:** NULL value for sexId ([978d021](https://github.com/bensteUEM/ChurchToolsAPI/commit/978d0214d06471917b29a84ff68e9f489afb19be))
+
 ## [2.0.0](https://github.com/bensteUEM/ChurchToolsAPI/compare/v1.8.0...v2.0.0) (2025-05-20)
 
 
