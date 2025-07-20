@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "churchtools-api"
-version = "2.0.0"
+version = "2.0.1"
 description = "A python wrapper for use with ChurchToolsAPI"
 authors = ["bensteUEM", "kolibri52", "fschrempf"]
 homepage = "https://github.com/bensteUEM/ChurchToolsAPI"
