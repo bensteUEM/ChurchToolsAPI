@@ -566,19 +566,14 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
             service_groups: the service groups that are known
         """
         for item in service_group_notes:
-            if len(item["serviceGroupNotes"]) > 0:
-                for note in item["serviceGroupNotes"]:
-                    if (
-                        note["serviceGroupId"] in service_groups
-                        and len(note["note"]) > 0
-                    ):
-                        document.add_heading(
-                            "Bemerkung für {}:".format(
-                                service_groups[note["serviceGroupId"]]["name"],
-                            ),
-                            level=4,
-                        )
-                        document.add_paragraph(note["note"])
+            if item["serviceGroupId"] in service_groups and len(item["note"]) > 0:
+                document.add_heading(
+                    "Bemerkung für {}:".format(
+                        service_groups[item["serviceGroupId"]]["name"],
+                    ),
+                    level=4,
+                )
+                document.add_paragraph(item["note"])
 
     def get_persons_with_service(self, eventId: int, serviceId: int) -> list[dict]:
         """Helper function which should return the list of persons.

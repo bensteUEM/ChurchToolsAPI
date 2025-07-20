@@ -388,3 +388,31 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
 
         assert len(result) >= 1
         assert result[0]["serviceId"] >= 1
+
+    def test_get_event_agenda_docx(self) -> None:
+        """Checks downloadability of a sample event as docx.
+
+        Does NOT compare it's content!
+
+        IMPORTANT - This test method and the parameters used depend on target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS.
+        """
+        SAMPLE_EVENT_ID = 4102
+        SAMPLE_SELECTED_SERVICES = [1, 3, 4, 7, 5, 6]
+
+        agenda = self.api.get_event_agenda(eventId=SAMPLE_EVENT_ID)
+        service_groups = self.api.get_event_masterdata(
+            resultClass="serviceGroups", returnAsDict=True
+        )
+        selectedServiceGroups = {
+            key: value
+            for key, value in service_groups.items()
+            if key in SAMPLE_SELECTED_SERVICES
+        }
+        document = self.api.get_event_agenda_docx(
+                agenda,
+                serviceGroups=selectedServiceGroups,
+                excludeBeforeEvent=False,
+            )
+
+        assert document
