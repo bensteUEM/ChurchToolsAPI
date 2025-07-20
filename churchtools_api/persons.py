@@ -92,6 +92,8 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
         """Function to get the Masterdata of the persons module.
 
         This information is required to map some IDs to specific items.
+        Special case treatment for resultClass sexes
+            first item is copied for "None" references as fallback
 
         Arguments:
             resultClass: the name of the masterdata to retrieve. Defaults to All
@@ -111,8 +113,11 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
 
             if resultClass:
                 response_data = response_data[resultClass]
+                if resultClass == "sexes":
+                    response_data.insert(0, {**response_data[0], "id": None})
                 if returnAsDict:
                     response_data = {item["id"]: item["name"] for item in response_data}
+                    response_data[None] = response_data[0]
 
             logger.debug("Person Masterdata load successful len=%s", len(response_data))
 

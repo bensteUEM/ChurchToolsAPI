@@ -111,10 +111,25 @@ class TestChurchtoolsApiPersons(TestsChurchToolsApiAbstract):
         EXPECTED_RESULT = "sex.unknown"
         SAMPLE_USER_ID = 513
 
-        person = self.api.get_persons(ids=[SAMPLE_USER_ID])
+        person = self.api.get_persons(ids=[SAMPLE_USER_ID])[0]
         gender_map = self.api.get_persons_masterdata(
             resultClass="sexes", returnAsDict=True
         )
-        result = gender_map[person[0]["sexId"]]
+        result = gender_map[person["sexId"]]
+
+        assert result == EXPECTED_RESULT
+
+    def test_get_persons_sex_id_none(self) -> None:
+        """Tests that persons sexId can be converted if NULL.
+
+        IMPORTANT - This test method and the parameters used depend on target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+        """
+        EXPECTED_RESULT = "sex.unknown"
+
+        gender_map = self.api.get_persons_masterdata(
+            resultClass="sexes", returnAsDict=True
+        )
+        result = gender_map[None]
 
         assert result == EXPECTED_RESULT
