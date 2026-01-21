@@ -46,6 +46,8 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
             "sortKey",
             "campusId",
             "meta",
+            "namePlural",
+            "namePluralTranslated",
         }
         assert set(next(iter(result))) == EXPECTED_KEYS
 
@@ -129,7 +131,7 @@ class TestChurchtoolsApiResources(TestsChurchToolsApiAbstract):
         """
         SAMPLE_BOOKING_ID = 5108
         result = self.api.get_bookings(booking_id=SAMPLE_BOOKING_ID)
-        assert result[0]["id"] == SAMPLE_BOOKING_ID
+        assert result[0]["booking"]["id"] == SAMPLE_BOOKING_ID
 
     def test_get_booking_by_resource_ids(self) -> None:
         """Checks get_booking_by_resource_ids.

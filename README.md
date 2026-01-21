@@ -54,7 +54,7 @@ There is also a main.ipynb which can be used to quickly execute single actions w
 
 ## Compatibility
 
-Tested against the current Churchtools APIs as of Sept 2024 (CT 3.101). More information is provided on the respective ChurchTools pages.
+Tested against the current Churchtools APIs as of Jan 2026 (CT 3.128.3). More information is provided on the respective ChurchTools pages.
 
 ### REST API
 

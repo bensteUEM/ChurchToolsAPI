@@ -81,6 +81,9 @@ class ChurchToolsApiResources(ChurchToolsApiAbstract):
                 might have a bug in API - Support Ticket 130123)
             appointment_id: int: get resources for one specific calendar_appointment
                 only (use together with to_ and from_ for performance reasons)
+
+        Returns:
+            list of bookings matching the criteria
         """
         url = self.domain + "/api/bookings"
         headers = {"accept": "application/json"}

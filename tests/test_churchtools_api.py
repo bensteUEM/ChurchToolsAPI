@@ -99,5 +99,5 @@ class TestsChurchToolsApi(TestsChurchToolsApiAbstract):
         assert "administer settings" in permissions["churchcore"]
 
         assert not permissions["churchcore"]["administer settings"]
-        assert not permissions["churchdb"]["view birthdaylist"]
+        assert not permissions["churchdb"]["view archive"]
         assert permissions["churchwiki"]["view"]

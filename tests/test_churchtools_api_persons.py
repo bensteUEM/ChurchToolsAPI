@@ -61,6 +61,7 @@ class TestChurchtoolsApiPersons(TestsChurchToolsApiAbstract):
         EXPECTED_SECTIONS = {
             "roles",
             "ageGroups",
+            "commentViewers",
             "targetGroups",
             "groupTypes",
             "groupCategories",
@@ -70,8 +71,6 @@ class TestChurchtoolsApiPersons(TestsChurchToolsApiAbstract):
             "campuses",
             "contactLabels",
             "growPaths",
-            "followUps",
-            "followUpIntervals",
             "groupMeetingTemplates",
             "relationshipTypes",
             "sexes",
@@ -97,7 +96,7 @@ class TestChurchtoolsApiPersons(TestsChurchToolsApiAbstract):
         result = self.api.get_persons_masterdata(resultClass="sexes", returnAsDict=True)
         assert isinstance(result, dict)
         assert len(result) > 1
-        assert isinstance(next(iter(result.keys())), int)
+        assert isinstance(next(iter(result.keys())), int | type(None))
         assert isinstance(next(iter(result.values())), str)
 
     def test_get_persons_sex_id(self) -> None:

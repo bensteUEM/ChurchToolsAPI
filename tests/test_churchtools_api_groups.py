@@ -180,7 +180,7 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         assert group3 is None
         EXPECTED_MESSAGES = [
             "Es gibt bereits eine Gruppe mit diesem Namen. "
-            "Soll die Gruppe trotzdem angelegt werden?"
+            "Soll die Gruppe trotzdem erstellt werden?"
         ]
         assert caplog.messages == EXPECTED_MESSAGES
 
