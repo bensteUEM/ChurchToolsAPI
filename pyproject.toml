@@ -16,7 +16,7 @@ tzlocal = "^5.2"
 ratelimit = "^2.2.1"
 
 [tool.poetry.group.dev.dependencies]
-poetry = "^1.6.1"
+poetry = "^2.0.0"
 tomli_w = "^1.0.0"
 wheel = "^0.41.2"
 setuptools = "^66.1.1"
