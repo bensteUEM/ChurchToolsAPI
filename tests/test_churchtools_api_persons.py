@@ -133,3 +133,33 @@ class TestChurchtoolsApiPersons(TestsChurchToolsApiAbstract):
         result = gender_map[None]
 
         assert result == EXPECTED_RESULT
+
+    def test_create_delete_person(self) -> None:
+        """Tests creating and deleting a person.
+
+        IMPORTANT - This test method and the parameters used depend on target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+        """
+        SAMPLE_FIRST_NAME = "TestFirstName"
+        SAMPLE_LAST_NAME = "TestLastName"
+        SAMPLE_MAIL = "TestMail@Example.com"
+
+        sample_person_data = {
+            "firstName": SAMPLE_FIRST_NAME,
+            "lastName": SAMPLE_LAST_NAME,
+            "email": SAMPLE_MAIL,
+        }
+
+        # create person
+        new_person = self.api.create_person(sample_person_data)
+        assert isinstance(new_person["id"], int)
+
+        # retrieve person and check data
+        check_person = self.api.get_persons(ids=[new_person["id"]])[0]
+        assert check_person["firstName"] == SAMPLE_FIRST_NAME
+        assert check_person["lastName"] == SAMPLE_LAST_NAME
+        assert check_person["email"] == SAMPLE_MAIL
+
+        # delete person
+        delete_result = self.api.delete_person(personId=new_person["id"])
+        assert delete_result is True

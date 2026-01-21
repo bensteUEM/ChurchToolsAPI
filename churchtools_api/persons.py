@@ -128,3 +128,107 @@ class ChurchToolsApiPersons(ChurchToolsApiAbstract):
             response.content,
         )
         return None
+
+    def create_person(self, person_data: dict) -> dict | None:
+        """Function to create a person to ChurchTools.
+
+        Arguments:
+            person_data: dict with person data according to CT API
+                firstName
+                lastName
+                email
+
+                and additional optional fields using the following deafults:
+                * departmentIds defaults to 0
+                * statusId defaults to 0 (unknown)
+                * campusId defaults to 0 (first campus)
+                * privacyPolicyAgreementTypeId defaults to 1 (Gruppenanmeldeforumular)
+                * privacyPolicyAgreementWhoId defaults to 1 (Person selbst)
+                * privacyPolicyAgreementDate defaults to "1900-01-01"
+
+        Permissions:
+            create person
+
+        Returns:
+            dict with created person data including new ID
+        """
+        # add default keys if not provided
+        required_keys = ["firstName", "lastName", "email"]
+        if not all(key in person_data for key in required_keys):
+            logger.error(
+                "Person creation failed: missing required keys in person_data: %s",
+                required_keys,
+            )
+            return None
+
+        default_keys = {
+            "departmentIds": [1],
+            "statusId": 0,  # Unkonwn
+            "campusId": 0,  # First Campus
+            "email": "no-mail@nomail.xx",
+            "privacyPolicyAgreementTypeId": 1,  # Gruppenanmeldeforumular
+            "privacyPolicyAgreementWhoId": 1,  # Person selbst
+            "privacyPolicyAgreementDate": "1900-01-01",
+        }
+
+        for key in default_keys:
+            if key not in person_data:
+                person_data[key] = default_keys[key]
+
+        # prepare request
+
+        url = self.domain + "/api/persons"
+
+        headers = {
+            "accept": "application/json",
+            "Content-Type": "application/json",
+        }
+
+        response = self.session.post(
+            url=url, headers=headers, data=json.dumps(person_data)
+        )
+
+        # use reposonse
+
+        if response.status_code == requests.codes.created:
+            response_content = json.loads(response.content)
+            response_data = response_content["data"].copy()
+
+            logger.debug("Person creation successful id=%s", response_data.get("id"))
+            return response_data
+        logger.warning(
+            "Person creation failed: %s %s",
+            response.status_code,
+            response.content,
+        )
+        return None
+
+    def delete_person(self, personId: int) -> bool:
+        """Function to delete a person from ChurchTools.
+
+        Arguments:
+            personId: ID of the person to delete
+
+        Permissions:
+            delete person
+
+        Returns:
+            bool indicating success
+        """
+        url = self.domain + f"/api/persons/{personId}"
+
+        headers = {
+            "accept": "application/json",
+        }
+        response = self.session.delete(url=url, headers=headers)
+
+        if response.status_code == requests.codes.no_content:
+            logger.debug("Person deletion successful id=%s", personId)
+            return True
+        logger.warning(
+            "Person deletion failed id=%s: %s %s",
+            personId,
+            response.status_code,
+            response.content,
+        )
+        return False
