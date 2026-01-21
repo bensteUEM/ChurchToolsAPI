@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.1.0](https://github.com/bensteUEM/ChurchToolsAPI/compare/v2.0.0...v2.1.0) (2026-01-21)
+
+
+### Features
+
+* **persons:** adding add delete person ([#279](https://github.com/bensteUEM/ChurchToolsAPI/issues/279)) ([d93a74d](https://github.com/bensteUEM/ChurchToolsAPI/commit/d93a74df207d426fe1584efc2f9a1eff40d1db77))
+
+
+### Bug Fixes
+
+* **event_agenda:** get_event_agenda_docx ([cc6f9b0](https://github.com/bensteUEM/ChurchToolsAPI/commit/cc6f9b0c5e80f58813efd1e120975e84bb9bfce9))
+* **persons:** NULL value for sexId ([978d021](https://github.com/bensteUEM/ChurchToolsAPI/commit/978d0214d06471917b29a84ff68e9f489afb19be))
+* update test for CT version compatibility ([56a6f61](https://github.com/bensteUEM/ChurchToolsAPI/commit/56a6f61f06437d844a648aa9300890c9baf58576))
+* upgrade poetry version ([69408e5](https://github.com/bensteUEM/ChurchToolsAPI/commit/69408e55610e3506f0e6c4753512ed673167d13a))
+
 ## [2.0.0](https://github.com/bensteUEM/ChurchToolsAPI/compare/v1.8.0...v2.0.0) (2025-05-20)
 
 
