@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/bensteUEM/ChurchToolsAPI/compare/v2.1.0...v2.2.0) (2026-06-14)
+
+
+### Features
+
+* **groups:** add group hiererchy access ([c409c1e](https://github.com/bensteUEM/ChurchToolsAPI/commit/c409c1e6380f2d3a211d65b1c581730711a0c693))
+
 ## [2.1.0](https://github.com/bensteUEM/ChurchToolsAPI/compare/v2.0.0...v2.1.0) (2026-01-21)
 
 
