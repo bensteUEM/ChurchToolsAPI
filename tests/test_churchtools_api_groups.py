@@ -429,3 +429,38 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
             parent_group_id=SAMPLE_PARENT_GROUP_ID,
         )
         assert result
+
+    def test_get_parent_groups(self) -> None:
+        """Checks if parent groups can be retrieved for a group.
+
+        IMPORTANT - This test method and the parameters used depend on target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+        """
+        SAMPLE_GROUP_ID_PARENT = 103
+        SAMPLE_GROUP_ID_CHILD = 2170
+
+
+        parent_groups = self.api.get_parent_groups(group_id=SAMPLE_GROUP_ID_CHILD)
+        assert isinstance(parent_groups, (list, type(None)))
+        if parent_groups is not None and len(parent_groups) > 0:
+            for parent_group in parent_groups:
+                assert isinstance(parent_group, dict)
+                assert "domainIdentifier" in parent_group
+                assert int(parent_group["domainIdentifier"]) == SAMPLE_GROUP_ID_PARENT
+
+    def test_get_child_groups(self) -> None:
+        """Checks if child groups can be retrieved for a group.
+
+        IMPORTANT - This test method and the parameters used depend on target system!
+        the hard coded sample exists on ELKW1610.KRZ.TOOLS
+        """
+        SAMPLE_GROUP_ID_PARENT = 103
+        SAMPLE_GROUP_ID_CHILD = 2170
+
+        child_groups = self.api.get_child_groups(group_id=SAMPLE_GROUP_ID_PARENT)
+        assert isinstance(child_groups, (list, type(None)))
+        if child_groups is not None and len(child_groups) > 0:
+            for child_group in child_groups:
+                assert isinstance(child_group, dict)
+                assert "domainIdentifier" in child_group
+                assert int(child_group["domainIdentifier"]) == SAMPLE_GROUP_ID_CHILD

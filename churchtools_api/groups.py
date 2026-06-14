@@ -628,3 +628,61 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
             response.content,
         )
         return None
+
+    def get_parent_groups(self, group_id: int) -> list[dict]:
+        """Get list of parent groups for the given group.
+
+        Arguments:
+            group_id: required group id
+
+        Returns:
+            list of parent groups
+        """
+        url = self.domain + f"/api/groups/{group_id}/parents"
+        headers = {"accept": "application/json"}
+        response = self.session.get(url=url, headers=headers)
+
+        if response.status_code == requests.codes.ok:
+            response_content = json.loads(response.content)
+
+            response_data = self.combine_paginated_response_data(
+                response_content,
+                url=url,
+                headers=headers,
+            )
+            return [response_data] if isinstance(response_data, dict) else response_data
+        logger.warning(
+            "%s Something went wrong fetching parent groups: %s",
+            response.status_code,
+            response.content,
+        )
+        return None
+
+    def get_child_groups(self, group_id: int) -> list[dict]:
+        """Get list of child groups for the given group.
+
+        Arguments:
+            group_id: required group id
+
+        Returns:
+            list of child groups
+        """
+        url = self.domain + f"/api/groups/{group_id}/children"
+        headers = {"accept": "application/json"}
+        response = self.session.get(url=url, headers=headers)
+
+        if response.status_code == requests.codes.ok:
+            response_content = json.loads(response.content)
+
+            response_data = self.combine_paginated_response_data(
+                response_content,
+                url=url,
+                headers=headers,
+            )
+            return [response_data] if isinstance(response_data, dict) else response_data
+        logger.warning(
+            "%s Something went wrong fetching child groups: %s",
+            response.status_code,
+            response.content,
+        )
+        return None

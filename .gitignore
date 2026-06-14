@@ -140,3 +140,5 @@ dmypy.json
 
 # Poetry package lock for builds
 poetry.lock
+
+mitarbeiterliste
