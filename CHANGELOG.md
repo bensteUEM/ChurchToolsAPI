@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.1](https://github.com/bensteUEM/ChurchToolsAPI/compare/v2.2.0...v2.2.1) (2026-07-29)
+
+
+### Bug Fixes
+
+* **events:** agenda download with new endpoint and params ([#282](https://github.com/bensteUEM/ChurchToolsAPI/issues/282)) ([c38ae73](https://github.com/bensteUEM/ChurchToolsAPI/commit/c38ae7347bc09ddba2e773bc5d46a19d361631b0))
+* updated CT bugfix rtype changed ([957995a](https://github.com/bensteUEM/ChurchToolsAPI/commit/957995a7d619664f24eb84f1b15290c75ab4631d))
+
 ## [2.2.0](https://github.com/bensteUEM/ChurchToolsAPI/compare/v2.1.0...v2.2.0) (2026-06-14)
 
 
