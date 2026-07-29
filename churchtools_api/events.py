@@ -329,15 +329,15 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         )
         return False
 
-    def get_event_agenda(self, eventId: int) -> list:
+    def get_event_agenda(self, event_id: int) -> list:
         """Retrieve agenda for event by ID from ChurchTools.
 
         Arguments:
-            eventId: number of the event
+            event_id: number of the event
         Returns:
             list of event agenda items.
         """
-        url = self.domain + f"/api/events/{eventId}/agenda"
+        url = self.domain + f"/api/events/{event_id}/agenda"
         headers = {"accept": "application/json"}
         response = self.session.get(url=url, headers=headers)
 
@@ -354,23 +354,25 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         return None
 
     def export_event_agenda(
-        self, target_format: str, target_path: str = "./downloads", **kwargs: dict
+        self,
+        event_id: int,
+        target_format: str,
+        target_path: str = "./downloads",
+        **kwargs: dict,
     ) -> bool:
         """Exports the agenda as zip file for imports in presenter-programs.
 
         Parameters:
+            event_id: event id to check for agenda id should be exported
             target_format: fileformat or name of presentation software
                 which should be supported.
-                Supported formats are 'SONG_BEAMER', 'PRO_PRESENTER6'
-                    and 'PRO_PRESENTER7'
+                Supported formats are 'SONG_BEAMER', 'PRO_PRESENTER_6'
+                    and 'PRO_PRESENTER_7'
             target_path: Filepath of the file which should
                 be exported (including filename)
             kwargs: additional keywords as listed below
 
         Keywords:
-            eventId: event id to check for agenda id should be exported
-            agendaId: agenda id of the agenda which should be exported
-                DO NOT combine with eventId because it will be overwritten!
             append_arrangement: if True, the name of the arrangement
                 will be included within the agenda caption
             export_Songs: if True, the songfiles will be in the
@@ -379,37 +381,19 @@ class ChurchToolsApiEvents(ChurchToolsApiAbstract):
         Returns:
             if successful.
         """
-        if "eventId" in kwargs:
-            if "agendaId" in kwargs:
-                logger.warning(
-                    "Invalid use of params - can not combine eventId and agendaId!",
-                )
-            else:
-                agenda = self.get_event_agenda(eventId=kwargs["eventId"])
-                agendaId = agenda["id"]
-        elif "agendaId" in kwargs:
-            agendaId = kwargs["agendaId"]
-        else:
-            logger.warning("Missing event or agendaId")
-            return False
-
         # note: target path can be either a zip-file defined before function
         # call or just a folder
         is_zip = target_path.lower().endswith(".zip")
         if not is_zip:
             target_path = Path(target_path)
             target_path.mkdir(parents=True, exist_ok=True)
-
-            if "eventId" in kwargs:
-                new_file_name = "{}_{}.zip".format(agenda["name"], target_format)
-            else:
-                new_file_name = f"{target_format}_agendaId_{agendaId}.zip"
+            new_file_name = f"{target_format}_event_id:{event_id}.zip"
 
             target_path = target_path / new_file_name
 
-        url = f"{self.domain}/api/agendas/{agendaId}/export"
+        url = f"{self.domain}/api/events/{event_id}/agenda/export"
         # NOTE the stream=True parameter below
-        params = {"target": target_format}
+        params = {"format": target_format}
         json_data = {}
         # The following 3 parameter 'appendArrangement', 'exportSongs' and
         # 'withCategory' are mandatory from the churchtools API side:
