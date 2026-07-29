@@ -267,7 +267,17 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         result = self.api.get_event_agenda(eventId)
         assert result is not None
 
-    def test_export_event_agenda(self, caplog: pytest.LogCaptureFixture) -> None:
+    @pytest.mark.parametrize(
+        "target_format",
+        [
+            pytest.param("SONG_BEAMER", id="song_beamer"),
+            pytest.param("PRO_PRESENTER_7", id="pro_presenter_7"),
+            pytest.param("PRO_PRESENTER_6", id="pro_presenter_6"),
+        ],
+    )
+    def test_export_event_agenda(
+        self, target_format: str
+    ) -> None:
         """IMPORTANT - This test method and the parameters used depend on target system!
 
         Test function to download an Event Agenda file package for e.g. Songbeamer
@@ -275,14 +285,7 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         On ELKW1610.KRZ.TOOLS event ID 484 is an existing Event
             with schedule (20th. Nov 2022)
         """
-        eventId = 484
-        agendaId = self.api.get_event_agenda(eventId)["id"]
-
-        caplog.clear()
-        with caplog.at_level(level=logging.WARNING, logger="churchtools_api.events"):
-            download_result = self.api.export_event_agenda("SONG_BEAMER")
-        assert len(caplog.records) == 1
-        assert not download_result
+        SAMPLE_EVENT_ID = 484
 
         download_dir = Path("downloads")
         for root, dirs, files in download_dir.walk(top_down=False):
@@ -291,13 +294,12 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
             for name in dirs:
                 (root / name).rmdir()
 
-        download_result = self.api.export_event_agenda("SONG_BEAMER", agendaId=agendaId)
+        download_result = self.api.export_event_agenda(
+            event_id=SAMPLE_EVENT_ID, target_format=target_format
+        )
         assert download_result
 
-        download_result = self.api.export_event_agenda("SONG_BEAMER", eventId=eventId)
-        assert download_result
-
-        EXPECTED_NUMBER_OF_FILES = 2
+        EXPECTED_NUMBER_OF_FILES = 1
         assert len(os.listdir("downloads")) == EXPECTED_NUMBER_OF_FILES
 
     def test_get_services(self) -> None:
@@ -400,7 +402,7 @@ class TestsChurchToolsApiEvents(TestsChurchToolsApiAbstract):
         SAMPLE_EVENT_ID = 4102
         SAMPLE_SELECTED_SERVICES = [1, 3, 4, 7, 5, 6]
 
-        agenda = self.api.get_event_agenda(eventId=SAMPLE_EVENT_ID)
+        agenda = self.api.get_event_agenda(event_id=SAMPLE_EVENT_ID)
         service_groups = self.api.get_event_masterdata(
             resultClass="serviceGroups", returnAsDict=True
         )
