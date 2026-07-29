@@ -517,9 +517,7 @@ class ChurchToolsApiGroups(ChurchToolsApiAbstract):
 
         if response.status_code == requests.codes.ok:
             response_content = json.loads(response.content)
-            # For unknown reasons the endpoint returns a list of items instead
-            # of a single item as specified in the API documentation.
-            return response_content["data"][0].copy()
+            return response_content["data"].copy()
 
         logger.warning(
             "%s Something went wrong adding group member: %s",

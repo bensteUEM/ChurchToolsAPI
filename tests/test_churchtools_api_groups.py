@@ -113,7 +113,7 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         IMPORTANT - This test method and the parameters used depend on target system!
         """
         SAMPLE_GROUP_ID = 103
-        EXPECTED_NUMNER_OF_PERMISSIONS = 2
+        EXPECTED_NUMNER_OF_PERMISSIONS = 20
 
         permissions = self.api.get_group_permissions(group_id=SAMPLE_GROUP_ID)
         assert permissions["churchdb"]["+see group"] == EXPECTED_NUMNER_OF_PERMISSIONS
@@ -441,7 +441,7 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
 
 
         parent_groups = self.api.get_parent_groups(group_id=SAMPLE_GROUP_ID_CHILD)
-        assert isinstance(parent_groups, (list, type(None)))
+        assert isinstance(parent_groups, list | type(None))
         if parent_groups is not None and len(parent_groups) > 0:
             for parent_group in parent_groups:
                 assert isinstance(parent_group, dict)
@@ -458,7 +458,7 @@ class TestChurchtoolsApiGroups(TestsChurchToolsApiAbstract):
         SAMPLE_GROUP_ID_CHILD = 2170
 
         child_groups = self.api.get_child_groups(group_id=SAMPLE_GROUP_ID_PARENT)
-        assert isinstance(child_groups, (list, type(None)))
+        assert isinstance(child_groups, list | type(None))
         if child_groups is not None and len(child_groups) > 0:
             for child_group in child_groups:
                 assert isinstance(child_group, dict)
