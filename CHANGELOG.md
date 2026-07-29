@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.2](https://github.com/bensteUEM/ChurchToolsAPI/compare/v2.2.1...v2.2.2) (2026-07-29)
+
+
+### Bug Fixes
+
+* security updates of dependencies ([b9f6281](https://github.com/bensteUEM/ChurchToolsAPI/commit/b9f628130562ad584eb392a82599aa17ba516457))
+
 ## [2.2.1](https://github.com/bensteUEM/ChurchToolsAPI/compare/v2.2.0...v2.2.1) (2026-07-29)
 
 
